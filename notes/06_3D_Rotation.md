@@ -6,23 +6,25 @@
 
 **Gimbal Lock**
 
-![1544445825310](assets/1544445825310.png)
+![1544445825310](assets/1544445825310.jpg)
 
 右手系，开始时箭头指向z轴，绕x轴旋转 -90°
 
-![1544445904281](assets/1544445904281.png)
+![1544445904281](assets/1544445904281.jpg)
 
-此时想让箭头指向 x 轴，发现没法做到了（蓝环和绿环重合）
+此时想让箭头指向 -x 轴，发现没法做到了（蓝环和绿环重合）
+
+> 假装图片的箭头是圆锥+圆柱构成的
 
 只能先绕x轴旋转 -90°，再向y轴旋转 90°。同时旋转，得到如下轨迹（发生了偏移）
 
-![1544446098961](assets/1544446098961.png)
+![1544446098961](assets/1544446098961.jpg)
 
 **Imaginary Unit $i$**
 
 ~~i=sqrt{-1}~~
 
-![1544446458827](assets/1544446458827.png)
+![1544446458827](assets/1544446458827.jpg)
 
 Imaginary unit is just a ==quarter-turn== in the counter-clockwise direction 
 
@@ -34,11 +36,11 @@ Instead of $e_0$, $e_1$, use “$1$” and “$i$” to denote the two ==bases==
 
 Otherwise(其他方面), behaves exactly like a real 2-dimensional space 
 
-![1544446658642](assets/1544446658642.png)
+![1544446658642](assets/1544446658642.jpg)
 
 **Complex Arithmetic**
 
-![1544446749602](assets/1544446749602.png)
+![1544446749602](assets/1544446749602.jpg)
 $$
 \begin{aligned}
 &z_1+z_2=(a_1+a_2)+(b_1+b_2)\ i\\
@@ -58,7 +60,7 @@ $$
 $$
 **2D Rotations: Matrices vs. Complex**
 
-![1544447604806](assets/1544447604806.png)
+![1544447604806](assets/1544447604806.jpg)
 
 **Quaternions**
 
@@ -73,6 +75,8 @@ Quaternion product determined by
 $$
 i^2=j^2=k^2=ijk=-1
 $$
+>可推出 $ij=k,\ jk=i,\ ki=j$
+
 together with “natural” rules (distributivity, associativity, etc.) 
 
 ==WARNING==: product no longer commutes! 
@@ -104,19 +108,21 @@ $$
 $$
 **3D Transformations via Quaternions **
 
-![1544448675849](assets/1544448675849.png)
+![1544448675849](assets/1544448675849.jpg)
 
 > $q=(a,\mathbf{v})=(a,(b,c,d))=a+bi+cj+dk$
 >
-> $\langle{q,p}\rangle=a_1a_2+b_1b_2+c_1c_2+d_1d_2$
+> 定义 $\langle{q,p}\rangle=a_1a_2+b_1b_2+c_1c_2+d_1d_2$
 >
-> $|q|^2=\langle{q,q}\rangle=a^2+b^2+c^2+d^2,\ |qp|=|q||p|$
+> 则
 >
-> $\cos\theta=\frac{\langle{q,p}\rangle}{|q||p|}$
+> - $|q|^2=\langle{q,q}\rangle=a^2+b^2+c^2+d^2,\ |qp|=|q||p|$
 >
-> $\overline{q}=(a,-\mathbf{v}),\ q\overline{q}=|q|^2$
+> - $\cos\theta=\frac{\langle{q,p}\rangle}{|q||p|}$
 >
-> $q^{-1}=\overline{q}/|q|^2,qq^{-1} = 1,\ (qp)^{-1}=p^{-1}q^{-1}$
+> 定义 $\overline{q}=(a,-\mathbf{v})$, 则 $q\overline{q}=|q|^2$
+>
+> 定义 $q^{-1}=\overline{q}/|q|^2$，则 $qq^{-1} = 1,\ (qp)^{-1}=p^{-1}q^{-1}$
 
 Given axis u, angle θ, quaternion q representing rotation is  
 $$
@@ -125,7 +131,9 @@ $$
 
 >Much easier to remember (and manipulate) than matrix! 
 >
->![1544449019015](assets/1544449019015.png)
+>![1544449019015](assets/1544449019015.jpg)
+>
+>![1544452260223](assets/1544452260223.jpg)
 
 **Interpolating Rotations **
 
@@ -134,7 +142,7 @@ $$
 \text{Slerp}(q_0,q_1,t)=q_0(q_0^{-1}q_1)^t,t\in[0,1]
 $$
 
->![img](https://images2015.cnblogs.com/blog/890966/201706/890966-20170608123241465-1268380295.png)
+>![img](assets/1544452129532.jpg)
 >$$
 >\begin{aligned}
 >\mathbf{r}(t)&=a(t)\mathbf{p}+b(t)\mathbf{q}\\
