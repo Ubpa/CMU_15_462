@@ -281,10 +281,10 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
                                               Color color ) {
   // Task 3: 
   // Implement triangle rasterization
-	float xMin = floor(min({ x0,x1,x2 })-0.5)+0.4999;
-	float xMax = floor(max({ x0,x1,x2 })+0.5)+0.5001;
-	float yMin = floor(min({ y0,y1,y2 })-0.5)+0.4999;
-	float yMax = floor(max({ y0,y1,y2 })+0.5)+0.5001;
+	float xMin = floor(min({ x0,x1,x2 })+0.5)-0.5;
+	float xMax = floor(max({ x0,x1,x2 })+0.5)+0.5;
+	float yMin = floor(min({ y0,y1,y2 })+0.5)-0.5;
+	float yMax = floor(max({ y0,y1,y2 })+0.5)+0.5;
 
 	float dX0 = x1 - x0;
 	float dX1 = x2 - x1;

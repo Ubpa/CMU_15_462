@@ -33,7 +33,7 @@ int loadDirectory( DrawSVG* drawsvg, const char* path ) {
     
     // load files
     string pathname = path; 
-    if (pathname[pathname.back()] != '/') pathname.push_back('/');
+    if (pathname.back() != '/') pathname.push_back('/');
     while (((ent = readdir (dir)) != NULL) && (n < 9)) {
 
       string filename = ent->d_name;
