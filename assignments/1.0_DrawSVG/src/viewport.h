@@ -48,6 +48,7 @@ class ViewportImp : public Viewport {
 }; // class ViewportImp
 
 
+#ifdef NDEBUG
 class ViewportRef : public Viewport {
  public:
   
@@ -55,6 +56,7 @@ class ViewportRef : public Viewport {
   virtual void update_viewbox( float dx, float dy, float scale );
 
 }; // class ViewportRef
+#endif // NDEBUG
 
 
 } // namespace CMU462

@@ -135,6 +135,7 @@ class SoftwareRendererImp : public SoftwareRenderer {
 
 }; // class SoftwareRendererImp
 
+#ifdef NDEBUG
 
 class SoftwareRendererRef : public SoftwareRenderer {
  public:
@@ -214,6 +215,7 @@ class SoftwareRendererRef : public SoftwareRenderer {
 
 }; // class SoftwareRendererRef
 
+#endif // NDEBUG
 } // namespace CMU462
 
 #endif // CMU462_SOFTWARE_RENDERER_H

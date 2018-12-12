@@ -140,17 +140,23 @@ class DrawSVG : public Renderer {
   /* software renderer */
   SoftwareRenderer* software_renderer;
   SoftwareRenderer* software_renderer_imp;
+#ifdef NDEBUG
   SoftwareRenderer* software_renderer_ref;
+#endif // NDEBUG
 
   /* texture sampler */
   Sampler2D* sampler;
   Sampler2D* sampler_imp;
+#ifdef NDEBUG
   Sampler2D* sampler_ref;
+#endif // NDEBUG
 
   /* tabs */
   std::vector<SVG*> tabs; size_t current_tab;
   std::vector<Viewport*> viewport_imp;
+#ifdef NDEBUG
   std::vector<Viewport*> viewport_ref;
+#endif // NDEBUG
   
   /* diff */
   bool show_diff;
@@ -176,7 +182,9 @@ class DrawSVG : public Renderer {
 
   /* saved canvas_to_norm transformations */
   std::vector<Matrix3x3> viewport_save_imp;
+#ifdef NDEBUG
   std::vector<Matrix3x3> viewport_save_ref;
+#endif // NDEBUG
 
   /* framebuffer for software renderer */
   std::vector<unsigned char> framebuffer;

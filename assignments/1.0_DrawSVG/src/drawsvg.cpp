@@ -12,12 +12,16 @@ DrawSVG::~DrawSVG() {
 
   tabs.clear();
   viewport_imp.clear();
+#ifdef NDEBUG
   viewport_ref.clear();
+#endif // NDEBUG
 
   delete hardware_renderer;
 
   delete software_renderer_imp;
+#ifdef NDEBUG
   delete software_renderer_ref;
+#endif // !NDEBUG
 
 }
 
@@ -35,9 +39,11 @@ string DrawSVG::info() {
 
   if (method == Software) {
     osd = "Software Renderer ";
+#ifdef NDEBUG
     if (software_renderer == software_renderer_ref) {
       osd += "- Reference";
     }
+#endif // NDEBUG
     if (sample_rate > 1) {
       osd += "( " + to_string(sample_rate * sample_rate) + "x SSAA)";
     }
@@ -53,28 +59,38 @@ void DrawSVG::init() {
 
   // software renderer implementations
   software_renderer_imp = new SoftwareRendererImp();
+#ifdef NDEBUG
   software_renderer_ref = new SoftwareRendererRef();
+#endif // !NDEBUG
   software_renderer = software_renderer_imp; // use imp at launch
 
   // texture sampler implementations
   sampler_imp = new Sampler2DImp();
+#ifdef NDEBUG
   sampler_ref = new Sampler2DRef();
+#endif // !NDEBUG
   sampler = sampler_imp; // use imp at launch
 
   software_renderer_imp->set_tex_sampler(sampler_imp);
+#ifdef NDEBUG
   software_renderer_ref->set_tex_sampler(sampler_ref);
+#endif // !NDEBUG
 
   // generate mipmaps & set initial viewports
   for (size_t i = 0; i < tabs.size(); ++i) {
 
     viewport_imp.push_back(new ViewportImp());
+#ifdef NDEBUG
     viewport_ref.push_back(new ViewportRef());
+#endif // NDEBUG
 
     // auto adjust
     auto_adjust(i);
 
+#ifdef NDEBUG
     // set initial canvas_to_norm for imp using ref
     viewport_imp[i]->set_canvas_to_norm(viewport_ref[i]->get_canvas_to_norm());
+#endif // NDEBUG
 
     // generate mipmaps
     regenerate_mipmap(i);
@@ -112,7 +128,9 @@ void DrawSVG::resize( size_t width, size_t height ) {
   // resize render target
   framebuffer.resize( 4 * width * height);
   software_renderer_imp->set_render_target(&framebuffer[0], width, height);
+#ifdef NDEBUG
   software_renderer_ref->set_render_target(&framebuffer[0], width, height);
+#endif // !NDEBUG
 
   // update hardware renderer
   hardware_renderer->resize(width, height);
@@ -144,6 +162,7 @@ void DrawSVG::char_event( unsigned int key ) {
       dec_sample_rate();
       break;
 
+#ifdef NDEBUG
     // switch between iml and ref renderer
     case 'r': case 'R':
       if (software_renderer == software_renderer_imp) {
@@ -151,16 +170,19 @@ void DrawSVG::char_event( unsigned int key ) {
       } else {software_renderer = software_renderer_imp; }
       setRenderMethod( Software );
       break;
+#endif // !NDEBUG
 
     // switch between iml and ref sampler
     case ';':
       sampler = sampler_imp;
       regenerate_mipmap(current_tab); redraw();
       break;
+#ifdef NDEBUG
     case '\'':
       sampler = sampler_ref;
       regenerate_mipmap(current_tab); redraw();
       break;
+#endif // NDEBUG
 
     // change render method
     case 's': case 'S':
@@ -170,6 +192,7 @@ void DrawSVG::char_event( unsigned int key ) {
       setRenderMethod( Hardware ); info();
       break;
 
+#ifdef NDEBUG
     // toggle diff
     case 'd': case 'D':
       if (method == Software) {
@@ -177,6 +200,7 @@ void DrawSVG::char_event( unsigned int key ) {
         redraw();
       }
       break;
+#endif // NDEBUG
 
     // toggle zoom
     case 'z': case 'Z':
@@ -249,7 +273,9 @@ void DrawSVG::cursor_event( float x, float y ) {
     float dx = (x - cursor_x) / width  * tabs[current_tab]->width;
     float dy = (y - cursor_y) / height * tabs[current_tab]->height;
     viewport_imp[current_tab]->update_viewbox(dx, dy, 1);
+#ifdef NDEBUG
     viewport_ref[current_tab]->update_viewbox(dx, dy, 1);
+#endif // NDEBUG
     redraw();
   }
   
@@ -266,7 +292,9 @@ void DrawSVG::scroll_event( float offset_x, float offset_y ) {
     float scale = 1 + 0.05 * offset_x + 0.05 * offset_y;
     scale = scale < 0.5 ? 0.5 : (scale > 1.5 ? 1.5 : scale); 
     viewport_imp[current_tab]->update_viewbox(0, 0, scale);
+#ifdef NDEBUG
     viewport_ref[current_tab]->update_viewbox(0, 0, scale);
+#endif // NDEBUG
     redraw();
   }
 }
@@ -310,6 +338,7 @@ void DrawSVG::setTab( size_t tab_index ) {
 
 void DrawSVG::draw_diff() {
 
+#ifdef NDEBUG
   // get reference output
   software_renderer_ref->draw_svg(*tabs[current_tab]);
   
@@ -340,6 +369,7 @@ void DrawSVG::draw_diff() {
     osd = to_string(errorCount) + " pixels different";
   }
 
+#endif // NDEBUG
 }
 
 void DrawSVG::draw_zoom() {
@@ -418,7 +448,9 @@ void DrawSVG::inc_sample_rate() {
   if (method == Software) {
     sample_rate += sample_rate < 4 ? 1 : 0;
     software_renderer_imp->set_sample_rate(sample_rate);
+#ifdef NDEBUG
     software_renderer_ref->set_sample_rate(sample_rate);
+#endif // NDEBUG
     redraw();
   }
 }
@@ -427,7 +459,9 @@ void DrawSVG::dec_sample_rate() {
   if (method == Software) {
     sample_rate -= sample_rate > 1 ? 1 : 0;
     software_renderer_imp->set_sample_rate(sample_rate);
+#ifdef NDEBUG
     software_renderer_ref->set_sample_rate(sample_rate);
+#endif // NDEBUG
     redraw();
   }
 }
@@ -438,10 +472,14 @@ void DrawSVG::redraw() {
 
   // set canvas_to_screen transformation
   Matrix3x3 m_imp = norm_to_screen * viewport_imp[current_tab]->get_canvas_to_norm();
+#ifdef NDEBUG
   Matrix3x3 m_ref = norm_to_screen * viewport_ref[current_tab]->get_canvas_to_norm();
+#endif // NDEBUG
   software_renderer_imp->set_canvas_to_screen( m_imp ); 
+#ifdef NDEBUG
   software_renderer_ref->set_canvas_to_screen( m_ref ); 
   hardware_renderer->set_canvas_to_screen( m_ref );
+#endif // NDEBUG
 
   switch (method) {
 
@@ -479,7 +517,9 @@ void DrawSVG::auto_adjust(size_t tab_index) {
   float h = tabs[tab_index]->height;
   float span = 1.2 * max(w,h) / 2;
   viewport_imp[tab_index]->set_viewbox( w / 2, h / 2, span);
+#ifdef NDEBUG
   viewport_ref[tab_index]->set_viewbox( w / 2, h / 2, span);
+#endif // NDEBUG
 }
 
 
