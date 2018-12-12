@@ -78,6 +78,7 @@ class Sampler2DImp : public Sampler2D {
   
 }; // class sampler2DImp
 
+#ifdef NDEBUG
 class Sampler2DRef : public Sampler2D {
  public:
 
@@ -98,6 +99,7 @@ class Sampler2DRef : public Sampler2D {
                          float u_scale, float v_scale);
   
 }; // class sampler2DRef
+#endif // NDEBUG
 
 } // namespace CMU462
 
