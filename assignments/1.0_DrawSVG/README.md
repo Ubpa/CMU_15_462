@@ -105,8 +105,8 @@ The position of each point is defined in a local coordinate frame, so `draw_poin
 
 The function `rasterize_point()` is responsible for actually drawing the point. In this assignment we define screen space for an output image of size `(target_w, target_h)` as follows:
 
-- `(0, 0)` corresponds to the top-left of the output image
-- `(target_w, target_h)` corresponds to the bottom-right of the output image
+- `(0, 0)` corresponds to the ==top-left== of the output image
+- `(target_w, target_h)` corresponds to the ==bottom-right== of the output image
 - **Please assume that screen sample positions are located at half-integer coordinates in screen space. That is, the top-left sample point is at coordinate (0.5, 0.5), and the bottom-right sample point is at coordinate (target_w-0.5, target_h-0.5).**
 
 ![Sample locations](misc/coord_1spp.png?raw=true)
