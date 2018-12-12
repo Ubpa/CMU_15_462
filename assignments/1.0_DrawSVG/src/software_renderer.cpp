@@ -261,12 +261,17 @@ void SoftwareRendererImp::rasterize_line( float x0, float y0,
 
 	float k = (y1 - y0) / (x1 - x0);
 
-	for (float x = x0, y=y0; x < x1; x++) {
-		if(xySwap)
+	if (xySwap) {
+		for (float x = x0, y = y0; x < x1; x++) {
 			rasterize_point(y, x, color);
-		else
+			y += k;
+		}
+	}
+	else {
+		for (float x = x0, y = y0; x < x1; x++) {
 			rasterize_point(x, y, color);
-		y += k;
+			y += k;
+		}
 	}
 }
 
@@ -276,7 +281,36 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
                                               Color color ) {
   // Task 3: 
   // Implement triangle rasterization
+	float xMin = floor(min({ x0,x1,x2 })-0.5)+0.4999;
+	float xMax = floor(max({ x0,x1,x2 })+0.5)+0.5001;
+	float yMin = floor(min({ y0,y1,y2 })-0.5)+0.4999;
+	float yMax = floor(max({ y0,y1,y2 })+0.5)+0.5001;
 
+	float dX0 = x1 - x0;
+	float dX1 = x2 - x1;
+	float dX2 = x0 - x2;
+	float dY0 = y1 - y0;
+	float dY1 = y2 - y1;
+	float dY2 = y0 - y2;
+	float A0 = dY0;
+	float A1 = dY1;
+	float A2 = dY2;
+	float B0 = -dX0;
+	float B1 = -dX1;
+	float B2 = -dX2;
+	float C0 = -x0 * dY0 + y0 * dX0;
+	float C1 = -x1 * dY1 + y1 * dX1;
+	float C2 = -x2 * dY2 + y2 * dX2;
+
+
+	for (float x = xMin; x <= xMax; x++) {
+		for (float y = yMin; y <= yMax; y++) {
+			if (A0*x + B0 * y + C0 <= 0
+				&& A1*x + B1 * y + C1 <= 0
+				&& A2*x + B2 * y + C2 <= 0)
+				rasterize_point(x, y, color);
+		}
+	}
 }
 
 void SoftwareRendererImp::rasterize_image( float x0, float y0,
