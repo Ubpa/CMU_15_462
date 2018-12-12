@@ -244,6 +244,30 @@ void SoftwareRendererImp::rasterize_line( float x0, float y0,
 
   // Task 2: 
   // Implement line rasterization
+	bool xySwap = false;
+	if (x0 - x1 == 0 || (y1 - y0) / (x1 - x0) > 1 || (y1 - y0) / (x1 - x0) < -1) {
+		swap(x0, y0);
+		swap(x1, y1);
+		xySwap = true;
+	}
+
+	if (x0 == x1)
+		return;
+
+	if (x1 < x0) {
+		swap(x0, x1);
+		swap(y0, y1);
+	}
+
+	float k = (y1 - y0) / (x1 - x0);
+
+	for (float x = x0, y=y0; x < x1; x++) {
+		if(xySwap)
+			rasterize_point(y, x, color);
+		else
+			rasterize_point(x, y, color);
+		y += k;
+	}
 }
 
 void SoftwareRendererImp::rasterize_triangle( float x0, float y0,

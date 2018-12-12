@@ -152,7 +152,7 @@ In Lecture 1, we discussed a few ways to think about rasterizing a line. (Recall
 
 - Handle non-integer vertex coordinates passed to `rasterize_line()`.
 - Handle lines of any slope.
-- Perform work proportional to the length of the line (methods that perform work for every pixel on screen or for all samples in the bounding box of the line are not acceptable solutions).
+- Perform work ==proportional to the length of the line== (methods that perform work for every pixel on screen or for all samples in the bounding box of the line are not acceptable solutions).
 
 We encourage you to start with an implementation of [Bresenham's algorithm](http://www.cs.helsinki.fi/group/goa/mallinnus/lines/bresenh.html) and then, if you wish, continue on with implementations that improve quality (e.g., draw smooth lines) or optimize drawing performance.
 

@@ -87,9 +87,11 @@ void DrawSVG::init() {
     // auto adjust
     auto_adjust(i);
 
+	// set initial canvas_to_norm for imp using ref
 #ifdef NDEBUG
-    // set initial canvas_to_norm for imp using ref
     viewport_imp[i]->set_canvas_to_norm(viewport_ref[i]->get_canvas_to_norm());
+#else
+	viewport_imp[i]->set_canvas_to_norm(viewport_imp[i]->get_canvas_to_norm());
 #endif // NDEBUG
 
     // generate mipmaps
@@ -479,6 +481,8 @@ void DrawSVG::redraw() {
 #ifdef NDEBUG
   software_renderer_ref->set_canvas_to_screen( m_ref ); 
   hardware_renderer->set_canvas_to_screen( m_ref );
+#else
+  hardware_renderer->set_canvas_to_screen( m_imp );
 #endif // NDEBUG
 
   switch (method) {
