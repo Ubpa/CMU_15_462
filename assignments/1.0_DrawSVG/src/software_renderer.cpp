@@ -99,10 +99,10 @@ void SoftwareRendererImp::draw_element(SVGElement* element) {
 
 	// Task 5 (part 1):
 	// Modify this to implement the transformation stack
-	static size_t depth = 0;
-	depth++;
-	for (size_t i = 1; i < depth; i++)
-		printf("  ");
+	//static size_t depth = 0;
+	//depth++;
+	//for (size_t i = 1; i < depth; i++)
+	//	printf("  ");
 	transformation = transformation * element->transform;
 	switch (element->type) {
 	case POINT:
@@ -110,27 +110,27 @@ void SoftwareRendererImp::draw_element(SVGElement* element) {
 		draw_point(static_cast<Point&>(*element));
 		break;
 	case LINE:
-		printf("Line\n");
+		//printf("Line\n");
 		draw_line(static_cast<Line&>(*element));
 		break;
 	case POLYLINE:
-		printf("Polyline\n");
+		//printf("Polyline\n");
 		draw_polyline(static_cast<Polyline&>(*element));
 		break;
 	case RECT:
-		printf("Rect\n");
+		//printf("Rect\n");
 		draw_rect(static_cast<Rect&>(*element));
 		break;
 	case POLYGON:
-		printf("Polygon\n");
+		//printf("Polygon\n");
 		draw_polygon(static_cast<Polygon&>(*element));
 		break;
 	case ELLIPSE:
-		printf("Ellipse\n");
+		//printf("Ellipse\n");
 		draw_ellipse(static_cast<Ellipse&>(*element));
 		break;
 	case IMAGE:
-		printf("Image\n");
+		//printf("Image\n");
 		draw_image(static_cast<Image&>(*element));
 		break;
 	case GROUP:
@@ -140,7 +140,7 @@ void SoftwareRendererImp::draw_element(SVGElement* element) {
 	default:
 		break;
 	}
-	depth--;
+	//depth--;
 	transformation = transformation * element->transform.inv();
 }
 
@@ -177,7 +177,7 @@ void SoftwareRendererImp::draw_polyline( Polyline& polyline ) {
 }
 
 void SoftwareRendererImp::draw_rect( Rect& rect ) {
-
+  
   Color c;
   
   // draw as two triangles
@@ -380,12 +380,15 @@ void SoftwareRendererImp::rasterize_image( float x0, float y0,
                                            Texture& tex ) {
   // Task 6: 
   // Implement image rasterization
+	float u_scale = x1 - x0;
+	float v_scale = y1 - y0;
 	for (float x = floor(x0 + 0.5) + 0.5; x <= x1; x++) {
 		for (float y = floor(y0 + 0.5) + 0.5; y <= y1; y++) {
 			float u = (x - x0) / (x1 - x0);
 			float v = (y - y0) / (y1 - y0);
 			//CMU462::Color color = sampler->sample_nearest(tex, u, v, 0);
-			CMU462::Color color = sampler->sample_bilinear(tex, u, v, 0);
+			//CMU462::Color color = sampler->sample_bilinear(tex, u, v, 0);
+			CMU462::Color color = sampler->sample_trilinear(tex, u, v, u_scale, v_scale);
 			rasterize_point(x, y, color, false);
 		}
 	}
@@ -413,15 +416,14 @@ void SoftwareRendererImp::resolve(void) {
 			color *= 1.0f / (sample_rate * sample_rate);
 			size_t idx = 4 * (i*target_w + j);
 			if (color.a != 0) {
-				render_target[idx + 0] = color.r / color.a * 255.0f;
-				render_target[idx + 1] = color.g / color.a * 255.0f;
-				render_target[idx + 2] = color.b / color.a * 255.0f;
+				color.r *= 1.0 / color.a * 255.0f;
+				color.g *= 1.0 / color.a * 255.0f;
+				color.b *= 1.0 / color.a * 255.0f;
 			}
-			else {
-				render_target[idx + 0] = color.r;
-				render_target[idx + 1] = color.g;
-				render_target[idx + 2] = color.b;
-			}
+
+			render_target[idx + 0] = color.r;
+			render_target[idx + 1] = color.g;
+			render_target[idx + 2] = color.b;
 			render_target[idx + 3] = color.a;
 		}
 	}

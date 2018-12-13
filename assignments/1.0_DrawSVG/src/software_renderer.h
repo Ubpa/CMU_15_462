@@ -68,6 +68,8 @@ class SoftwareRendererImp : public SoftwareRenderer {
 
   SoftwareRendererImp( ) : SoftwareRenderer( ), supersample_render_target(nullptr), screen_to_buffer(CMU462::Matrix3x3::identity()) { }
 
+  virtual ~SoftwareRendererImp() { delete[] supersample_render_target; }
+
   // draw an svg input to render target
   void draw_svg( SVG& svg );
 
