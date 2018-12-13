@@ -40,16 +40,16 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 - [x] 0.0 linear algebra
 - [x] 0.5 vector calculus
-- [ ] 1.0 draw svg
+- [x] 1.0 draw svg
   - [x] 1 Hardware Renderer
   - [x] 2 Warm Up: Drawing Lines
   - [x] 3 Drawing Triangles
   - [x] 4 Anti-Aliasing Using Supersampling
   - [x] 5 Implementing Modeling and Viewing Transforms
   - [x] 6 Drawing Scaled Images
-  - [ ] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
-  - [ ] 8 Alpha Compositing
-  - [ ] 9 Draw Something!!!
+  - [x] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
+  - [x] 8 Alpha Compositing
+  - [x] 9 Draw Something!!!
 - [ ] 2.0
 - [ ] 3.0
 - [ ] 4.0
