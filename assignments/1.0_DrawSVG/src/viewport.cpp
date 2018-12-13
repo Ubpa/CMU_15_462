@@ -10,6 +10,9 @@ void ViewportImp::set_viewbox( float x, float y, float span ) {
   // Set svg to normalized device coordinate transformation. Your input
   // arguments are defined as SVG canvans coordinates.
   
+	this->x = x;
+	this->y = y;
+	this->span = span;
 	CMU462::Matrix3x3 m[4];
 	for(size_t i=0;i<4;i++)
 		m[i] = CMU462::Matrix3x3::identity();
@@ -24,11 +27,7 @@ void ViewportImp::set_viewbox( float x, float y, float span ) {
 }
 
 void ViewportImp::update_viewbox( float dx, float dy, float scale ) { 
-  
-  this->x -= dx;
-  this->y -= dy;
-  this->span *= scale;
-  set_viewbox( x, y, span );
+	set_viewbox(x - dx, y - dy, span*scale);
 }
 
 } // namespace CMU462

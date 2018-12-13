@@ -37,6 +37,7 @@ void SoftwareRendererImp::draw_svg( SVG& svg ) {
   }
 
   // draw all elements
+  printf("---------------------------------------\n");
   for ( size_t i = 0; i < svg.elements.size(); ++i ) {
     draw_element(svg.elements[i]);
   }
@@ -94,40 +95,53 @@ void SoftwareRendererImp::set_render_target( unsigned char* render_target,
   }
 }
 
-void SoftwareRendererImp::draw_element( SVGElement* element ) {
+void SoftwareRendererImp::draw_element(SVGElement* element) {
 
-  // Task 5 (part 1):
-  // Modify this to implement the transformation stack
-
-  switch(element->type) {
-    case POINT:
-      draw_point(static_cast<Point&>(*element));
-      break;
-    case LINE:
-      draw_line(static_cast<Line&>(*element));
-      break;
-    case POLYLINE:
-      draw_polyline(static_cast<Polyline&>(*element));
-      break;
-    case RECT:
-      draw_rect(static_cast<Rect&>(*element));
-      break;
-    case POLYGON:
-      draw_polygon(static_cast<Polygon&>(*element));
-      break;
-    case ELLIPSE:
-      draw_ellipse(static_cast<Ellipse&>(*element));
-      break;
-    case IMAGE:
-      draw_image(static_cast<Image&>(*element));
-      break;
-    case GROUP:
-      draw_group(static_cast<Group&>(*element));
-      break;
-    default:
-      break;
-  }
-
+	// Task 5 (part 1):
+	// Modify this to implement the transformation stack
+	static size_t depth = 0;
+	depth++;
+	for (size_t i = 1; i < depth; i++)
+		printf("  ");
+	transformation = transformation * element->transform;
+	switch (element->type) {
+	case POINT:
+		//printf("Point\n");
+		draw_point(static_cast<Point&>(*element));
+		break;
+	case LINE:
+		printf("Line\n");
+		draw_line(static_cast<Line&>(*element));
+		break;
+	case POLYLINE:
+		printf("Polyline\n");
+		draw_polyline(static_cast<Polyline&>(*element));
+		break;
+	case RECT:
+		printf("Rect\n");
+		draw_rect(static_cast<Rect&>(*element));
+		break;
+	case POLYGON:
+		printf("Polygon\n");
+		draw_polygon(static_cast<Polygon&>(*element));
+		break;
+	case ELLIPSE:
+		printf("Ellipse\n");
+		draw_ellipse(static_cast<Ellipse&>(*element));
+		break;
+	case IMAGE:
+		printf("Image\n");
+		draw_image(static_cast<Image&>(*element));
+		break;
+	case GROUP:
+		printf("Group\n");
+		draw_group(static_cast<Group&>(*element));
+		break;
+	default:
+		break;
+	}
+	depth--;
+	transformation = transformation * element->transform.inv();
 }
 
 
@@ -192,7 +206,6 @@ void SoftwareRendererImp::draw_rect( Rect& rect ) {
     rasterize_line( p3.x, p3.y, p2.x, p2.y, c );
     rasterize_line( p2.x, p2.y, p0.x, p0.y, c );
   }
-
 }
 
 void SoftwareRendererImp::draw_polygon( Polygon& polygon ) {
@@ -243,11 +256,9 @@ void SoftwareRendererImp::draw_image( Image& image ) {
 }
 
 void SoftwareRendererImp::draw_group( Group& group ) {
-
   for ( size_t i = 0; i < group.elements.size(); ++i ) {
     draw_element(group.elements[i]);
   }
-
 }
 
 // Rasterization //
@@ -311,13 +322,13 @@ void SoftwareRendererImp::rasterize_line( float x0, float y0,
 
 	if (xySwap) {
 		for (float x = x0, y = y0; x < x1; x++) {
-			rasterize_point(y, x, color);
+			rasterize_point(y, x, color, false);
 			y += k;
 		}
 	}
 	else {
 		for (float x = x0, y = y0; x < x1; x++) {
-			rasterize_point(x, y, color);
+			rasterize_point(x, y, color, false);
 			y += k;
 		}
 	}
@@ -353,9 +364,12 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
 
 	for (float x = xMin; x <= xMax; x++) {
 		for (float y = yMin; y <= yMax; y++) {
-			if (A0*x + B0 * y + C0 <= 0
+			if ((A0*x + B0 * y + C0 <= 0
 				&& A1*x + B1 * y + C1 <= 0
 				&& A2*x + B2 * y + C2 <= 0)
+				|| (A0*x + B0 * y + C0 >= 0
+					&& A1*x + B1 * y + C1 >= 0
+					&& A2*x + B2 * y + C2 >= 0))
 				rasterize_point(x, y, color, false);
 		}
 	}

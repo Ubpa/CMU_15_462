@@ -45,7 +45,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 2 Warm Up: Drawing Lines
   - [x] 3 Drawing Triangles
   - [x] 4 Anti-Aliasing Using Supersampling
-  - [ ] 5 Implementing Modeling and Viewing Transforms
+  - [x] 5 Implementing Modeling and Viewing Transforms
   - [ ] 6 Drawing Scaled Images
   - [ ] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
   - [ ] 8 Alpha Compositing
@@ -53,3 +53,4 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [ ] 2.0
 - [ ] 3.0
 - [ ] 4.0
+
