@@ -46,7 +46,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 3 Drawing Triangles
   - [x] 4 Anti-Aliasing Using Supersampling
   - [x] 5 Implementing Modeling and Viewing Transforms
-  - [ ] 6 Drawing Scaled Images
+  - [x] 6 Drawing Scaled Images
   - [ ] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
   - [ ] 8 Alpha Compositing
   - [ ] 9 Draw Something!!!
