@@ -37,7 +37,7 @@ void SoftwareRendererImp::draw_svg( SVG& svg ) {
   }
 
   // draw all elements
-  printf("---------------------------------------\n");
+  //printf("---------------------------------------\n");
   for ( size_t i = 0; i < svg.elements.size(); ++i ) {
     draw_element(svg.elements[i]);
   }
@@ -134,7 +134,7 @@ void SoftwareRendererImp::draw_element(SVGElement* element) {
 		draw_image(static_cast<Image&>(*element));
 		break;
 	case GROUP:
-		printf("Group\n");
+		//printf("Group\n");
 		draw_group(static_cast<Group&>(*element));
 		break;
 	default:

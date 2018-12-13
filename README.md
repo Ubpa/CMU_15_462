@@ -21,9 +21,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 06 3d rotation
 - [x] 07 texture
 - [x] 08 depth and transparency
-- [ ] 09 intro geometry
-- [ ] 10
-- [ ] 11
+- [x] 09 intro geometry
+- [ ] 10 meshes and manifolds
+- [ ] 11 digital geometr processing 
 - [ ] 12
 - [ ] 13
 - [ ] 14
