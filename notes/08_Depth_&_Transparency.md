@@ -80,6 +80,8 @@ if we instead use the premultiplied "over" operation, we get the correct alpha
 >
 > filtered (color,alpha)= (0.5, 0.5, 0, 0.5)，rst color over white = (0.75, 0.75, 0.5)，多了红色
 >
+> 本来应该不产生影响（因为$\alpha=0$ ）的红底色在滤波的时候跟绿色混合了
+>
 > **Premultiplied**
 >
 > filtered (color,alpha)= (0, 0.5, 0, 0.5)，rst color over white = (0.5, 0.75, 0.5)，正常
@@ -95,7 +97,17 @@ C&=\alpha_B B+(1-\alpha_B)\alpha_A A\\
 \alpha_C&=\alpha_B+(1-\alpha_B)\alpha_A
 \end{aligned}
 $$
-考虑A和B为透明度0.5的红色，则 C=[0.75,0,0], $\alpha_C=0.75$ ，这变成了 premultiplied alpha，即说明 Non-premultiplied alpha is not closed
+考虑A和B为透明度0.5的红色，则 C=[0.75,0,0], $\alpha_C=0.75$ ，C 变成了 premultiplied alpha，即说明 Non-premultiplied alpha is not closed
+
+> 正确的C的计算如下
+>
+> $A'=(0.5,0,0)$
+>
+> $B'=(0.5,0,0)$
+>
+> $C'=(0.75,0,0),\ \alpha_C=(0.75,0,0)$
+>
+> $C=C'/\alpha_C=(1.0,0,0)$
 
 **Summary: advantages of premultiplied alpha **
 

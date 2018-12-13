@@ -86,13 +86,13 @@ Color Sampler2DImp::sample_nearest(Texture& tex, float u, float v, int level) {
 	if(level >= tex.mipmap.size())
 		return Color(1, 0, 1, 1);
 
-	size_t x = clamp<float>(u, 0, 1)*tex.mipmap[level].width;
-	size_t y = clamp<float>(v, 0, 1)*tex.mipmap[level].height;
+	size_t x = clamp<float>(u, 0, 0.999999f)*tex.mipmap[level].width;
+	size_t y = clamp<float>(v, 0, 0.999999f)*tex.mipmap[level].height;
 	size_t idx = 4 * (y * tex.mipmap[level].width + x);
-	float r = tex.mipmap[level].texels[idx + 0];
-	float g = tex.mipmap[level].texels[idx + 1];
-	float b = tex.mipmap[level].texels[idx + 2];
-	float a = tex.mipmap[level].texels[idx + 3];
+	float r = tex.mipmap[level].texels[idx + 0] / 255.0f;
+	float g = tex.mipmap[level].texels[idx + 1] / 255.0f;
+	float b = tex.mipmap[level].texels[idx + 2] / 255.0f;
+	float a = tex.mipmap[level].texels[idx + 3] / 255.0f;
 	return Color(r, g, b, a);
 }
 
