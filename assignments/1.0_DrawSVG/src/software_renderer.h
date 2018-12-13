@@ -66,7 +66,7 @@ class SoftwareRenderer : public SVGRenderer {
 class SoftwareRendererImp : public SoftwareRenderer {
  public:
 
-  SoftwareRendererImp( ) : SoftwareRenderer( ) { }
+  SoftwareRendererImp( ) : SoftwareRenderer( ), supersample_render_target(nullptr), screen_to_buffer(CMU462::Matrix3x3::identity()) { }
 
   // draw an svg input to render target
   void draw_svg( SVG& svg );
@@ -112,7 +112,7 @@ class SoftwareRendererImp : public SoftwareRenderer {
   // Rasterization //
 
   // rasterize a point
-  void rasterize_point( float x, float y, Color color );
+  void rasterize_point( float x, float y, Color color, bool supersample = true );
 
   // rasterize a line
   void rasterize_line( float x0, float y0,
@@ -133,6 +133,8 @@ class SoftwareRendererImp : public SoftwareRenderer {
   // resolve samples to render target
   void resolve( void );
 
+  CMU462::Matrix3x3 screen_to_buffer;
+  unsigned char* supersample_render_target;
 }; // class SoftwareRendererImp
 
 #ifdef NDEBUG

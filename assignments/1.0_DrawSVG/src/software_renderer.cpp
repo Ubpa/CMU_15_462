@@ -17,7 +17,24 @@ namespace CMU462 {
 void SoftwareRendererImp::draw_svg( SVG& svg ) {
 
   // set top level transformation
-  transformation = canvas_to_screen;
+  transformation = screen_to_buffer * canvas_to_screen;
+  
+  // change rendertarget
+  unsigned char * render_target_backup = nullptr;
+  if (sample_rate > 1) {
+	render_target_backup = render_target;
+	render_target = supersample_render_target;
+	target_w *= sample_rate;
+	target_h *= sample_rate;
+	for (size_t i = 0; i < target_h; i++) {
+	  for (size_t j = 0; j < target_w; j++) {
+		render_target[(i*target_w + j) * 4 + 0] = 255;
+		render_target[(i*target_w + j) * 4 + 1] = 255;
+		render_target[(i*target_w + j) * 4 + 2] = 255;
+		render_target[(i*target_w + j) * 4 + 3] = 255;
+	  }
+	}
+  }
 
   // draw all elements
   for ( size_t i = 0; i < svg.elements.size(); ++i ) {
@@ -36,16 +53,30 @@ void SoftwareRendererImp::draw_svg( SVG& svg ) {
   rasterize_line(d.x, d.y, c.x, c.y, Color::Black);
 
   // resolve and send to render target
-  resolve();
-
+  if (sample_rate > 1) {
+    target_w /= sample_rate;
+    target_h /= sample_rate;
+    render_target = render_target_backup;
+    resolve();
+  }
 }
 
-void SoftwareRendererImp::set_sample_rate( size_t sample_rate ) {
+void SoftwareRendererImp::set_sample_rate(size_t sample_rate) {
 
   // Task 4: 
   // You may want to modify this for supersampling support
-  this->sample_rate = sample_rate;
+	if (this->sample_rate == sample_rate)
+		return;
 
+	this->sample_rate = sample_rate;
+	screen_to_buffer = CMU462::Matrix3x3::identity();
+	screen_to_buffer(0, 0) = sample_rate;
+	screen_to_buffer(1, 1) = sample_rate;
+	delete[] supersample_render_target;
+	supersample_render_target = nullptr;
+	if (sample_rate != 1) {
+		supersample_render_target = new unsigned char[target_w*target_h*sample_rate*sample_rate * 4];
+	}
 }
 
 void SoftwareRendererImp::set_render_target( unsigned char* render_target,
@@ -57,6 +88,10 @@ void SoftwareRendererImp::set_render_target( unsigned char* render_target,
   this->target_w = width;
   this->target_h = height;
 
+  if (sample_rate != 1) {
+	  delete[] supersample_render_target;
+	  supersample_render_target = new unsigned char[target_w*target_h*sample_rate*sample_rate * 4];
+  }
 }
 
 void SoftwareRendererImp::draw_element( SVGElement* element ) {
@@ -220,7 +255,7 @@ void SoftwareRendererImp::draw_group( Group& group ) {
 // The input arguments in the rasterization functions 
 // below are all defined in screen space coordinates
 
-void SoftwareRendererImp::rasterize_point( float x, float y, Color color ) {
+void SoftwareRendererImp::rasterize_point( float x, float y, Color color, bool supersample ) {
 
   // fill in the nearest pixel
   int sx = (int) floor(x);
@@ -231,11 +266,24 @@ void SoftwareRendererImp::rasterize_point( float x, float y, Color color ) {
   if ( sy < 0 || sy >= target_h ) return;
 
   // fill sample - NOT doing alpha blending!
-  render_target[4 * (sx + sy * target_w)    ] = (uint8_t) (color.r * 255);
-  render_target[4 * (sx + sy * target_w) + 1] = (uint8_t) (color.g * 255);
-  render_target[4 * (sx + sy * target_w) + 2] = (uint8_t) (color.b * 255);
-  render_target[4 * (sx + sy * target_w) + 3] = (uint8_t) (color.a * 255);
-
+  if (supersample) {
+	  for (int ki = (1 - int(sample_rate)) / 2; ki <= int(sample_rate) / 2; ki++) {
+		  for (int kj = (1 - int(sample_rate)) / 2; kj <= int(sample_rate) / 2; kj++) {
+			  int x = clamp<int>(sx + ki, 0, target_w - 1);
+			  int y = clamp<int>(sy + kj, 0, target_h - 1);
+			  render_target[4 * (x + y * target_w) + 0] = (uint8_t)((color.r*color.a + (1 - color.a)*(render_target[4 * (x + y * target_w) + 0] / 255.0f)) * 255);
+			  render_target[4 * (x + y * target_w) + 1] = (uint8_t)((color.g*color.a + (1 - color.a)*(render_target[4 * (x + y * target_w) + 1] / 255.0f)) * 255);
+			  render_target[4 * (x + y * target_w) + 2] = (uint8_t)((color.b*color.a + (1 - color.a)*(render_target[4 * (x + y * target_w) + 2] / 255.0f)) * 255);
+			  render_target[4 * (x + y * target_w) + 3] = (uint8_t)((color.a + (1 - color.a)*(render_target[4 * (x + y * target_w) + 3] / 255.0f)) * 255);
+		  }
+	  }
+  }
+  else {
+	  render_target[4 * (sx + sy * target_w) + 0] = (uint8_t)((color.r*color.a + (1 - color.a)*(render_target[4 * (sx + sy * target_w) + 0] / 255.0f)) * 255);
+	  render_target[4 * (sx + sy * target_w) + 1] = (uint8_t)((color.g*color.a + (1 - color.a)*(render_target[4 * (sx + sy * target_w) + 1] / 255.0f)) * 255);
+	  render_target[4 * (sx + sy * target_w) + 2] = (uint8_t)((color.b*color.a + (1 - color.a)*(render_target[4 * (sx + sy * target_w) + 2] / 255.0f)) * 255);
+	  render_target[4 * (sx + sy * target_w) + 3] = (uint8_t)((color.a + (1 - color.a)*(render_target[4 * (sx + sy * target_w) + 3] / 255.0f)) * 255);
+  }
 }
 
 void SoftwareRendererImp::rasterize_line( float x0, float y0,
@@ -308,7 +356,7 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
 			if (A0*x + B0 * y + C0 <= 0
 				&& A1*x + B1 * y + C1 <= 0
 				&& A2*x + B2 * y + C2 <= 0)
-				rasterize_point(x, y, color);
+				rasterize_point(x, y, color, false);
 		}
 	}
 }
@@ -322,13 +370,39 @@ void SoftwareRendererImp::rasterize_image( float x0, float y0,
 }
 
 // resolve samples to render target
-void SoftwareRendererImp::resolve( void ) {
+void SoftwareRendererImp::resolve(void) {
 
   // Task 4: 
   // Implement supersampling
   // You may also need to modify other functions marked with "Task 4".
-  return;
-
+	for (size_t i = 0; i < target_h; i++) {
+		for (size_t j = 0; j < target_w; j++) {
+			CMU462::Color color(0, 0, 0, 0);
+			for (size_t ki = 0; ki < sample_rate; ki++) {
+				for (size_t kj = 0; kj < sample_rate; kj++) {
+					size_t idx = (i*sample_rate + ki) * target_w * sample_rate * 4 + (j*sample_rate + kj) * 4;
+					float r = supersample_render_target[idx + 0];
+					float g = supersample_render_target[idx + 1];
+					float b = supersample_render_target[idx + 2];
+					float a = supersample_render_target[idx + 3];
+					color += CMU462::Color(r, g, b, a);
+				}
+			}
+			color *= 1.0f / (sample_rate * sample_rate);
+			size_t idx = 4 * (i*target_w + j);
+			if (color.a != 0) {
+				render_target[idx + 0] = color.r / color.a * 255.0f;
+				render_target[idx + 1] = color.g / color.a * 255.0f;
+				render_target[idx + 2] = color.b / color.a * 255.0f;
+			}
+			else {
+				render_target[idx + 0] = color.r;
+				render_target[idx + 1] = color.g;
+				render_target[idx + 2] = color.b;
+			}
+			render_target[idx + 3] = color.a;
+		}
+	}
 }
 
 

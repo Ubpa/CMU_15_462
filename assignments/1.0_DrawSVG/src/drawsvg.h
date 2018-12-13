@@ -166,7 +166,7 @@ class DrawSVG : public Renderer {
   bool show_zoom;
   void draw_zoom();
 
-  /* samples rate (sqrt(s/pix)) */
+  /* samples rate (sqrt(s/pix)), 1 <= sammple_rate <= 4 */
   size_t sample_rate;
   void inc_sample_rate();
   void dec_sample_rate();
