@@ -31,7 +31,7 @@ Surface is zero set of a polynomial in x, y, z (“algebraic variety”)
 
 > 喵喵喵? zero set?
 
-![1544712735907](assets/1544712735907.png)
+![1544712735907](assets/1544712735907.jpg)
 
 **Constructive Solid Geometry (Implicit) **
 
@@ -39,17 +39,17 @@ Build more complicated shapes via ==Boolean operations==
 
 Basic operations: 
 
-![1544712802743](assets/1544712802743.png)
+![1544712802743](assets/1544712802743.jpg)
 
 **Blobby Surfaces **
 
 Instead of Booleans, gradually blend surfaces together 
 
-![1544712875326](assets/1544712875326.png)
+![1544712875326](assets/1544712875326.jpg)
 
 Easier to understand in 2D: 
 
-![1544712989474](assets/1544712989474.png)
+![1544712989474](assets/1544712989474.jpg)
 
 **Blending Distance Functions **
 
@@ -57,7 +57,7 @@ A distance function gives distance to closest point on object
 
 Can blend any two distance functions d1, d2: 
 
-![1544713264246](assets/1544713264246.png)
+![1544713264246](assets/1544713264246.jpg)
 
 **Level Set Methods **
 
@@ -71,7 +71,7 @@ Provides much more explicit control over shape (like a texture)
 
 Often demands sophisticated fltering (trilinear, tricubic…) 
 
-![1544713374081](assets/1544713374081.png)
+![1544713374081](assets/1544713374081.jpg)
 
 Drawback: storage for 2D surface is now O(n3)
 
@@ -85,7 +85,7 @@ New “language” for describing natural phenomena
 
 Hard to control shape! 
 
-![1544713523128](assets/1544713523128.png)
+![1544713523128](assets/1544713523128.jpg)
 
 **Implicit Representations - Pros & Cons **
 
@@ -156,13 +156,13 @@ Can use a pair of curves to get a surface
 
 Value at any point (u,v) given by product of a curve f at u and a curve g at v (sometimes called the “tensor product”): 
 
-![1544714913562](assets/1544714913562.png)
+![1544714913562](assets/1544714913562.jpg)
 
 **Bézier Patches**
 
 Bézier patch is sum of (tensor) products of Bernstein bases 
 
-![1544715559369](assets/1544715559369.png)
+![1544715559369](assets/1544715559369.jpg)
 
 **Bézier Surface **
 
@@ -170,7 +170,7 @@ Just as we connected Bézier curves, can connect Bézier patches to get a surfac
 
 Very easy to draw: just dice each patch into regular (u,v) grid! 
 
-![1544715841888](assets/1544715841888.png)
+![1544715841888](assets/1544715841888.jpg)
 
 **Subdivision  **
 
@@ -179,7 +179,7 @@ Very easy to draw: just dice each patch into regular (u,v) grid!
 - Update vertex positions according to fxed rule
 - For careful choice of averaging rule, yields smooth curve 
 
-![1544715978975](assets/1544715978975.png)
+![1544715978975](assets/1544715978975.jpg)
 
 **Subdivision Surfaces **
 

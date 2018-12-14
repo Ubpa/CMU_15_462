@@ -22,9 +22,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 07 texture
 - [x] 08 depth and transparency
 - [x] 09 intro geometry
-- [ ] 10 meshes and manifolds
+- [x] 10 meshes and manifolds
 - [ ] 11 digital geometr processing 
-- [ ] 12
+- [ ] 12 geometric queries 
 - [ ] 13
 - [ ] 14
 - [ ] 15
