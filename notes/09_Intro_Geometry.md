@@ -25,7 +25,7 @@ Each choice best suited to a different task/type of geometry
 
 ## 9.1 Implicit
 
-**Algebraic Surfaces **
+**Algebraic Surfaces**
 
 Surface is zero set of a polynomial in x, y, z (“algebraic variety”) 
 
@@ -33,7 +33,7 @@ Surface is zero set of a polynomial in x, y, z (“algebraic variety”)
 
 ![1544712735907](assets/1544712735907.jpg)
 
-**Constructive Solid Geometry (Implicit) **
+**Constructive Solid Geometry (Implicit)**
 
 Build more complicated shapes via ==Boolean operations==
 
@@ -41,7 +41,7 @@ Basic operations:
 
 ![1544712802743](assets/1544712802743.jpg)
 
-**Blobby Surfaces **
+**Blobby Surfaces**
 
 Instead of Booleans, gradually blend surfaces together 
 
@@ -51,7 +51,7 @@ Easier to understand in 2D:
 
 ![1544712989474](assets/1544712989474.jpg)
 
-**Blending Distance Functions **
+**Blending Distance Functions**
 
 A distance function gives distance to closest point on object 
 
@@ -59,7 +59,7 @@ Can blend any two distance functions d1, d2:
 
 ![1544713264246](assets/1544713264246.jpg)
 
-**Level Set Methods **
+**Level Set Methods**
 
 hard to describe complex shapes in closed form 
 
@@ -77,7 +77,7 @@ Drawback: storage for 2D surface is now O(n3)
 
 Can reduce cost by storing only a narrow band around surface 
 
-**Fractals **
+**Fractals**
 
 No precise defnition; exhibit self-similarity, detail at all scales 
 
@@ -87,7 +87,7 @@ Hard to control shape!
 
 ![1544713523128](assets/1544713523128.jpg)
 
-**Implicit Representations - Pros & Cons **
+**Implicit Representations - Pros & Cons**
 
 Pros:
 - description can be very compact (e.g., a polynomial)
@@ -118,7 +118,7 @@ Cons:
 - More complicated data structures
 - Perhaps most common representation in graphics 
 
-**Triangle Mesh **
+**Triangle Mesh**
 
 - Store vertices as triples of coordinates (x,y,z) 
 
@@ -127,7 +127,7 @@ Cons:
 
 **Bézier Curves**
 
-> **Bernstein Basis **
+> **Bernstein Basis**
 >
 > $B_k^n(x)=C_n^kx^k(1-x)^{n-k}$
 
@@ -142,7 +142,7 @@ $$
 4. tangent to end segments
 5. contained in convex hull (nice for rasterization) 
 
-**Piecewise Bézier Curves  **
+**Piecewise Bézier Curves **
 
 Widely-used technique (Illustrator, fonts, SVG, etc.) 
 
@@ -164,7 +164,7 @@ Bézier patch is sum of (tensor) products of Bernstein bases
 
 ![1544715559369](assets/1544715559369.jpg)
 
-**Bézier Surface **
+**Bézier Surface**
 
 Just as we connected Bézier curves, can connect Bézier patches to get a surface 
 
@@ -172,7 +172,7 @@ Very easy to draw: just dice each patch into regular (u,v) grid!
 
 ![1544715841888](assets/1544715841888.jpg)
 
-**Subdivision  **
+**Subdivision **
 
 - Start with control curve
 - Insert new vertex at each edge midpoint
@@ -181,7 +181,7 @@ Very easy to draw: just dice each patch into regular (u,v) grid!
 
 ![1544715978975](assets/1544715978975.jpg)
 
-**Subdivision Surfaces **
+**Subdivision Surfaces**
 
 - Start with coarse polygon mesh (“control cage”) 
 

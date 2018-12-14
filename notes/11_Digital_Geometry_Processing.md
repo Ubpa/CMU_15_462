@@ -1,6 +1,6 @@
 # 11 Digital Geometry Processing 
 
-**Geometry Processing Tasks **
+**Geometry Processing Tasks**
 
 ![1544788363583](assets/1544788363583.jpg)
 
@@ -14,13 +14,13 @@
 
 ## 11.1 Upsample
 
-**Upsampling via Subdivision **
+**Upsampling via Subdivision**
 
 - Repeatedly split each element into smaller pieces 
 
 - Replace vertex positions with weighted average of neighbors 
 
-**Catmull-Clark Subdivision **
+**Catmull-Clark Subdivision**
 
 - Step 0: split every polygon (any # of sides) into quadrilaterals: 
 - New vertex positions are weighted combination of old ones: 
@@ -106,16 +106,16 @@ Idea: compute ==edge midpoint==, measure ==quadric error==
 
 Better idea: use ==point that minimizes quadric error== as new point! 
 
-**Minimizing a Quadratic Form **
+**Minimizing a Quadratic Form**
 $$
 f(\mathbf{x})=\mathbf{x}^\text{T}A\mathbf{x}+\mathbf{u}^\text{T}\mathbf{x}+\mathbf{v}\\
 f'(\mathbf{x})=2A\mathbf{x}+\mathbf{u}=0\\
 \mathbf{x}=-\frac{1}{2}A^{-1}\mathbf{u}
 $$
 
-> not always have a minnimum, maybe a maximun
+> not always have a minimum, maybe a maximum
 
-**Positive Defnite Quadratic Form **
+**Positive Defnite Quadratic Form**
 
 When matrix A is positive-definite:
 $$
@@ -123,7 +123,7 @@ $$
 $$
 we get a minimun
 
-**Minimizing Quadratic Error **
+**Minimizing Quadratic Error**
 
 Find “best” point for edge collapse by minimizing quad. form 
 $$
@@ -140,7 +140,7 @@ $$
 2B\mathbf{x}+2\mathbf{w}=0\\
 \mathbf{x}=-B^{-1}\mathbf{w}
 $$
-**Quadric Error Simplifcation: Final Algorithm **
+**Quadric Error Simplifcation: Final Algorithm**
 
 - Compute K for each triangle (distance to plane) 
 - Set K at each vertex to sum of Ks from incident triangles 
@@ -153,7 +153,7 @@ $$
 
 ## 11.3 Resample
 
-**Delaunay **
+**Delaunay**
 
 Already have a good tool: edge fips! 
 
@@ -195,7 +195,7 @@ On surface: move only in tangent direction
 
 How? Remove normal component from update vector
 
-**Isotropic Remeshing Algorithm **
+**Isotropic Remeshing Algorithm**
 
 Try to make triangles uniform shape & size 
 

@@ -77,7 +77,7 @@ $$
 
 differentiable at $x_0$ if $f^{'+}(x_0)^=f^{'-}(x_0)$
 
-**Derivative as Best Linear Approximation **
+**Derivative as Best Linear Approximation**
 
 Any smooth function f(x) can be expressed as a Taylor series: 
 $$

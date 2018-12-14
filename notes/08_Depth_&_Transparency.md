@@ -19,7 +19,7 @@ work with interpenetrating surfaces and supersampling
 
 ## 8.2 Compositing
 
-**Representing opacity as alpha **
+**Representing opacity as alpha**
 
 Alpha describes the opacity of an object 
 
@@ -39,7 +39,7 @@ $$
 
 > 最简单的例子：不透明物体在透明物体前与后是完全不同的
 
-**non-premultiplied alpha **
+**non-premultiplied alpha**
 $$
 \begin{aligned}
 A&=(R_A,G_A,B_A)\\
@@ -109,7 +109,7 @@ $$
 >
 > $C=C'/\alpha_C=(1.0,0,0)$
 
-**Summary: advantages of premultiplied alpha **
+**Summary: advantages of premultiplied alpha**
 
 - Simple: compositing operation treats all channels (RGB and A) the same 
 

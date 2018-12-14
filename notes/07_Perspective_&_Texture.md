@@ -27,7 +27,7 @@ $$
 $$
 left (l), right (r), top (t), bottom (b), near (n), far (f) 
 
-**Barycentric Coordinates **
+**Barycentric Coordinates**
 
 ![1544529768539](assets/1544529768539.jpg)
 $$
@@ -36,7 +36,7 @@ $$
 
 > $Attr(x)=\phi_i(x)Attr(x_i)+\phi_j(x)Attr(x_j)+\phi_k(x)Attr(x_k)$
 
-**Perspective-incorrect interpolation **
+**Perspective-incorrect interpolation**
 
 Due to perspective projection (homogeneous divide), barycentric interpolation of values on a triangle with different depths is not an affine function of screen XY coordinates. 
 
@@ -44,7 +44,7 @@ Attribute values must be interpolated linearly in 3D object space.
 
 ![1544530020221](assets/1544530020221.jpg)
 
-**Perspective Correct Interpolation **
+**Perspective Correct Interpolation**
 
 - To interpolate some attribute ɸ…
 
@@ -110,7 +110,7 @@ Texels at higher levels represent ==low-pass fltered== version of original textu
 
 ![1544530930695](assets/1544530930695.jpg)
 
-**Summary: texture fltering using the mip map **
+**Summary: texture fltering using the mip map**
 
 - Small storage overhead (33%)
 

@@ -68,7 +68,7 @@ $$
 
 Affine maps are not linear maps
 
-Just as a linear function preserves weighted sums, an affine function f preserves ==convex combinations==. In other words, if we have some set of weights $w_1, . . . , w_n$ such that $\sum_{i=1}^n w_i = 1$, then a function f is **affine** if
+Just as a linear function preserves weighted sums, an affine function f preserves ==convex combinations==. In other words, if we have some set of weights $w_1, . . . , w_n$ such that $\sum_{i=1}^n w_i = 1$, then a function f is**affine** if
 $$
 f(w_1x_1 + · · · + w_nx_n) = \sum_i w_i f(x_i)
 $$
@@ -99,7 +99,7 @@ $$
 $$
 This way, the geometric meaning of the sum $u_1^2 +…+u_n^2$ is maintained: it is the length of the vector $\mathbf{u}$.
 
- **Gram-Schmidt**
+**Gram-Schmidt**
 
 Given a collection of basis vectors $a_1, … a_n$, how do we fnd an orthonormal basis $e_1, … e_n$?
 

@@ -3,9 +3,24 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 > http://15462.courses.cs.cmu.edu/fall2018/
 
+## 简介
+
+我正在跟这个课
+
+主要是看 slides 做笔记 notes
+
+> 用 [typora](https://www.typora.io/) 写的（支持高亮，latex等功能），且图片放在了网盘内，直接在 github 上不大行
+>
+> 查看的时候得用 typora 且从网盘里下载好图片
+
+然后完成 assignments
+
 ## 资源文件
 
+> 包含 slides, notes/assets 等，按需下载，持续更新中
+
 链接：https://pan.baidu.com/s/1gjXbqJYDD_66fGo8Ce9Txw 
+
 提取码：fsyq 
 
 ## Todo
@@ -24,8 +39,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 09 intro geometry
 - [x] 10 meshes and manifolds
 - [x] 11 digital geometr processing 
-- [ ] 12 geometric queries 
-- [ ] 13
+- [x] 12 geometric queries 
+- [ ] 13 spatial data structures 
 - [ ] 14
 - [ ] 15
 - [ ] 16

@@ -83,7 +83,7 @@ together with “natural” rules (distributivity, associativity, etc.)
 
 > For $q,p\in\mathbb{H},qp\ne pq$
 
-**Quaternion Product in Components **
+**Quaternion Product in Components**
 $$
 \begin{aligned}
 q&=a_1+b_1 i+c_1 j+d_1 k\\
@@ -98,7 +98,7 @@ $$
 
 > fortunately there is a (much) nicer expression
 
-**Quaternions—Scalar + Vector Form **
+**Quaternions—Scalar + Vector Form**
 $$
 \begin{aligned}
 &(x,y,z)\mapsto 0+xi+yj+zk\\
@@ -106,7 +106,7 @@ $$
 &(a,\mathbf{u})(b,\mathbf{v})=(ab-\mathbf{u}\cdot\mathbf{v},a\mathbf{v}+b\mathbf{u}+\mathbf{u}\times\mathbf{v})
 \end{aligned}
 $$
-**3D Transformations via Quaternions **
+**3D Transformations via Quaternions**
 
 ![1544448675849](assets/1544448675849.jpg)
 
@@ -135,7 +135,7 @@ $$
 >
 >![1544452260223](assets/1544452260223.jpg)
 
-**Interpolating Rotations **
+**Interpolating Rotations**
 
 4D球面线性插值
 $$

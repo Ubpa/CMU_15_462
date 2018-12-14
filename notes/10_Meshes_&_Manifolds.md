@@ -2,7 +2,7 @@
 
 ## 10.1 Manifolds
 
-**Smooth Surfaces **
+**Smooth Surfaces**
 
 Intuitively, a surface is the boundary or “shell” of an object 
 
@@ -20,7 +20,7 @@ not every shape is manifold, for instance
 
 ## 10.2 Mesh
 
-**manifold polygon mesh **
+**manifold polygon mesh**
 
 A manifold polygon mesh has fans, not fins (鱼翅)
 
@@ -45,7 +45,7 @@ For polygonal surfaces just two easy conditions to check:
 >
 > Soup is 국. In a soup, the ingredients are mixed together and are unorganized. Think of 순두부찌개. The idea is that many things are put together in an unordered or unorganized way. 
 
-**Incidence Matrices **
+**Incidence Matrices**
 
 Can encode all neighbor information via incidence matrices 
 
@@ -84,7 +84,7 @@ Can encode all neighbor information via incidence matrices
 
 - easy to edit
 
-**Comparison of Polygon Mesh Data Strucutres **
+**Comparison of Polygon Mesh Data Strucutres**
 
 ![1544759765917](assets/1544759765917.jpg)
 
