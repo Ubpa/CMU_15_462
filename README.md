@@ -17,13 +17,15 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 然后完成 assignments
 
-> 略过 assignment 3.0
+> ~~略过 assignment 3.0~~
 >
-> 之前自己已经实现过了，参考项目 [RayTracingToy](https://github.com/Ubpa/RayTracingToy)
+> ~~之前自己已经实现过了，参考项目 [RayTracingToy](https://github.com/Ubpa/RayTracingToy)~~
 >
-> 只在该项目中再去实现一些优化算法，如 BVH, ray-triangle intersection speedup 等
+> ~~只在该项目中再去实现一些优化算法，如 BVH, ray-triangle intersection speedup 等~~
 >
-> 之后再考虑 PBR
+> ~~之后再考虑 PBR~~
+>
+> 其实还是有很多东西未涉及到的，如 BRDF，MCRTX，Impotance Sampling，而且 assignment 2,3,4 都是在一个项目 Scotty3D 里边的，所以写写也无妨
 
 ## 资源文件
 
@@ -55,7 +57,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 15 radiometry 
 - [x] 16 the rendering equation 
 - [x] 17 numerical integration 
-- [ ] 18 monte carlo ray tracing 
+- [x] 18 monte carlo ray tracing 
 - [ ] 19 variance reduction 
 - [ ] 20 introduction to animation 
 - [ ] 21 intoduction to optimization 
@@ -76,6 +78,6 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 8 Alpha Compositing
   - [x] 9 Draw Something!!!
 - [ ] 2.0 MeshEdit
-- [x] ~~3.0 PathTracer~~
+- [ ] 3.0 PathTracer
 - [ ] 4.0 Animation
 

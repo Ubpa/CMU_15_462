@@ -21,6 +21,10 @@ Only requires function to be evaluated at random points on its domain
 
 ==Error of estimate is independent of the dimensionality of the integrand, depends on the number of random samples used== 
 
+> **MCI from Wikipedia** 
+>
+> > https://en.wikipedia.org/wiki/Monte_Carlo_integration
+>
 > 蒙特卡洛积分问题就是计算多维定积分
 > $$
 > I=\int_\Omega f(\overline{x})\ \text{d}\overline{x}
@@ -28,6 +32,10 @@ Only requires function to be evaluated at random points on its domain
 > 其中 $\Omega$ 是 $R^m$ 的子集，有体积
 > $$
 > V=\int_\Omega \text{d}\overline{x}
+> $$
+> 最简单的 Monte Carlo 方法是在 Ω 中均匀采样，得到 N 个均匀的样本
+> $$
+> \overline{x}_1, \overline{x}_2,...,\overline{x}_N\in\Omega
 > $$
 > $I$ 估计为
 > $$
@@ -48,6 +56,18 @@ Only requires function to be evaluated at random points on its domain
 > 只要 $\{\sigma^2_1,\sigma^2_2,...\}$ 是有界的，则方差以$\frac{1}{N}$ 的速度减小，不依赖于积分的维度
 >
 > 需要注意的是，与确定性方法不同，误差的估计不是严格的误差界限;随机抽样可能无法发现被积函数的所有重要特征，而这些特征可能导致对误差的低估。
+>
+> 另外可以使用非均匀分布的样本，一般用于重要性采样
+>
+> > https://en.wikipedia.org/wiki/Importance_sampling
+>
+> 新的分布，最优就是
+> $$
+> \frac{f(x)}{I}
+> $$
+> 此时一个样本就能达到方差为0，因为这种分布本身就包含了我们想求的积分 $I$，因此不会有误差
+>
+> 但实际上我们要求的就是 I，所以无法直接获取最优的分布
 
 **generate samples of a discrete random variable (with a known PDF)** 
 
