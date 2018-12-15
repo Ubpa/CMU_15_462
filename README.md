@@ -15,6 +15,12 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 然后完成 assignments
 
+> 略过 assignment 3.0
+>
+> 之前自己已经实现过了，参考项目 [RayTracingToy](https://github.com/Ubpa/RayTracingToy)
+>
+> 只在该项目中再去实现一些优化算法，如 BVH, ray-triangle intersection 等
+
 ## 资源文件
 
 > 包含 slides, notes/assets 等，按需下载，持续更新中
@@ -40,9 +46,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 10 meshes and manifolds
 - [x] 11 digital geometr processing 
 - [x] 12 geometric queries 
-- [ ] 13 spatial data structures 
-- [ ] 14
-- [ ] 15
+- [x] 13 spatial data structures 
+- [ ] 14 color
+- [ ] 15 radiometry 
 - [ ] 16
 - [ ] 17
 - [ ] 18
@@ -65,7 +71,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
   - [x] 8 Alpha Compositing
   - [x] 9 Draw Something!!!
-- [ ] 2.0
-- [ ] 3.0
-- [ ] 4.0
+- [ ] 2.0 MeshEdit
+- [x] ~~3.0 PathTracer~~
+- [ ] 4.0 Animation
 

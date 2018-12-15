@@ -115,6 +115,52 @@ $$
   - If barycentric coordinates are all positive, point in triangle
 - Actually, a lot more to say... if you care about performance! 
 
+Parameterize triangle given by vertices using barycentric coordinates 
+$$
+f(u,v)=(1-u-v)\mathbf{p}_0+u\mathbf{p}_1+v\mathbf{p}_2
+$$
+Plug parametric ray equation directly into equation for points on triangle: 
+$$
+\mathbf{p}_0 + u(\mathbf{p}_1 - \mathbf{p}_0) + v(\mathbf{p}_2 - \mathbf{p}_0) = \mathbf{o} + t\mathbf{d}
+$$
+solve for $\mathbf{u,v,t}$
+$$
+\begin{bmatrix}
+\mathbf{p}_1-\mathbf{p}_0
+&\mathbf{p}_2-\mathbf{p}_0
+&-\mathbf{d}
+\end{bmatrix}
+\begin{bmatrix}
+u\\v\\t
+\end{bmatrix}
+=\mathbf{o}-\mathbf{p}_0
+$$
+**Ray AABB Intersection**
+
+每一个维度都求出一个 $t_{min}$ 和 $t_{max}$
+
+![1544845131881](assets/1544845131881.jpg)
+
+3个维度得到3个区间，公共区间不为空则说明相交
+
+**Ray-scene intersection**
+
+Given a scene defned by a set of N primitives and a ray r, fnd the closest point of intersection of r with the scene 
+
+```c++
+Primitive * p_closest = NULL;
+float t_closest = inf;
+for(auto p : scene){
+    float t = p.intersect(r)
+    if(t >= 0 && t < t_closest){
+        t_closest = t;
+        p_closest = p;
+    }
+}
+```
+
+Complexity: O(N) 
+
 ## 12.3 Mesh-Mesh Intersection 
 
 **point-point intersection**
