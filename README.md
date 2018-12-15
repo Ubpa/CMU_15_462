@@ -21,7 +21,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 >
 > 之前自己已经实现过了，参考项目 [RayTracingToy](https://github.com/Ubpa/RayTracingToy)
 >
-> 只在该项目中再去实现一些优化算法，如 BVH, ray-triangle intersection 等
+> 只在该项目中再去实现一些优化算法，如 BVH, ray-triangle intersection speedup 等
+>
+> 之后再考虑 PBR
 
 ## 资源文件
 
@@ -51,7 +53,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 13 spatial data structures 
 - [x] 14 color
 - [x] 15 radiometry 
-- [ ] 16 the rendering equation 
+- [x] 16 the rendering equation 
 - [ ] 17 numerical integration 
 - [ ] 18 monte carlo ray tracing 
 - [ ] 19 variance reduction 

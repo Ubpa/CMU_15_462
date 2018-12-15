@@ -173,7 +173,7 @@ Will use $\omega $to donate a direction vector (unit length)
 
 Radiance is the solid angle density of irradiance
 $$
-L(\mathbf{p},\omega)=\lim\limits_{\Delta\to0}\frac{\Delta E_\omega(\mathbf{p})}{\Delta\omega}=\frac{\text{d}E_\omega(\mathbf{p})}{\text{d}\omega}(W/m^2sr)
+L(\mathbf{p},\omega)=\lim\limits_{\Delta\to0}\frac{\Delta E_\omega(\mathbf{p})}{\Delta\omega}=\frac{\text{d}E_\omega(\mathbf{p})}{\text{d}\omega}(W/m^2\text{sr})
 $$
 where $E_\omega$ denotes that the differential surface area is oriented to face in the direction $\omega$
 
