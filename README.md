@@ -47,7 +47,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 11 digital geometr processing 
 - [x] 12 geometric queries 
 - [x] 13 spatial data structures 
-- [ ] 14 color
+- [x] 14 color
 - [ ] 15 radiometry 
 - [ ] 16
 - [ ] 17

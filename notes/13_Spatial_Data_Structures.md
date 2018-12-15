@@ -261,3 +261,4 @@ Choose the right structure for the job!
     - Simple, cheap to construct
     - Good intersection performance if scene primitives are uniformly distributed
 - Many, many combinations thereof… 
+
