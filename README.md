@@ -54,7 +54,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 14 color
 - [x] 15 radiometry 
 - [x] 16 the rendering equation 
-- [ ] 17 numerical integration 
+- [x] 17 numerical integration 
 - [ ] 18 monte carlo ray tracing 
 - [ ] 19 variance reduction 
 - [ ] 20 introduction to animation 
