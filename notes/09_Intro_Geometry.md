@@ -142,7 +142,7 @@ $$
 4. tangent to end segments
 5. contained in convex hull (nice for rasterization) 
 
-**Piecewise Bézier Curves **
+**Piecewise Bézier Curves**
 
 Widely-used technique (Illustrator, fonts, SVG, etc.) 
 
@@ -172,7 +172,7 @@ Very easy to draw: just dice each patch into regular (u,v) grid!
 
 ![1544715841888](assets/1544715841888.jpg)
 
-**Subdivision **
+**Subdivision**
 
 - Start with control curve
 - Insert new vertex at each edge midpoint

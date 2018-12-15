@@ -12,6 +12,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 > 用 [typora](https://www.typora.io/) 写的（支持高亮，latex等功能），且图片放在了网盘内，直接在 github 上不大行
 >
 > 查看的时候得用 typora 且从网盘里下载好图片
+>
+> 再notes都写完后，考虑将图片降质压缩上传到 github 上
 
 然后完成 assignments
 
@@ -48,15 +50,15 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 12 geometric queries 
 - [x] 13 spatial data structures 
 - [x] 14 color
-- [ ] 15 radiometry 
-- [ ] 16
-- [ ] 17
-- [ ] 18
-- [ ] 19
-- [ ] 20
-- [ ] 21
-- [ ] 22
-- [ ] 23
+- [x] 15 radiometry 
+- [ ] 16 the rendering equation 
+- [ ] 17 numerical integration 
+- [ ] 18 monte carlo ray tracing 
+- [ ] 19 variance reduction 
+- [ ] 20 introduction to animation 
+- [ ] 21 intoduction to optimization 
+- [ ] 22 dynamics and time integration 
+- [ ] 23 physically-based animation and PDEs 
 ### Assignments
 
 - [x] 0.0 linear algebra
