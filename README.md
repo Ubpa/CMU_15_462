@@ -58,7 +58,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 16 the rendering equation 
 - [x] 17 numerical integration 
 - [x] 18 monte carlo ray tracing 
-- [ ] 19 variance reduction 
+- [x] 19 variance reduction 
 - [ ] 20 introduction to animation 
 - [ ] 21 intoduction to optimization 
 - [ ] 22 dynamics and time integration 
