@@ -59,7 +59,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 17 numerical integration 
 - [x] 18 monte carlo ray tracing 
 - [x] 19 variance reduction 
-- [ ] 20 introduction to animation 
+- [x] 20 introduction to animation 
 - [ ] 21 intoduction to optimization 
 - [ ] 22 dynamics and time integration 
 - [ ] 23 physically-based animation and PDEs 

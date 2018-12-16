@@ -4,13 +4,13 @@
 
 **Naïve Path Tracing**
 
-![1544940395413](assets/1544940395413.png)
+![1544940395413](assets/1544940395413.jpg)
 
 Naïve path tracing misses important phenomena! 
 
 **Importance Sampling in Rendering**
 
-![1544940446496](assets/1544940446496.png)
+![1544940446496](assets/1544940446496.jpg)
 
 **Bidirectional Path Tracing**
 
@@ -18,13 +18,13 @@ Forward path tracing: no control over path length (hits light after n bounces, o
 
 Idea: connect paths from light, eye (“bidirectional”) 
 
-![1544940538425](assets/1544940538425.png)
+![1544940538425](assets/1544940538425.jpg)
 
 **Metropolis-Hastings Algorithm**
 
 Good paths can be hard to find
 
-![1544940588563](assets/1544940588563.png)
+![1544940588563](assets/1544940588563.jpg)
 
 > perturb 扰乱
 
@@ -34,7 +34,7 @@ MH: take random walk of dependent samples (“mutations”)
 
 Basic idea: prefer to take steps that increase sample value 
 
-![1544940682640](assets/1544940682640.png)
+![1544940682640](assets/1544940682640.jpg)
 
 If careful, sample distribution will be proportional to integrand 
 
@@ -50,13 +50,13 @@ If careful, sample distribution will be proportional to integrand
 - Occasionally jump to random point (ergodicity)
 - Transition probability is “relative darkness” f(x’)/f(xi) 
 
-![1544941635673](assets/1544941635673.png)
+![1544941635673](assets/1544941635673.jpg)
 
 **Metropolis Light Transport** 
 
-![1544941672031](assets/1544941672031.png)
+![1544941672031](assets/1544941672031.jpg)
 
-![1544941682680](assets/1544941682680.png)
+![1544941682680](assets/1544941682680.jpg)
 
 **Multiple Importance Sampling (MIS)**
 
@@ -68,9 +68,9 @@ MIS: combine strategies to preserve strengths of all of them
 
 Balance heuristic is (provably!) about as good as anything
 
-![1544941726743](assets/1544941726743.png)
+![1544941726743](assets/1544941726743.jpg)
 
-![1544941743354](assets/1544941743354.png)
+![1544941743354](assets/1544941743354.jpg)
 
 ## 19.2 Sampling Patterns
 
@@ -82,13 +82,13 @@ But even for uniform density, lots of possible sampling patterns
 
 Sampling pattern will affect variance (of estimator!) 
 
-![1544941806919](assets/1544941806919.png)
+![1544941806919](assets/1544941806919.jpg)
 
 **Stratifed Sampling**
 
 stratifed estimate never has larger variance (often lower) 
 
-![1544941938864](assets/1544941938864.png)
+![1544941938864](assets/1544941938864.jpg)
 
 **Low-Discrepancy(差异) Sampling**
 
@@ -98,7 +98,7 @@ Number of samples should be proportional to area
 
 Discrepancy measures deviation(偏差) from this ideal 
 
-![1544942252426](assets/1544942252426.png)
+![1544942252426](assets/1544942252426.jpg)
 
 **Quasi-Monte Carlo methods (QMC)**
 
@@ -106,7 +106,7 @@ Replace truly random samples with low-discrepancy samples
 
 Why? Koksma’s theorem: 
 
-![1544942285320](assets/1544942285320.png)
+![1544942285320](assets/1544942285320.jpg)
 
 **Hammersley & Halton Points**
 
@@ -129,19 +129,19 @@ $$
 
 > n must be known ahead of time! 
 
-![1544942537326](assets/1544942537326.png)
+![1544942537326](assets/1544942537326.jpg)
 
 **Adaptive Blue Noise**
 
 Can adjust cell size to sample a given density (e.g., importance) 
 
-![1544942607289](assets/1544942607289.png)
+![1544942607289](assets/1544942607289.jpg)
 
 ## 19.3 efficiently sample from a large distribution 
 
 **Sampling from the CDF** 
 
-![1544942881191](assets/1544942881191.png)
+![1544942881191](assets/1544942881191.jpg)
 
 cost is $O(n\log n)$
 
@@ -157,7 +157,7 @@ Get amortized O(1) sampling by building “alias table”
 
 Basic idea: rob from the rich, give to the poor (O(n)): 
 
-![1544943037070](assets/1544943037070.png)
+![1544943037070](assets/1544943037070.jpg)
 
 Table just stores two identities & ratio of heights per column 
 
