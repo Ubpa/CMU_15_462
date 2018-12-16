@@ -61,7 +61,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 19 variance reduction 
 - [x] 20 introduction to animation 
 - [x] 21 intoduction to optimization 
-- [ ] 22 dynamics and time integration 
+- [x] 22 dynamics and time integration 
 - [ ] 23 physically-based animation and PDEs 
 ### Assignments
 
