@@ -4,16 +4,113 @@
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
 
-namespace CMU462 {
+using namespace CMU462;
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
-  // TODO: (meshEdit)
-  // This method should split the given edge and return an iterator to the
-  // newly inserted vertex. The halfedge of this vertex should point along
-  // the edge that was split, rather than the new edges.
+	// TODO: (meshEdit)
+	// This method should split the given edge and return an iterator to the
+	// newly inserted vertex. The halfedge of this vertex should point along
+	// the edge that was split, rather than the new edges.
 
-  showError("splitEdge() not implemented.");
-  return VertexIter();
+	// [Note:this method is for triangle meshes only!]
+	// The selected edge e is split at its midpoint
+	// and the new vertex v is connected to the two opposite vertices
+	// (or one in the case of a surface with boundary)
+
+	VertexIter newV = newVertex();
+	newV->halfedge() = e0->halfedge();
+	newV->position = e0->centroid();
+
+	if (e0->isBoundary()) {
+
+	}
+	else {
+		// new 
+		constexpr size_t newENum = 3;
+		constexpr size_t newFNum = 2;
+		constexpr size_t newHENum = 6;
+		
+		HalfedgeIter newHEs[newHENum];
+		for (size_t i = 0; i < newHENum; i++)
+			newHEs[i] = newHalfedge();
+
+		EdgeIter newEs[newENum];
+		for (size_t i = 0; i < newENum; i++)
+			newEs[i] = newEdge();
+
+		FaceIter newFs[newFNum];
+		for (size_t i = 0; i < newFNum; i++)
+			newFs[i] = newFace();
+
+		// 1. edge
+		for (size_t i = 0; i < newENum; i++)
+			newEs[i]->halfedge() = newHEs[i * 2];
+
+		// 2. vertex
+		if (e0->halfedge()->vertex()->halfedge() == e0->halfedge())
+			e0->halfedge()->vertex()->halfedge() = e0->halfedge()->twin();
+
+		// 3. halfedge
+		HalfedgeIter oldE[6];
+		oldE[0] = e0->halfedge();
+		oldE[1] = oldE[0]->next();
+		oldE[2] = oldE[1]->next();
+		oldE[3] = e0->halfedge()->twin();
+		oldE[4] = oldE[3]->next();
+		oldE[5] = oldE[4]->next();
+
+		// 3.1 halfedge->twin and edge
+		for (size_t i = 0; i < newENum; i++) {
+			newHEs[2 * i]->twin() = newHEs[2 * i + 1];
+			newHEs[2 * i]->edge() = newEs[i];
+			newHEs[2 * i + 1]->twin() = newHEs[2 * i];
+			newHEs[2 * i + 1]->edge() = newEs[i];
+		}
+
+		// 3.2 halfedge->face
+		newEs[0]->halfedge()->face() = newFs[1];
+		newEs[0]->halfedge()->twin()->face() = newFs[0];
+
+		newEs[1]->halfedge()->face() = newFs[0]; ;
+		newEs[1]->halfedge()->twin()->face() = e0->halfedge()->face();
+
+		newEs[2]->halfedge()->face() = e0->halfedge()->twin()->face();
+		newEs[2]->halfedge()->twin()->face() = newFs[1];
+
+		oldE[2]->face() = newFs[0];
+		oldE[4]->face() = newFs[1];
+
+		// 3.3 halfedge->vertex
+		newEs[0]->halfedge()->vertex() = newV;
+		newEs[0]->halfedge()->twin()->vertex() = oldE[0]->vertex();
+		newEs[1]->halfedge()->vertex() = newV;
+		newEs[1]->halfedge()->twin()->vertex() = oldE[2]->vertex();
+		newEs[2]->halfedge()->vertex() = newV;
+		newEs[2]->halfedge()->twin()->vertex() = oldE[5]->vertex();
+
+		e0->halfedge()->vertex() = newV;
+
+		// 3.4 halfedge->next
+		oldE[1]->next() = newEs[1]->halfedge()->twin();
+		oldE[2]->next() = newEs[0]->halfedge()->twin();
+		oldE[3]->next() = newEs[2]->halfedge();
+		oldE[4]->next() = newEs[2]->halfedge()->twin();
+
+		newEs[0]->halfedge()->next() = oldE[4];
+		newEs[0]->halfedge()->twin()->next() = newEs[1]->halfedge();
+		newEs[1]->halfedge()->next() = oldE[2];
+		newEs[1]->halfedge()->twin()->next() = oldE[0];
+		newEs[2]->halfedge()->next() = oldE[5];
+		newEs[2]->halfedge()->twin()->next() = newEs[0]->halfedge();
+
+		// 4. face
+		newFs[0]->halfedge() = newEs[0]->halfedge()->twin();
+		newFs[1]->halfedge() = newEs[0]->halfedge();
+		e0->halfedge()->face()->halfedge() = e0->halfedge();
+		e0->halfedge()->twin()->face()->halfedge() = e0->halfedge()->twin();
+	}
+
+	return newV;
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
@@ -51,12 +148,62 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
 }
 
 EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
-  // TODO: (meshEdit)
-  // This method should flip the given edge and return an iterator to the
-  // flipped edge.
+	// TODO: (meshEdit)
+	// This method should flip the given edge and return an iterator to the
+	// flipped edge.
 
-  showError("flipEdge() not implemented.");
-  return EdgeIter();
+	// The selected edge e is "rotated" around the face, 
+	// in the sense that each endpoint moves to the next vertex (in counter-clockwise order)
+	// along the boundary of the two polygons containing e.
+	if (e0->isBoundary())
+		return e0;
+
+	HalfedgeIter he = e0->halfedge();
+	HalfedgeIter twin = he->twin();
+
+	// 1. vertex
+	if (he->vertex()->halfedge() == he)
+		he->vertex()->halfedge() = twin->next();
+	if (twin->vertex()->halfedge() == twin)
+		twin->vertex()->halfedge() = he->next();
+	
+	// 2. face
+	if (he->face()->halfedge() == he->next())
+		he->face()->halfedge() = he;
+	if (twin->face()->halfedge() == twin->next())
+		twin->face()->halfedge() = twin;
+
+	// 3. edge
+	// no changes
+
+	// 4. halfedge
+	// 4.1 halfedge->face
+	he->next()->face() = twin->face();
+	twin->next()->face() = he->face();
+
+	// 4.2 halfedge->vertex
+	he->vertex() = twin->next()->next()->vertex();
+	twin->vertex() = he->next()->next()->vertex();
+
+	// 4.3 halfedge->next
+	HalfedgeIter heNext = he->next();
+	HalfedgeIter heNext2= heNext->next();
+	HalfedgeIter hePre = he->pre();
+	HalfedgeIter twinNext = twin->next();
+	HalfedgeIter twinNext2 = twinNext->next();
+	HalfedgeIter twinPre = twin->pre();
+
+	hePre->next() = twinNext;
+	heNext->next() = twin;
+	he->next() = heNext2;
+	twinPre->next() = heNext;
+	twinNext->next() = he;
+	twin->next() = twinNext2;
+
+	// 4.4 halfedge->twin and edge
+	// no changes
+
+	return e0;
 }
 
 void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
@@ -459,5 +606,3 @@ void MeshResampler::resample(HalfedgeMesh& mesh) {
   // -> Finally, apply some tangential smoothing to the vertex positions
   showError("resample() not implemented.");
 }
-
-}  // namespace CMU462

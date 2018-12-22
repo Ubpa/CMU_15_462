@@ -5,6 +5,13 @@
 
 namespace CMU462 {
 
+HalfedgeIter Halfedge::pre() {
+	HalfedgeIter it = this->next();
+	while (&(*it->next()) != this)
+		it = it->next();
+	return it;
+}
+
 bool Halfedge::isBoundary()
 // returns true if and only if this halfedge is on the boundary
 {

@@ -351,13 +351,11 @@ class HalfedgeElement {
  */
 class Halfedge : public HalfedgeElement {
  public:
-  HalfedgeIter& twin() { return _twin; }  ///< access the twin half edge
-  HalfedgeIter& next() { return _next; }  ///< access the next half edge
-  VertexIter& vertex() {
-    return _vertex;
-  }                                   ///< access the vertex in the half edge
-  EdgeIter& edge() { return _edge; }  ///< access the edge the half edge is on
-  FaceIter& face() { return _face; }  ///< access the face the half edge is on
+  HalfedgeIter& twin() { return _twin; }   ///< access the twin half edge
+  HalfedgeIter& next() { return _next; }   ///< access the next half edge
+  VertexIter& vertex() { return _vertex; } ///< access the vertex in the half edge
+  EdgeIter& edge() { return _edge; }       ///< access the edge the half edge is on
+  FaceIter& face() { return _face; }       ///< access the face the half edge is on
 
   HalfedgeCIter twin() const {
     return _twin;
@@ -374,6 +372,8 @@ class Halfedge : public HalfedgeElement {
   FaceCIter face() const {
     return _face;
   }  ///< access the face the half edge is on (const iterator)
+
+  HalfedgeIter pre();
 
   /**
    * Check if the edge is a boundary edge.

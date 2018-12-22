@@ -62,7 +62,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 - [x] 20 introduction to animation 
 - [x] 21 intoduction to optimization 
 - [x] 22 dynamics and time integration 
-- [ ] 23 physically-based animation and PDEs 
+- [x] 23 physically-based animation and PDEs 
 ### Assignments
 
 - [x] 0.0 linear algebra
@@ -78,6 +78,16 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 8 Alpha Compositing
   - [x] 9 Draw Something!!!
 - [ ] 2.0 MeshEdit
+  - [ ] Local
+    - [x] flipEdge
+    - [x] splitEdge
+    - [ ] collapseEdge
+    - [ ] collapseFace
+    - [ ] eraseVertex
+    - [ ] eraseEdge
+    - [ ] bevelEdge
+    - [ ] bevelFace
+  - [ ] Global
 - [ ] 3.0 PathTracer
 - [ ] 4.0 Animation
 
