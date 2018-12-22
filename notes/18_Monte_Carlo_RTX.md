@@ -1,10 +1,10 @@
 # 18 Monte Carlo Ray Tracing
 
-**Ray Tracing vs. Rasterization**
+**Ray Tracing vs. Rasterization** 
 
 - Order
 
-  ![1544891907496](assets/1544891907496,jpg)
+  ![1544891907496](assets/1544891907496.jpg)
 
 - illumination
 
@@ -14,13 +14,13 @@
 
   - [GLOBAL] ray tracer processes on ray at a time; ray knows about everything it intersects, easy to talk about shadows & other “global” illumination effects 
 
-**Importance Sampling in RTX**
+**Importance Sampling in RTX** 
 
 put more where integrand is large (“most useful samples”) 
 
-![1544894682231](assets/1544894682231,jpg)
+![1544894682231](assets/1544894682231.jpg)
 
-**Direct lighting—uniform sampling**
+**Direct lighting—uniform sampling** 
 
 Uniformly-sample hemisphere of directions with respect to solid angle 
 $$
@@ -36,7 +36,7 @@ $$
 >
 > $(\xi_1, \xi_2) = (\sqrt{1-\xi_1^2}\cos(2\pi\xi_2), \sqrt{1-\xi_1^2}\sin(2\pi\xi_2), \xi_1)$ 
 >
-> ![1544896370674](assets/1544896370674,jpg)
+> ![1544896370674](assets/1544896370674.jpg)
 >
 >  推导如下：
 > $$
@@ -56,27 +56,27 @@ $$
 > $$
 >
 
-**Direct lighting—uniform sampling (algorithm)**
+**Direct lighting—uniform sampling (algorithm)** 
 
-- Given surface point $\mathbf{p}$
+- Given surface point $\mathbf{p}$ 
 
 - For each of N samples:
 
-  - Generate random direction: $\omega_i$
+  - Generate random direction: $\omega_i$ 
 
-  - Compute incoming radiance $L_i$ arriving at $\mathbf{p}$ from direction: $\omega_i$
+  - Compute incoming radiance $L_i$ arriving at $\mathbf{p}$ from direction: $\omega_i$ 
 
     > A ray tracer evaluates radiance along a ray 
 
-  - Compute incident irradiance due to ray: $dE_i=L_i\cos\theta_i$
+  - Compute incident irradiance due to ray: $dE_i=L_i\cos\theta_i$ 
 
   - Accumulate $\frac{2\pi}{N}\ \text{d}E_i$ into estimator
 
-![1544898869796](assets/1544898869796,jpg)
+![1544898869796](assets/1544898869796.jpg)
 
 Incident lighting estimator uses different random directions in each pixel. Some of those directions point towards the light, others do not. 
 
-**Reduce noise**
+**Reduce noise** 
 
 - Don’t need to integrate over entire hemisphere of directions (incoming radiance is 0 from most directions).
 - Just integrate over the area of the light (directions where incoming radiance is non-zero)and weight appropriately 
@@ -89,7 +89,7 @@ E(\mathbf{p})=\int_{\mathcal{H}^2} L_i(\mathbf{p},\omega_i)\cos\theta\ \text{d}\
 $$
 Change of variables to integrate over area of light 
 
-![1544899869932](assets/1544899869932,jpg)
+![1544899869932](assets/1544899869932.jpg)
 $$
 d\omega=\frac{\text{d}A}{|\mathbf{p}'-\mathbf{p}|^2}=\frac{\cos\theta\ \text{d}A'}{|\mathbf{p}'-\mathbf{p}|^2}\\
 E(\mathbf{p})=\int_{A'}L_o(\mathbf{p}',\omega')V(\mathbf{p},\mathbf{p}')\frac{\cos\theta\cos\theta'}{|\mathbf{p}-\mathbf{p}'|^2}\ \text{d} A'
@@ -100,30 +100,30 @@ p(\mathbf{p}')=\frac{1}{A'}\\
 Y_i=L_o(\mathbf{p}'_i,\omega'_i)V(\mathbf{p},\mathbf{p}'_i)\frac{\cos\theta\cos\theta'}{|\mathbf{p}-\mathbf{p}'|^2}\\
 F_N=\frac{A'}{N}\sum_{i=1}^N Y_i
 $$
-![1544900153356](assets/1544900153356,jpg)
+![1544900153356](assets/1544900153356.jpg)
 
 If no occlusion is present, all directions chosen in computing estimate “hit” the light source.
 (Choice of direction only matters if portion of light is occluded from surface point p, 即半影区域) 
 
-![1544900216991](assets/1544900216991,jpg)
+![1544900216991](assets/1544900216991.jpg)
 
-![1544900225715](assets/1544900225715,jpg)
+![1544900225715](assets/1544900225715.jpg)
 
-**Comparing different techniques**
+**Comparing different techniques** 
 
 Variance in an estimator manifests as noise in rendered images 
 $$
 Efficiency\propto\frac{1}{Variance\times Cost}
 $$
-**Path tracing: indirect illumination**
+**Path tracing: indirect illumination** 
 $$
 E(\mathbf{p},\omega_o)=\int_{\mathcal{H}^2}f_r(\mathbf{\omega_i},\omega_o)L_{o,i}(tr(\mathbf{p},w_i),-\omega_i)\cos\theta_i\ \text{d}\omega_i
 $$
 Recursively call path tracing function to compute incident indirect radiance 
 
-![1544900856380](assets/1544900856380,jpg)
+![1544900856380](assets/1544900856380.jpg)
 
-**Stop--Russian roulette(轮盘)**
+**Stop--Russian roulette(轮盘)** 
 
 Idea: want to avoid spending time evaluating function for samples that make a ==small contribution== to the fnal result 
 $$
@@ -138,12 +138,13 @@ Ignoring low-contribution samples introduces systematic error
 Instead, ==randomly discard low-contribution samples== in a way that leaves estimator unbiased 
 
 > New estimator: evaluate original estimator with probability  $p_{rr}$, reweight. Otherwise ignore
+
 >
 > Same expected value as original estimator: 
-> $$
+>$$
 > p_{rr}E[\frac{X}{p_{rr}}]+E[(1-p_{rr})0]=E[X]
-> $$
+>$$
 >
 
-![1544901700511](assets/1544901700511,jpg)
+![1544901700511](assets/1544901700511.jpg)
 

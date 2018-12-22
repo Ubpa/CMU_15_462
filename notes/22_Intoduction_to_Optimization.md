@@ -18,7 +18,7 @@ Global minimum is absolute best among all possibilities
 
 Local minimum is best “among immediate neighbors” 
 
-![1544963302214](assets/1544963302214,jpg)
+![1544963302214](assets/1544963302214.jpg)
 
 **Characterization of Local Minima**
 
@@ -49,7 +49,7 @@ $$
 
 In general, any (local or global) minimizer must at least satisfy the Karush–Kuhn–Tucker (KKT) conditions: 
 
-> ![1544964532370](assets/1544964532370,jpg)
+> ![1544964532370](assets/1544964532370.jpg)
 
 **Convex Optimization**
 
@@ -57,7 +57,7 @@ Special class of problems that are almost always “easy” to solve (polynomial
 
 Problem convex if it has a convex domain and convex objective 
 
-![1544964620204](assets/1544964620204,jpg)
+![1544964620204](assets/1544964620204.jpg)
 
 Why care about convex problems in graphics?
 - can make guarantees about solution (always the best)
@@ -85,11 +85,11 @@ General idea: apply a coordinate transformation so that the local energy landsca
 
 Gradient now points directly toward nearby minimizer 
 
-![1544965204741](assets/1544965204741,jpg)
+![1544965204741](assets/1544965204741.jpg)
 
 Most basic strategy: Newton’s method: 
 
-![1544965236714](assets/1544965236714,jpg)
+![1544965236714](assets/1544965236714.jpg)
 
 Great for convex problems (even proofs about # of steps!)
 
@@ -105,9 +105,9 @@ Meta-strategy: try lots of solvers, see what works!
 
 Consider a simple path-like chain in 2D 
 
-![1544965490739](assets/1544965490739,jpg)
+![1544965490739](assets/1544965490739.jpg)
 
-![1544965496289](assets/1544965496289,jpg)
+![1544965496289](assets/1544965496289.jpg)
 $$
 p_1=p_0+e^{i\theta_0}u_0\\
 p_2=p_1+e^{i\theta_1}u_1\\

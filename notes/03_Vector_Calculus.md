@@ -203,8 +203,8 @@ Usually* denoted by $\Delta$
 Many starting points for Laplacian: 
 
 - divergence of gradient $\Delta f=\nabla \cdot \nabla f=\text{div}(\text{grad}\ f)$
-- sum of 2nd partial derivatives $\Delta f:=\sum_{i=1}^n\partia<span class="md-search-hit md-search-select">l^2</span> f/\partial x_i^2$
-- gradient of Dirichlet energy : $\Delta f := -\nabla_f(\frac{1}{2}||\nabla f||^2)$
+- sum of 2nd partial derivatives $\Delta f:=\sum_{i=1}^n\partial^2 f/\partial x_i^2$
+- gradient of Dirichlet energy : $\Delta f := -\nabla_f(\frac{1}{2}||\nabla f||^2)​$
 - by analogy: graph Laplacian ![1544190923948](assets/1544190923948.jpg)
 - ...
 
