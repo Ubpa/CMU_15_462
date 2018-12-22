@@ -81,7 +81,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [ ] Local
     - [x] flipEdge
     - [x] splitEdge
-    - [ ] collapseEdge
+    - [x] collapseEdge
     - [ ] collapseFace
     - [ ] eraseVertex
     - [ ] eraseEdge

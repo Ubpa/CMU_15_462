@@ -3,12 +3,13 @@
 
 #include "error_dialog.h"
 
-namespace CMU462 {
+using namespace CMU462;
 
-HalfedgeIter Halfedge::pre() {
+const HalfedgeIter Halfedge::pre() {
 	HalfedgeIter it = this->next();
 	while (&(*it->next()) != this)
 		it = it->next();
+
 	return it;
 }
 
@@ -882,5 +883,3 @@ Info Halfedge::getInfo() {
 
   return info;
 }
-
-}  // namespace CMU462

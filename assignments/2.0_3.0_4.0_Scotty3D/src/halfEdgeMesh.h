@@ -373,7 +373,7 @@ class Halfedge : public HalfedgeElement {
     return _face;
   }  ///< access the face the half edge is on (const iterator)
 
-  HalfedgeIter pre();
+  const HalfedgeIter pre();
 
   /**
    * Check if the edge is a boundary edge.

@@ -194,12 +194,149 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
-  // TODO: (meshEdit)
-  // This method should collapse the given edge and return an iterator to
-  // the new vertex created by the collapse.
+	// TODO: (meshEdit)
+	// This method should collapse the given edge and return an iterator to
+	// the new vertex created by the collapse.
 
-  showError("collapseEdge() not implemented.");
-  return VertexIter();
+	// The selected edge e is replaced by a single vertex v.
+	// This vertex is connected by edges to all vertices previously connected to either endpoint of e. 
+	// Moreover, if either of the polygons containing e was a triangle, it will be replaced by an edge
+	// (rather than a degenerate polygon with only two edges)
+
+	// the new vertex is the centroid of the edge
+
+	VertexIter v0 = e->halfedge()->vertex();
+	VertexIter v1 = e->halfedge()->twin()->vertex();
+
+	HalfedgeIter he = v1->halfedge();
+	HalfedgeIter twinNext = he->twin()->next();
+	// erase edge thar make a triangle
+	do
+	{
+		// e
+		if (he->twin()->vertex() == v0)
+			continue;
+
+		// triangle
+		if (he->next()->twin()->vertex() == v0) {
+			// erase edge
+
+			HalfedgeIter hePre = he->pre();
+			HalfedgeIter heNext = he->next();
+			HalfedgeIter twin = he->twin();
+			HalfedgeIter twinPre = twin->pre();
+			HalfedgeIter twinNext = twin->next();
+
+			// 1. vertex
+			if (twin->vertex()->halfedge() == twin)
+				twin->vertex()->halfedge() = heNext;
+
+			if (he->vertex()->halfedge() == he)
+				he->vertex()->halfedge() = twinNext;
+
+			// 2. edge
+			// no changes
+
+			// 3. face
+			if (twin->face()->halfedge() == twin)
+				twin->face()->halfedge() = heNext;
+
+			// 4. halfedge
+			// 4.1 halfedge->twin, edge and vertex
+			// no changes
+
+			// 4.2 halfedge->face
+			heNext->face() = twin->face();
+			hePre->face() = twin->face();
+
+			// 4.3 halfedge->next
+			twinPre->next() = heNext;
+			hePre->next() = twinNext;
+
+			// 5. delete
+			deleteFace(he->face());
+			deleteEdge(he->edge());
+			deleteHalfedge(he);
+			deleteHalfedge(twin);
+			continue;
+		}
+		else if (he->twin()->pre()->vertex() == v0) {
+			// erase edge
+
+			HalfedgeIter hePre = he->pre();
+			HalfedgeIter heNext = he->next();
+			HalfedgeIter twin = he->twin();
+			HalfedgeIter twinPre = twin->pre();
+			HalfedgeIter twinNext = twin->next();
+
+			// 1. vertex
+			if (twin->vertex()->halfedge() == twin)
+				twin->vertex()->halfedge() = heNext;
+
+			if (he->vertex()->halfedge() == he)
+				he->vertex()->halfedge() = twinNext;
+
+			// 2. edge
+			// no changes
+
+			// 3. face
+			if (he->face()->halfedge() == he)
+				he->face()->halfedge() = heNext;
+
+			// 4. halfedge
+			// 4.1 halfedge->twin, edge and vertex
+			// no changes
+
+			// 4.2 halfedge->face
+			twinNext->face() = he->face();
+			twinPre->face() = he->face();
+
+			// 4.3 halfedge->next
+			hePre->next() = twinNext;
+			twinPre->next() = heNext;
+
+			// 5. delete
+			deleteFace(twin->face());
+			deleteEdge(twin->edge());
+			deleteHalfedge(twin);
+			deleteHalfedge(he);
+			continue;
+		}
+	} while (he = twinNext, twinNext = he->twin()->next(), he != v1->halfedge());
+
+	v0->position = e->centroid();
+
+	he = v1->halfedge();
+	twinNext = he->twin()->next();
+	do {
+		// e
+		if (he->twin()->vertex() == v0)
+			continue;
+
+		if (v0->halfedge() == e->halfedge())
+			v0->halfedge() = he;
+
+		he->vertex() = v0;
+
+		if (he->pre() == e->halfedge()) {
+			he->vertex() = v0;
+			he->pre()->pre()->next() = he;
+			he->face()->halfedge() = he;
+		}
+
+		if (he->twin()->next() == e->halfedge()->twin()) {
+			HalfedgeIter twin = he->twin();
+			twin->next() = twin->next()->next();
+			twin->face()->halfedge() = twin;
+		}
+	} while (he = twinNext, twinNext = he->twin()->next(), he != v1->halfedge());
+
+	deleteHalfedge(e->halfedge()->twin());
+	deleteHalfedge(e->halfedge());
+	deleteEdge(e);
+	deleteVertex(v1);
+	
+	return v0;
 }
 
 VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
