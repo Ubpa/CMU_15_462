@@ -304,17 +304,17 @@ $$
 > $$
 >
 
-**Algorithm to compute render equation**
+**Algorithm to compute render equation** 
 
 Approximate integral via Monte Carlo integration 
 
-Generate directions $\omega_j$ sampled from some distribution $p(\omega)$
+Generate directions $\omega_j$ sampled from some distribution $p(\omega)$ 
 
 Compute the estimator 
 $$
 \frac{1}{N}\sum_{j=1}^N\frac{f_r(\mathbf{p},\omega_j\to\omega_r)L_i(\mathbf{p},\omega_j)\cos\theta_j}{p(\omega_j)}
 $$
-To reduce variance $p(\omega_j)$ should match BRDF or incident radiance function 
+To reduce variance $p(\omega_j)​$ should match BRDF or incident radiance function 
 
 ```c++
 // Assume:

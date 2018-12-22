@@ -8,11 +8,30 @@
 
 Naïve path tracing misses important phenomena! 
 
-**Importance Sampling in Rendering**
+**Importance Sampling in Rendering** 
+
+以下是我们要求的积分公式
+$$
+L_o(\mathbf{p},\omega_o)=L_e(\mathbf{p},\omega_o) + \int_{\mathcal{H}^2}f_r(\mathbf{p},\omega_i\to\omega_o)L_i(\mathbf{p},\omega_i)\cos\theta \ \text{d}\omega_i
+$$
+考虑重要性采样，那么 $p(x)$ 应该接近 $f_r(\mathbf{p},\omega_i\to\omega_o)L_i(\mathbf{p},\omega_i)\cos\theta$，但我们并不知道这个函数的具体表达式，只能通过启发性的形式去寻找。
+
+分别考虑乘积项
+
+- $f_r(\mathbf{p},\omega_i\to\omega_o)$：我们可以根据BRDF来确定采样规律，如遇到镜面就往镜面反射方向采样
+- $L_i(\mathbf{p},\omega_i)$：我们可以根据光源来确定采样规律，如在光源方向采样
 
 ![1544940446496](assets/1544940446496.jpg)
 
-**Bidirectional Path Tracing**
+**Bidirectional Path Tracing** 
+
+![1545459463411](assets/1545459463411.png)
+
+之前提到可以根据光源方向来采样，这是直接光照。但要求与光源之间无阻隔。
+
+考虑上边这个场景，场景中大部分位置与光源之间都存在阻隔，故简单的在光源方向采样也无济于事。
+
+因此考虑双向路径追踪。
 
 Forward path tracing: no control over path length (hits light after n bounces, or gets terminated by Russian Roulette) 
 
@@ -21,6 +40,8 @@ Idea: connect paths from light, eye (“bidirectional”)
 ![1544940538425](assets/1544940538425.jpg)
 
 **Metropolis-Hastings Algorithm**
+
+之前提到了双向路径追踪算法，但问题是如何选择光源出发的路径。有时候，光源的大部分路径都是无效的。
 
 Good paths can be hard to find
 

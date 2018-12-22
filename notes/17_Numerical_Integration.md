@@ -69,6 +69,36 @@ Only requires function to be evaluated at random points on its domain
 >
 > 但实际上我们要求的就是 I，所以无法直接获取最优的分布
 
+**Importance Sampling** 
+
+> 这里有一个不错的博文 https://www.cnblogs.com/time-flow1024/p/10094293.html
+
+考虑随机变量
+$$
+Y=\frac{f(X)}{p(X)}
+$$
+其概率密度为 $p(X)$ ，则
+$$
+E[Y]=\int_{\Omega}\frac{f(x)}{p(x)}p(x)dx=I
+$$
+故可用 Y 的均值来估计 f(x) 的积分值
+$$
+I\approx Q_N=\frac{1}{N}\sum_{i=1}^N Y_i=\frac{1}{N}\sum_{i=1}^N \frac{f(x_i)}{p(x_i)}
+$$
+方差为
+$$
+\sigma^2[Q_N]=\frac{1}{N}\sigma^2[Y]=\frac{1}{N}\sigma^2[\frac{f(X)}{p(X)}]
+$$
+> 我们考虑下均匀采样用以验证
+>
+> 此时 $p(X)=\frac{1}{V}$，则方差为 $\sigma^2[F_N]=\frac{V^2}{N}\sigma^2[f(X)] $ ，与之前的结论相同
+
+那么，为了使得方差最小，$p^*(x) = f(x)/I$。
+
+这个结论是无意义的，因为我们就是来求积分值的，而 $p^*(x)$ 包含了积分值
+
+但这也给了我们启发，需要尽量找与 f(x) 相近 的 p(x) 来进行重要性采样
+
 **generate samples of a discrete random variable (with a known PDF)** 
 
 To randomly select an event, select $x_i$ if $P_{i-1}<\xi\le P_i$
