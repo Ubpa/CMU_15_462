@@ -16,20 +16,24 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 	// The selected edge e is split at its midpoint
 	// and the new vertex v is connected to the two opposite vertices
 	// (or one in the case of a surface with boundary)
-
 	VertexIter newV = newVertex();
-	newV->halfedge() = e0->halfedge();
 	newV->position = e0->centroid();
 
 	if (e0->isBoundary()) {
+		// boundary is also a face
 
-	}
-	else {
-		// new 
-		constexpr size_t newENum = 3;
-		constexpr size_t newFNum = 2;
-		constexpr size_t newHENum = 6;
-		
+		// flip edge->halfedge
+		if (e0->halfedge()->isBoundary())
+			e0->halfedge() = e0->halfedge()->twin();
+
+		VertexIter oldV = e0->halfedge()->vertex();
+		newV->halfedge() = e0->halfedge();
+
+		// 0. new 
+		constexpr size_t newENum = 2;
+		constexpr size_t newFNum = 1;
+		constexpr size_t newHENum = 4;
+
 		HalfedgeIter newHEs[newHENum];
 		for (size_t i = 0; i < newHENum; i++)
 			newHEs[i] = newHalfedge();
@@ -46,11 +50,82 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 		for (size_t i = 0; i < newENum; i++)
 			newEs[i]->halfedge() = newHEs[i * 2];
 
-		// 2. vertex
-		if (e0->halfedge()->vertex()->halfedge() == e0->halfedge())
-			e0->halfedge()->vertex()->halfedge() = e0->halfedge()->twin();
+		// 2. halfedge
+		HalfedgeIter oldE[6];
+		oldE[0] = e0->halfedge();
+		oldE[1] = oldE[0]->next();
+		oldE[2] = oldE[1]->next();
 
-		// 3. halfedge
+		// 2.1 halfedge->twin and edge
+		for (size_t i = 0; i < newENum; i++) {
+			newHEs[2 * i]->twin() = newHEs[2 * i + 1];
+			newHEs[2 * i + 1]->twin() = newHEs[2 * i];
+
+			newHEs[2 * i]->edge() = newEs[i];
+			newHEs[2 * i + 1]->edge() = newEs[i];
+		}
+
+		// 2.2 halfedge->face
+		newEs[0]->halfedge()->face() = e0->halfedge()->twin()->face();//boundary
+		newEs[0]->halfedge()->twin()->face() = newFs[0];
+
+		newEs[1]->halfedge()->face() = newFs[0]; ;
+		newEs[1]->halfedge()->twin()->face() = e0->halfedge()->face();
+
+		oldE[2]->face() = newFs[0];
+
+		// 2.3 halfedge->vertex
+		newEs[0]->halfedge()->vertex() = newV;
+		newEs[0]->halfedge()->twin()->vertex() = oldE[0]->vertex();
+		newEs[1]->halfedge()->vertex() = newV;
+		newEs[1]->halfedge()->twin()->vertex() = oldE[2]->vertex();
+
+		e0->halfedge()->vertex() = newV;
+
+		// 2.4 halfedge->next
+		oldE[1]->next() = newEs[1]->halfedge()->twin();
+		oldE[2]->next() = newEs[0]->halfedge()->twin();
+
+		newEs[0]->halfedge()->next() = e0->halfedge()->twin()->next();//boundary
+		e0->halfedge()->twin()->next() = newEs[0]->halfedge();
+		newEs[0]->halfedge()->twin()->next() = newEs[1]->halfedge();
+		newEs[1]->halfedge()->next() = oldE[2];
+		newEs[1]->halfedge()->twin()->next() = oldE[0];
+
+		// 3. face
+		newFs[0]->halfedge() = newEs[0]->halfedge()->twin();
+		e0->halfedge()->face()->halfedge() = e0->halfedge();
+
+		// 4. vertex
+		if (oldV->halfedge() == e0->halfedge())
+			oldV->halfedge() = newEs[0]->halfedge()->twin();
+	}
+	else {
+		VertexIter oldV = e0->halfedge()->vertex();
+		newV->halfedge() = e0->halfedge();
+
+		// 0. new 
+		constexpr size_t newENum = 3;
+		constexpr size_t newFNum = 2;
+		constexpr size_t newHENum = 6;
+
+		HalfedgeIter newHEs[newHENum];
+		for (size_t i = 0; i < newHENum; i++)
+			newHEs[i] = newHalfedge();
+
+		EdgeIter newEs[newENum];
+		for (size_t i = 0; i < newENum; i++)
+			newEs[i] = newEdge();
+
+		FaceIter newFs[newFNum];
+		for (size_t i = 0; i < newFNum; i++)
+			newFs[i] = newFace();
+
+		// 1. edge
+		for (size_t i = 0; i < newENum; i++)
+			newEs[i]->halfedge() = newHEs[i * 2];
+
+		// 2. halfedge
 		HalfedgeIter oldE[6];
 		oldE[0] = e0->halfedge();
 		oldE[1] = oldE[0]->next();
@@ -59,15 +134,16 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 		oldE[4] = oldE[3]->next();
 		oldE[5] = oldE[4]->next();
 
-		// 3.1 halfedge->twin and edge
+		// 2.1 halfedge->twin and edge
 		for (size_t i = 0; i < newENum; i++) {
 			newHEs[2 * i]->twin() = newHEs[2 * i + 1];
-			newHEs[2 * i]->edge() = newEs[i];
 			newHEs[2 * i + 1]->twin() = newHEs[2 * i];
+
+			newHEs[2 * i]->edge() = newEs[i];
 			newHEs[2 * i + 1]->edge() = newEs[i];
 		}
 
-		// 3.2 halfedge->face
+		// 2.2 halfedge->face
 		newEs[0]->halfedge()->face() = newFs[1];
 		newEs[0]->halfedge()->twin()->face() = newFs[0];
 
@@ -80,7 +156,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 		oldE[2]->face() = newFs[0];
 		oldE[4]->face() = newFs[1];
 
-		// 3.3 halfedge->vertex
+		// 2.3 halfedge->vertex
 		newEs[0]->halfedge()->vertex() = newV;
 		newEs[0]->halfedge()->twin()->vertex() = oldE[0]->vertex();
 		newEs[1]->halfedge()->vertex() = newV;
@@ -90,7 +166,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 
 		e0->halfedge()->vertex() = newV;
 
-		// 3.4 halfedge->next
+		// 2.4 halfedge->next
 		oldE[1]->next() = newEs[1]->halfedge()->twin();
 		oldE[2]->next() = newEs[0]->halfedge()->twin();
 		oldE[3]->next() = newEs[2]->halfedge();
@@ -103,11 +179,15 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 		newEs[2]->halfedge()->next() = oldE[5];
 		newEs[2]->halfedge()->twin()->next() = newEs[0]->halfedge();
 
-		// 4. face
+		// 3. face
 		newFs[0]->halfedge() = newEs[0]->halfedge()->twin();
 		newFs[1]->halfedge() = newEs[0]->halfedge();
 		e0->halfedge()->face()->halfedge() = e0->halfedge();
 		e0->halfedge()->twin()->face()->halfedge() = e0->halfedge()->twin();
+
+		// 4. vertex
+		if (oldV->halfedge() == e0->halfedge())
+			oldV->halfedge() = newEs[0]->halfedge()->twin();
 	}
 
 	return newV;

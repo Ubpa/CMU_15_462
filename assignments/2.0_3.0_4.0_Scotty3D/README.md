@@ -7,3 +7,18 @@ functionality of the program constitutes the majority of the coursework for
 
 Further information is available in the User Guide and Developer Manual, both
 available on the project wiki accessible via tab at the top of the Github.com UI.
+
+## Notes
+
+### Local
+
+#### Spilt Edge
+
+- Not Boundary
+
+![1545485889782](assets/1545485889782.jpg)
+
+- Boundary
+
+![1545492608038](assets/1545492608038.jpg)
+
