@@ -322,13 +322,13 @@ void SoftwareRendererImp::rasterize_line( float x0, float y0,
 
 	if (xySwap) {
 		for (float x = x0, y = y0; x < x1; x++) {
-			rasterize_point(y, x, color, false);
+			rasterize_point(y, x, color);
 			y += k;
 		}
 	}
 	else {
 		for (float x = x0, y = y0; x < x1; x++) {
-			rasterize_point(x, y, color, false);
+			rasterize_point(x, y, color);
 			y += k;
 		}
 	}

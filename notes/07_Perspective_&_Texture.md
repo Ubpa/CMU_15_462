@@ -94,6 +94,16 @@ Texels at higher levels represent ==low-pass fltered== version of original textu
 
 ![1544530598797](assets/1544530598797.jpg)
 
+**Bilinear filtering**
+
+![1545460392164](assets/1545460392164.jpg)
+$$
+\begin{aligned}
+P
+&=(1-t)((1-s)P_{00}+sP_{01})+t((1-s)P_{10}+sP_{11})\\
+&=(1-t)(1-s)P_{00}+(1-t)sP_{01}+t(1-s)P_{10}+stP_{11}
+\end{aligned}
+$$
 **Tri-linear filtering**
 
 在两个层级之间线性插值，层级内进行双线性插值，从而形成三线性插值
@@ -102,7 +112,15 @@ Texels at higher levels represent ==low-pass fltered== version of original textu
 
 ![1544530772836](assets/1544530772836.jpg)
 
-
+> 这里有个关键的点没有提到，就是已知所要插值点的位置，如何选取周围的四个点。
+>
+> 看图就知道了，就看其落在所在像素的哪个角落
+>
+> 左图中，插值点在像素中心的左上角，所以选择左上角的四个像素
+>
+> 右图中，插值点在像素中心的右下角，所以选择右下角的四个像素
+>
+> 总的规律就是，插值点在四个像素中心点的内部
 
 **anisotropic filter**
 
