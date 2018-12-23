@@ -483,7 +483,7 @@ void Mesh::erase_selected_element() {
   if (element == nullptr) return;
   Vertex *vertex = element->getVertex();
   Edge *edge = element->getEdge();
-  FaceIter f;
+  FaceIter f = mesh.facesEnd();
   if (edge != nullptr) {
     f = mesh.eraseEdge(edge->halfedge()->edge());
   } else if (vertex != nullptr) {
@@ -493,7 +493,7 @@ void Mesh::erase_selected_element() {
   }
   scene->selected.clear();
   scene->selected.object = this;
-  scene->selected.element = elementAddress(f);
+  scene->selected.element = mesh.facesEnd() == f ? nullptr : elementAddress(f);
   scene->hovered.clear();
   scene->elementTransform->target.clear();
 }

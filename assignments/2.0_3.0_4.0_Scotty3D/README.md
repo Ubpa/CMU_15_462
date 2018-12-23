@@ -1,4 +1,4 @@
-# CMU 15-462 - Scotty3D
+# CMU 15-462 - Scotty3D 
 
 Welcome to Scotty3D! This 3D graphics software implements interactive mesh
 editing, realistic path tracing, and dynamic animation. Implementing the
@@ -8,11 +8,17 @@ functionality of the program constitutes the majority of the coursework for
 Further information is available in the User Guide and Developer Manual, both
 available on the project wiki accessible via tab at the top of the Github.com UI.
 
-## Notes
+## 任务简述 
 
-### Local
+[User Guide - Mesh Edit](https://github.com/cmu462/Scotty3D/wiki/User-Guide-(MeshEdit)) 
 
-#### Spilt Edge
+[Developer Manual - Local Mesh Operations](https://github.com/cmu462/Scotty3D/wiki/Local-Mesh-Operations) 
+
+## Notes 
+
+### Local 
+
+#### Spilt Edge 
 
 - Not Boundary
 
@@ -21,4 +27,22 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 - Boundary
 
 ![1545492608038](assets/1545492608038.jpg)
+
+#### Collapse Edge 
+
+![1545504132406](assets/1545504132406.jpg)
+
+#### Erase Edge
+
+- normal
+
+![1545538991552](assets/1545538991552.jpg)
+
+- degeneration
+
+![1545543042515](assets/1545543042515.jpg)
+
+- boundary
+
+![1545547201892](assets/1545547201892.png)
 

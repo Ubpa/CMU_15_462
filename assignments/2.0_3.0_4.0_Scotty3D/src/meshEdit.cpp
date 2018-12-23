@@ -210,99 +210,22 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 
 	HalfedgeIter he = v1->halfedge();
 	HalfedgeIter twinNext = he->twin()->next();
-	// erase edge thar make a triangle
+	// erase edge that make a triangle
 	do
 	{
 		// e
-		if (he->twin()->vertex() == v0)
-			continue;
-
-		// triangle
-		if (he->next()->twin()->vertex() == v0) {
-			// erase edge
-
-			HalfedgeIter hePre = he->pre();
-			HalfedgeIter heNext = he->next();
-			HalfedgeIter twin = he->twin();
-			HalfedgeIter twinPre = twin->pre();
-			HalfedgeIter twinNext = twin->next();
-
-			// 1. vertex
-			if (twin->vertex()->halfedge() == twin)
-				twin->vertex()->halfedge() = heNext;
-
-			if (he->vertex()->halfedge() == he)
-				he->vertex()->halfedge() = twinNext;
-
-			// 2. edge
-			// no changes
-
-			// 3. face
-			if (twin->face()->halfedge() == twin)
-				twin->face()->halfedge() = heNext;
-
-			// 4. halfedge
-			// 4.1 halfedge->twin, edge and vertex
-			// no changes
-
-			// 4.2 halfedge->face
-			heNext->face() = twin->face();
-			hePre->face() = twin->face();
-
-			// 4.3 halfedge->next
-			twinPre->next() = heNext;
-			hePre->next() = twinNext;
-
-			// 5. delete
-			deleteFace(he->face());
-			deleteEdge(he->edge());
-			deleteHalfedge(he);
-			deleteHalfedge(twin);
-			continue;
+		if (he->twin()->vertex() != v0) {
+			// triangle 1
+			if (he->next()->twin()->vertex() == v0)
+				eraseEdge(he->edge());
+			// triangle 2
+			else if (he->twin()->pre()->vertex() == v0)
+				eraseEdge(he->edge());
 		}
-		else if (he->twin()->pre()->vertex() == v0) {
-			// erase edge
 
-			HalfedgeIter hePre = he->pre();
-			HalfedgeIter heNext = he->next();
-			HalfedgeIter twin = he->twin();
-			HalfedgeIter twinPre = twin->pre();
-			HalfedgeIter twinNext = twin->next();
-
-			// 1. vertex
-			if (twin->vertex()->halfedge() == twin)
-				twin->vertex()->halfedge() = heNext;
-
-			if (he->vertex()->halfedge() == he)
-				he->vertex()->halfedge() = twinNext;
-
-			// 2. edge
-			// no changes
-
-			// 3. face
-			if (he->face()->halfedge() == he)
-				he->face()->halfedge() = heNext;
-
-			// 4. halfedge
-			// 4.1 halfedge->twin, edge and vertex
-			// no changes
-
-			// 4.2 halfedge->face
-			twinNext->face() = he->face();
-			twinPre->face() = he->face();
-
-			// 4.3 halfedge->next
-			hePre->next() = twinNext;
-			twinPre->next() = heNext;
-
-			// 5. delete
-			deleteFace(twin->face());
-			deleteEdge(twin->edge());
-			deleteHalfedge(twin);
-			deleteHalfedge(he);
-			continue;
-		}
-	} while (he = twinNext, twinNext = he->twin()->next(), he != v1->halfedge());
+		he = twinNext;
+		twinNext = he->twin()->next();
+	} while (he != v1->halfedge());
 
 	v0->position = e->centroid();
 
@@ -351,17 +274,110 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
   // TODO: (meshEdit)
   // This method should replace the given vertex and all its neighboring
   // edges and faces with a single face, returning the new face.
-
-  return FaceIter();
+  showError("eraseVertex() not implemented.");
+  return faces.end();
 }
 
 FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
-  // TODO: (meshEdit)
-  // This method should erase the given edge and return an iterator to the
-  // merged face.
+	// TODO: (meshEdit)
+	// This method should erase the given edge and return an iterator to the
+	// merged face.
 
-  showError("eraseVertex() not implemented.");
-  return FaceIter();
+	// The selected edge e will be replaced with the union of the faces containing it
+	// producing a new face e.
+	
+	// boundary
+	if (e->isBoundary()) {
+		if (!e->halfedge()->face()->isBoundary())
+			e->halfedge() = e->halfedge()->twin();
+	}
+
+	FaceIter f0 = e->halfedge()->face();
+
+	// degeneration
+	if (e->halfedge()->next() == e->halfedge()->twin()
+		|| e->halfedge()->twin()->next() == e->halfedge()) {
+		if (e->halfedge()->next() != e->halfedge()->twin())
+			e->halfedge() = e->halfedge()->twin();
+
+		// vertex
+		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
+			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
+
+		// face
+		if (e->halfedge()->face()->halfedge() == e->halfedge()
+			|| e->halfedge()->face()->halfedge() == e->halfedge()->twin())
+			e->halfedge()->face()->halfedge() = e->halfedge()->pre();
+
+		// halfedge
+		e->halfedge()->pre()->next() = e->halfedge()->next()->next();
+
+
+		// delete
+		if (e->halfedge()->twin()->next() == e->halfedge())
+			deleteVertex(e->halfedge()->vertex());
+
+		deleteVertex(e->halfedge()->twin()->vertex());
+		deleteHalfedge(e->halfedge()->twin());
+		deleteHalfedge(e->halfedge());
+		deleteEdge(e);
+	}
+	// normal, delete e->halfedge->twin->face
+	else {
+		// 1. vertex
+		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
+			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
+
+		if (e->halfedge()->twin()->vertex()->halfedge() == e->halfedge()->twin())
+			e->halfedge()->twin()->vertex()->halfedge() = e->halfedge()->next();
+
+		// 2. face
+		if (f0->halfedge() == e->halfedge())
+			f0->halfedge() = e->halfedge()->next();
+
+		// 3. edge
+		// no changes
+
+		// 4. halfedge
+		// 4.1 halfedge->face
+		for (HalfedgeIter he = e->halfedge()->twin()->next(); he != e->halfedge()->twin(); he = he->next())
+			he->face() = e->halfedge()->face();
+
+		// 4.2 halfedge->next
+		e->halfedge()->pre()->next() = e->halfedge()->twin()->next();
+		e->halfedge()->twin()->pre()->next() = e->halfedge()->next();
+
+		// delete
+		deleteFace(e->halfedge()->twin()->face());
+		deleteHalfedge(e->halfedge()->twin());
+		deleteHalfedge(e->halfedge());
+		deleteEdge(e);
+
+		HalfedgeIter he = f0->halfedge();
+		HalfedgeIter next;
+		do {
+			if (he->next() == he->twin()) {
+				next = he->next()->next();
+				bool needDelF = next == he;
+				eraseEdge(he->edge());
+				if (needDelF) {
+					if (f0->isBoundary())
+						deleteBoundary(f0);
+					else
+						deleteFace(f0);
+					return faces.end();
+				}
+			}
+			else
+				next = he->next();
+
+			he = next;
+		} while (he != f0->halfedge());
+	}
+
+	if (f0->isBoundary())
+		f0 = faces.end();
+	return f0;
 }
 
 EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
