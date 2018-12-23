@@ -448,7 +448,7 @@ void Mesh::collapse_selected_element() {
     return;
   }
 
-  scene->selected.element = elementAddress(v);
+  scene->selected.element = v == mesh.verticesEnd() ? nullptr : elementAddress(v);
   scene->hovered.clear();
   scene->elementTransform->target.clear();
 }
@@ -472,7 +472,7 @@ void Mesh::split_selected_edge() {
   Edge *edge = element->getEdge();
   if (edge == nullptr) return;
   VertexIter v = mesh.splitEdge(edge->halfedge()->edge());
-  scene->selected.element = elementAddress(v);
+  scene->selected.element = v == mesh.verticesEnd() ? nullptr : elementAddress(v);
   scene->hovered.clear();
   scene->elementTransform->target.clear();
 }
@@ -493,7 +493,12 @@ void Mesh::erase_selected_element() {
   }
   scene->selected.clear();
   scene->selected.object = this;
-  scene->selected.element = mesh.facesEnd() == f ? nullptr : elementAddress(f);
+  if (f._Getcont() == mesh.facesEnd()._Getcont()) {
+	  scene->selected.element = f == mesh.facesEnd() ? nullptr : elementAddress(f);
+  }
+  else {
+	  scene->selected.element = f == mesh.boundariesEnd() ? nullptr : elementAddress(f);
+  }
   scene->hovered.clear();
   scene->elementTransform->target.clear();
 }

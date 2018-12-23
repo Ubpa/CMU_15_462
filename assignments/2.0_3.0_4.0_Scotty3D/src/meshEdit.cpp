@@ -15,9 +15,17 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 	// the edge that was split, rather than the new edges.
 
 	// [Note:this method is for triangle meshes only!]
+	if (e0->halfedge()->face()->degree() != 3
+		|| e0->halfedge()->twin()->face()->degree() != 3) {
+		showError("splitEdge is for triangle meshes only!");
+		return vertices.end();
+	}
+
+
 	// The selected edge e is split at its midpoint
 	// and the new vertex v is connected to the two opposite vertices
 	// (or one in the case of a surface with boundary)
+
 	VertexIter newV = newVertex();
 	newV->position = e0->centroid();
 
@@ -210,26 +218,33 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	VertexIter v0 = e->halfedge()->vertex();
 	VertexIter v1 = e->halfedge()->twin()->vertex();
 
+	// erase edge that make a triangle
 	HalfedgeIter he = v1->halfedge();
 	HalfedgeIter twinNext = he->twin()->next();
-	// erase edge that make a triangle
-	do
-	{
+	int n = v1->degree() + (v1->isBoundary() ? 1 : 0);
+	while (n-- > 0) {
 		// e
 		if (he->twin()->vertex() != v0) {
-			// triangle 1
-			if (he->next()->twin()->vertex() == v0)
-				eraseEdge(he->edge());
-			// triangle 2
-			else if (he->twin()->pre()->vertex() == v0)
-				eraseEdge(he->edge());
+			// triangle
+			if (he->next()->twin()->vertex() == v0 || he->twin()->pre()->vertex() == v0) {
+				FaceIter f = eraseEdge(he->edge(), false);
+				if (f->halfedge()->edge() == e) {
+					if (e->halfedge()->next() == e->halfedge()->twin())
+						f->halfedge() = e->halfedge()->twin()->next();
+					else
+						f->halfedge() = e->halfedge()->next();
+				}
+			}
 		}
 
 		he = twinNext;
 		twinNext = he->twin()->next();
-	} while (he != v1->halfedge());
+	}
 
 	v0->position = e->centroid();
+
+	if (v0->halfedge()->edge() == e)
+		v0->halfedge() = e->halfedge()->twin()->next();
 
 	he = v1->halfedge();
 	twinNext = he->twin()->next();
@@ -237,9 +252,6 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 		// e
 		if (he->twin()->vertex() == v0)
 			continue;
-
-		if (v0->halfedge() == e->halfedge())
-			v0->halfedge() = he;
 
 		he->vertex() = v0;
 
@@ -255,6 +267,21 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 			twin->face()->halfedge() = twin;
 		}
 	} while (he = twinNext, twinNext = he->twin()->next(), he != v1->halfedge());
+
+	if (e->halfedge()->next()->next() == e->halfedge()) {
+		deleteVertex(v0);
+		if (e->halfedge()->face()->isBoundary())
+			deleteBoundary(e->halfedge()->face());
+		else
+			deleteFace(e->halfedge()->face());
+		v0 = vertices.end();
+	}
+	else {
+		if (e->halfedge()->next() == e->halfedge()->twin())
+			e->halfedge()->pre()->next() = e->halfedge()->twin()->next();
+		else if (e->halfedge()->twin()->next() == e->halfedge())
+			e->halfedge()->twin()->pre()->next() = e->halfedge()->next();
+	}
 
 	deleteHalfedge(e->halfedge()->twin());
 	deleteHalfedge(e->halfedge());
@@ -284,20 +311,33 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	pos *= 1.0 / faceEdges.size();
 
 	while (faceEdges.size() > 3) {
-		collapseEdge(faceEdges.front());
+		HalfedgeIter he = faceEdges.front()->halfedge();
+		// triangle
+		if (he->next() == he->twin()->next()->next()->twin()) {
+			faceEdges.pop_front();
+			faceEdges.insert(faceEdges.begin()+1, he->twin()->next()->edge());
+			he->twin()->next()->edge()->halfedge() = he->twin()->next();
+		}
+		collapseEdge(he->edge());
 		faceEdges.pop_front();
 	}
 	collapseEdge(faceEdges.front());
 	faceEdges.pop_front();
 	faceEdges.pop_front();
 	VertexIter v = collapseEdge(faceEdges.front());
+	if (v == vertices.end())
+		return v;
+
 	faceEdges.pop_front();
 
 	v->position = pos;
 	he = v->halfedge();
-	do {
+	int n = v->degree() + (v->isBoundary() ? 1 : 0);
+	while (n-- > 0) {
 		// degeneration
 		if (he->next()->next() == he) {
+			if (v->halfedge() == he)
+				v->halfedge() = he->twin()->next();
 			he->next()->edge()->halfedge() = he->next()->twin();
 			he->twin()->edge() = he->next()->edge();
 			he->twin()->twin() = he->next()->twin();
@@ -312,7 +352,7 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 		}
 		else
 			he = he->twin()->next();
-	} while (he != v->halfedge());
+	}
 	
 	return v;
 }
@@ -324,17 +364,20 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 	
 	HalfedgeIter he = v->halfedge()->twin()->next();
 	FaceIter f;
-	do
-	{
+	while (true) {
 		EdgeIter e = he->edge();
+		e->halfedge() = he;
 		he = he->twin()->next();
+		bool end = he == v->halfedge();
 		f = eraseEdge(e);
-	} while (he != v->halfedge());
+		if (end)
+			break;
+	}
 
 	return f;
 }
 
-FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
+FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
 	// TODO: (meshEdit)
 	// This method should erase the given edge and return an iterator to the
 	// merged face.
@@ -378,6 +421,55 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
 		deleteHalfedge(e->halfedge());
 		deleteEdge(e);
 	}
+	else if (e->halfedge()->face() == e->halfedge()->twin()->face()) {
+		// 1. vertex
+		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
+			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
+
+		if (e->halfedge()->twin()->vertex()->halfedge() == e->halfedge()->twin())
+			e->halfedge()->twin()->vertex()->halfedge() = e->halfedge()->next();
+
+		// 2. face
+		if (f0->halfedge() == e->halfedge())
+			f0->halfedge() = e->halfedge()->next();
+
+		// 3. edge
+		// no changes
+
+		// 4. halfedge
+		// 4.1 halfedge->next
+		HalfedgeIter hePre = e->halfedge()->pre();
+		HalfedgeIter heTwinPre = e->halfedge()->twin()->pre();
+		hePre->next() = e->halfedge()->twin()->next();
+		heTwinPre->next() = e->halfedge()->next();
+
+		// 4.2 halfedge->face
+		FaceIter bound[2] = { newBoundary(),newBoundary() };
+
+		deleteFace(e->halfedge()->face());
+		HalfedgeIter he = e->halfedge()->next();
+		bound[0]->halfedge() = he;
+		do
+		{
+			he->face() = bound[0];
+			he = he->next();
+		} while (he != e->halfedge()->next());
+
+		he = e->halfedge()->twin()->next();
+		bound[1]->halfedge() = he;
+		do
+		{
+			he->face() = bound[1];
+			he = he->next();
+		} while (he != e->halfedge()->twin()->next());
+
+		// 5. delete
+		deleteHalfedge(e->halfedge()->twin());
+		deleteHalfedge(e->halfedge());
+		deleteEdge(e);
+
+		f0 = faces.end();
+	}
 	// normal, delete e->halfedge->twin->face
 	else {
 		// 1. vertex
@@ -409,30 +501,33 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
 		deleteHalfedge(e->halfedge());
 		deleteEdge(e);
 
-		HalfedgeIter he = f0->halfedge();
-		HalfedgeIter next;
-		do {
-			if (he->next() == he->twin()) {
-				next = he->next()->next();
-				bool needDelF = next == he;
-				eraseEdge(he->edge());
-				if (needDelF) {
-					if (f0->isBoundary())
-						deleteBoundary(f0);
-					else
-						deleteFace(f0);
-					return faces.end();
+		// single line
+		if (delSingleLine) {
+			HalfedgeIter he = f0->halfedge();
+			HalfedgeIter next;
+			do {
+				if (he->next() == he->twin()) {
+					next = he->next()->next();
+					bool needDelF = next == he;
+					eraseEdge(he->edge());
+					if (needDelF) {
+						if (f0->isBoundary())
+							deleteBoundary(f0);
+						else
+							deleteFace(f0);
+						return faces.end();
+					}
 				}
-			}
-			else
-				next = he->next();
+				else
+					next = he->next();
 
-			he = next;
-		} while (he != f0->halfedge());
+				he = next;
+			} while (he != f0->halfedge());
+		}
 	}
 
-	if (f0->isBoundary())
-		f0 = faces.end();
+	//if (f0->isBoundary())
+	//	f0 = faces.end();
 	return f0;
 }
 
@@ -686,15 +781,15 @@ void HalfedgeMesh::buildSubdivisionFaceList(vector<vector<Index> >& subDFaces) {
 }
 
 FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
-  // TODO This method should replace the vertex v with a face, corresponding to
-  // a bevel operation. It should return the new face.  NOTE: This method is
-  // responsible for updating the *connectivity* of the mesh only---it does not
-  // need to update the vertex positions.  These positions will be updated in
-  // HalfedgeMesh::bevelVertexComputeNewPositions (which you also have to
-  // implement!)
+	// TODO This method should replace the vertex v with a face, corresponding to
+	// a bevel operation. It should return the new face.  NOTE: This method is
+	// responsible for updating the *connectivity* of the mesh only---it does not
+	// need to update the vertex positions.  These positions will be updated in
+	// HalfedgeMesh::bevelVertexComputeNewPositions (which you also have to
+	// implement!)
 
-  showError("bevelVertex() not implemented.");
-  return facesBegin();
+	showError("bevelVertex() not implemented.");
+	return facesBegin();
 }
 
 FaceIter HalfedgeMesh::bevelEdge(EdgeIter e) {

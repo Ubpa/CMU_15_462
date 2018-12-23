@@ -954,7 +954,7 @@ class HalfedgeMesh {
    * Merge the two faces on either side of an edge, returning a
    * pointer to the merged face.
    */
-  FaceIter eraseEdge(EdgeIter e);
+  FaceIter eraseEdge(EdgeIter e, bool delSingleLine = true);
 
   /**
    * Splits all non-triangular faces into triangles.

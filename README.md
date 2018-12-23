@@ -85,6 +85,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] collapseFace
     - [x] eraseVertex
     - [x] eraseEdge
+    - [ ] bevelVertex
     - [ ] bevelEdge
     - [ ] bevelFace
   - [ ] Global
