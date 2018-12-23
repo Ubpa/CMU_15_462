@@ -21,7 +21,6 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 		return vertices.end();
 	}
 
-
 	// The selected edge e is split at its midpoint
 	// and the new vertex v is connected to the two opposite vertices
 	// (or one in the case of a surface with boundary)
@@ -336,19 +335,30 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	while (n-- > 0) {
 		// degeneration
 		if (he->next()->next() == he) {
-			if (v->halfedge() == he)
-				v->halfedge() = he->twin()->next();
-			he->next()->edge()->halfedge() = he->next()->twin();
-			he->twin()->edge() = he->next()->edge();
-			he->twin()->twin() = he->next()->twin();
-			he->next()->twin()->twin() = he->twin();
+			if (he->edge() != he->next()->edge()) {
+				if (v->halfedge() == he)
+					v->halfedge() = he->twin()->next();
+				he->next()->edge()->halfedge() = he->next()->twin();
+				he->twin()->edge() = he->next()->edge();
+				he->twin()->twin() = he->next()->twin();
+				he->next()->twin()->twin() = he->twin();
 
-			HalfedgeIter next = he->twin()->next();
-			deleteFace(he->face());
-			deleteHalfedge(he->next());
-			deleteEdge(he->edge());
-			deleteHalfedge(he);
-			he = next;
+				HalfedgeIter next = he->twin()->next();
+				deleteFace(he->face());
+				deleteHalfedge(he->next());
+				deleteEdge(he->edge());
+				deleteHalfedge(he);
+				he = next;
+			}
+			else {
+				deleteVertex(he->twin()->vertex());
+				deleteVertex(he->vertex());
+				deleteFace(he->face());
+				deleteEdge(he->edge());
+				deleteHalfedge(he->twin());
+				deleteHalfedge(he);
+				v = vertices.end();
+			}
 		}
 		else
 			he = he->twin()->next();
@@ -363,6 +373,7 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 	// edges and faces with a single face, returning the new face.
 	
 	HalfedgeIter he = v->halfedge()->twin()->next();
+
 	FaceIter f;
 	while (true) {
 		EdgeIter e = he->edge();
@@ -421,7 +432,10 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
 		deleteHalfedge(e->halfedge());
 		deleteEdge(e);
 	}
-	else if (e->halfedge()->face() == e->halfedge()->twin()->face()) {
+	else if ((e->halfedge()->face()->isBoundary() == e->halfedge()->twin()->face()->isBoundary()
+		&& e->halfedge()->face() == e->halfedge()->twin()->face())
+		&& (e->halfedge()->next() != e->halfedge()->twin()
+			|| e->halfedge()->twin()->next() != e->halfedge())) {
 		// 1. vertex
 		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
 			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
