@@ -4,6 +4,8 @@
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
 
+#include <deque>
+
 using namespace CMU462;
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
@@ -263,11 +265,56 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 }
 
 VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
-  // TODO: (meshEdit)
-  // This method should collapse the given face and return an iterator to
-  // the new vertex created by the collapse.
-  showError("collapseFace() not implemented.");
-  return VertexIter();
+	// TODO: (meshEdit)
+	// This method should collapse the given face and return an iterator to
+	// the new vertex created by the collapse.
+	
+	// The selected face f is replaced by a single vertex v.
+	// All edges previously connected to vertices of f are now connected directly to v.
+
+	Vector3D pos(0, 0, 0);
+	HalfedgeIter he = f->halfedge();
+	deque<EdgeIter> faceEdges;
+	do {
+		pos += he->vertex()->position;
+		he->edge()->halfedge() = he;
+		faceEdges.push_back(he->edge());
+		he = he->next();
+	} while (he != f->halfedge());
+	pos *= 1.0 / faceEdges.size();
+
+	while (faceEdges.size() > 3) {
+		collapseEdge(faceEdges.front());
+		faceEdges.pop_front();
+	}
+	collapseEdge(faceEdges.front());
+	faceEdges.pop_front();
+	faceEdges.pop_front();
+	VertexIter v = collapseEdge(faceEdges.front());
+	faceEdges.pop_front();
+
+	v->position = pos;
+	he = v->halfedge();
+	do {
+		// degeneration
+		if (he->next()->next() == he) {
+			he->next()->edge()->halfedge() = he->next()->twin();
+			he->twin()->edge() = he->next()->edge();
+			he->twin()->twin() = he->next()->twin();
+			he->next()->twin()->twin() = he->twin();
+
+			HalfedgeIter next = he->twin()->next();
+			deleteFace(he->face());
+			deleteHalfedge(he->next());
+			deleteEdge(he->edge());
+			deleteHalfedge(he);
+			he = next;
+		}
+		else
+			he = he->twin()->next();
+	} while (he != v->halfedge());
+	
+	return v;
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {

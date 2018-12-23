@@ -44,5 +44,8 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 
 - boundary
 
-![1545547201892](assets/1545547201892.png)
+![1545547201892](assets/1545547201892.jpg)
 
+#### Collaps Face
+
+用 Collaps Edge 实现 Collaps Face
