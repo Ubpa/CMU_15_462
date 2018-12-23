@@ -318,11 +318,20 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
-  // TODO: (meshEdit)
-  // This method should replace the given vertex and all its neighboring
-  // edges and faces with a single face, returning the new face.
-  showError("eraseVertex() not implemented.");
-  return faces.end();
+	// TODO: (meshEdit)
+	// This method should replace the given vertex and all its neighboring
+	// edges and faces with a single face, returning the new face.
+	
+	HalfedgeIter he = v->halfedge()->twin()->next();
+	FaceIter f;
+	do
+	{
+		EdgeIter e = he->edge();
+		he = he->twin()->next();
+		f = eraseEdge(e);
+	} while (he != v->halfedge());
+
+	return f;
 }
 
 FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {

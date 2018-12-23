@@ -16,9 +16,9 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 
 ## Notes 
 
-### Local 
+### 1. Local 
 
-#### Spilt Edge 
+#### 1.1 Spilt Edge 
 
 - Not Boundary
 
@@ -28,11 +28,11 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 
 ![1545492608038](assets/1545492608038.jpg)
 
-#### Collapse Edge 
+#### 1.2 Collapse Edge 
 
 ![1545504132406](assets/1545504132406.jpg)
 
-#### Erase Edge
+#### 1.3 Erase Edge
 
 - normal
 
@@ -46,6 +46,10 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 
 ![1545547201892](assets/1545547201892.jpg)
 
-#### Collaps Face
+#### 1.4 Collaps Face
 
 用 Collaps Edge 实现 Collaps Face
+
+#### 1.5 Erase Vertex
+
+用 Erase Edge 实现 Erase Vertex
