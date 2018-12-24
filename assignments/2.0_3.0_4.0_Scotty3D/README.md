@@ -53,3 +53,16 @@ available on the project wiki accessible via tab at the top of the Github.com UI
 #### 1.5 Erase Vertex
 
 用 Erase Edge 实现 Erase Vertex
+
+#### 1.6 Bevel Vertex
+
+1. Collect Edges
+
+2. Insert Vertex
+
+   ![1545659659554](assets/1545659659554.jpg)
+
+3. Connect vertex
+
+   ![1545659732101](assets/1545659732101.jpg)
+
