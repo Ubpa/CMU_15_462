@@ -522,6 +522,8 @@ void Mesh::bevel_selected_element() {
     } while (tmp != f->halfedge());
 
     _newf = mesh.bevelFace(f->halfedge()->face());
+	if (_newf == mesh.facesEnd())
+		return;
     scene->selected.element = elementAddress(_newf);
     scene->hovered.clear();
     scene->elementTransform->target.clear();
@@ -529,12 +531,16 @@ void Mesh::bevel_selected_element() {
     VertexIter v0 = e->halfedge()->vertex();
     VertexIter v1 = e->halfedge()->twin()->vertex();
     _newf = mesh.bevelEdge(e->halfedge()->edge());
+	if (_newf == mesh.facesEnd())
+		return;
     scene->selected.element = elementAddress(_newf->halfedge()->edge());
     scene->hovered.clear();
     scene->elementTransform->target.clear();
   } else if (v != nullptr) {
     beveledVertexPos = v->position;
     _newf = mesh.bevelVertex(v->halfedge()->vertex());
+	if (_newf == mesh.facesEnd())
+		return;
     scene->selected.element = elementAddress(_newf->halfedge()->vertex());
     scene->hovered.clear();
     scene->elementTransform->target.clear();

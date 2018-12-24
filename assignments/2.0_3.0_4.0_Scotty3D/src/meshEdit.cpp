@@ -8,6 +8,136 @@
 
 using namespace CMU462;
 
+VertexIter HalfedgeMesh::InsertVertex(EdgeIter e) {
+	// Insert a vertex on the middle of edge.
+
+	VertexIter v0 = e->halfedge()->vertex();
+	VertexIter v1 = e->halfedge()->twin()->vertex();
+	HalfedgeIter he = e->halfedge();
+
+	// pre backup
+	HalfedgeIter hePre = he->pre();
+	HalfedgeIter twin = he->twin();
+	HalfedgeIter twinNext = he->twin()->next();
+	Vector3D pos = he->edge()->centroid();
+
+	VertexIter newV = newVertex();
+	he->vertex() = newV;
+
+	newV->position = pos;
+	newV->halfedge() = he;
+
+	HalfedgeIter he0 = newHalfedge();
+	HalfedgeIter he1 = newHalfedge();
+
+	he0->vertex() = v0;
+	he1->vertex() = newV;
+
+	EdgeIter newE = newEdge();
+	newE->halfedge() = he0;
+	he0->edge() = newE;
+	he1->edge() = newE;
+
+	he0->twin() = he1;
+	he1->twin() = he0;
+
+	he0->face() = he->face();
+	he1->face() = twin->face();
+
+	he0->next() = he;
+	hePre->next() = he0;
+	he1->next() = twinNext;
+	twin->next() = he1;
+
+	if (v0->halfedge() == he)
+		v0->halfedge() = he0;
+
+	return newV;
+}
+
+EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
+	// Connect two verties in a face.
+
+	//  |                                        |
+	// he0(¡ý)                                 (¡ü)he3
+	//  |               new He0(->)              |
+	//  v0  - - - - - - -  new E  - - - - - - -  v1
+	//  |               new He1(<-)              |
+	// he1(¡ý)                                 (¡ü)he2
+	//  |                                        |
+
+	// let halfedges of v0 and v1 to be their left-up halfedge
+	{
+		FaceIter f00 = v0->halfedge()->face();
+		FaceIter f01 = v0->halfedge()->twin()->face();
+		FaceIter f10 = v1->halfedge()->face();
+		FaceIter f11 = v1->halfedge()->twin()->face();
+		if (f00 == f10) {
+			v0->halfedge() = v0->halfedge()->pre()->twin();
+		}
+		else if (f00 == f11) {
+			v0->halfedge() = v0->halfedge()->pre()->twin();
+			v1->halfedge() = v1->halfedge()->twin()->next();
+		}
+		else if (f01 == f10) {
+			// do nothing
+		}
+		else if (f01 == f11) {
+			v1->halfedge() = v1->halfedge()->twin()->next();
+		}
+		else {
+			showError("v0 and v1 are not in same face");
+		}
+	}
+
+	HalfedgeIter he0 = v0->halfedge()->twin();
+	HalfedgeIter he1 = he0->next();
+	HalfedgeIter he3 = v1->halfedge();
+	HalfedgeIter he2 = he3->pre();
+
+
+	HalfedgeIter newHe0 = newHalfedge();
+	HalfedgeIter newHe1 = newHalfedge();
+
+
+	newHe0->vertex() = v0;
+	newHe1->vertex() = v1;
+
+
+	EdgeIter newE = newEdge();
+	newE->halfedge() = newHe1;
+	newHe0->edge() = newE;
+	newHe1->edge() = newE;
+
+
+	newHe0->twin() = newHe1;
+	newHe1->twin() = newHe0;
+
+
+	FaceIter newF = newFace();
+	he0->face()->halfedge() = newHe0;
+	newF->halfedge() = newHe1;
+	{
+		HalfedgeIter he = he1;
+		while (true) {
+			he->face() = newF;
+			if (he == he2)
+				break;
+			he = he->next();
+		}
+	}
+	newHe0->face() = he0->face();
+	newHe1->face() = he1->face();
+
+
+	he0->next() = newHe0;
+	newHe0->next() = he3;
+	he2->next() = newHe1;
+	newHe1->next() = he1;
+
+	return newE;
+}
+
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 	// TODO: (meshEdit)
 	// This method should split the given edge and return an iterator to the
@@ -808,7 +938,6 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 	{
 		HalfedgeIter he = v->halfedge();
 		do {
-			he->edge()->halfedge() = he;
 			edges.push_back(he->edge());
 			he = he->twin()->next();
 		} while (he->edge() != v->halfedge()->edge());
@@ -816,112 +945,47 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 
 	// 2. insert V
 	vector<VertexIter> newV;
-	for (size_t i = 0; i < edges.size(); i++) {
-		HalfedgeIter he = edges[i]->halfedge();
-
-		// pre backup
-		HalfedgeIter hePre = he->pre();
-		HalfedgeIter twin = he->twin();
-		HalfedgeIter twinNext = he->twin()->next();
-		Vector3D pos = he->edge()->centroid();
-
-		VertexIter curV = newVertex();
-		newV.push_back(curV);
-		he->vertex() = curV;
-
-		curV->position = pos;
-		curV->halfedge() = he;
-
-		HalfedgeIter he0 = newHalfedge();
-		HalfedgeIter he1 = newHalfedge();
-
-		he0->vertex() = v;
-		he1->vertex() = curV;
-
-		EdgeIter newE = newEdge();
-		newE->halfedge() = he0;
-		he0->edge() = newE;
-		he1->edge() = newE;
-
-		he0->twin() = he1;
-		he1->twin() = he0;
-
-		he0->face() = he->face();
-		he1->face() = twin->face();
-
-		he0->next() = he;
-		hePre->next() = he0;
-		he1->next() = twinNext;
-		twin->next() = he1;
-
-		if (v->halfedge() == he)
-			v->halfedge() = he0;
-	}
+	for (size_t i = 0; i < edges.size(); i++)
+		newV.push_back(InsertVertex(edges[i]));
 	
 	// 3. connect V
 	for (size_t i = 0; i < newV.size(); i++) {
-		// he0(¡ý)           new He0(->)           (¡ü)he3
-		//  v0  - - - - - - -  new E  - - - - - - -  v1
-		// he1(¡ý)           new He1(<-)           (¡ü)he2
-		//   |                                       |
-		//   ------------------- v -------------------
-		
 		VertexIter v0 = newV[i];
 		VertexIter v1 = newV[(i + 1) % newV.size()];
-		HalfedgeIter he0 = v0->halfedge()->twin();
-		HalfedgeIter he1 = he0->next();
-		HalfedgeIter he2 = he1->next();
-		HalfedgeIter he3 = he2->next();
-
-
-		HalfedgeIter newHe0 = newHalfedge();
-		HalfedgeIter newHe1 = newHalfedge();
-
-
-		newHe0->vertex() = v0;
-		newHe1->vertex() = v1;
-
-
-		EdgeIter newE = newEdge();
-		newE->halfedge() = newHe1;
-		newHe0->edge() = newE;
-		newHe1->edge() = newE;
-
-
-		newHe0->twin() = newHe1;
-		newHe1->twin() = newHe0;
-
-
-		FaceIter newF = newFace();
-		newF->halfedge() = newHe1;
-		he1->face() = newF;
-		he2->face() = newF;
-		newHe0->face() = he0->face();
-		newHe1->face() = he1->face();
-
-		if (he0->face()->halfedge() == he1 || he0->face()->halfedge() == he2)
-			he0->face()->halfedge() == newHe0;
-
-
-		he0->next() = newHe0;
-		newHe0->next() = he3;
-		he2->next() = newHe1;
-		newHe1->next() = he1;
+		ConnectVertex(v0, v1);
 	}
 	
 	return eraseVertex(v);
 }
 
 FaceIter HalfedgeMesh::bevelEdge(EdgeIter e) {
-  // TODO This method should replace the edge e with a face, corresponding to a
-  // bevel operation. It should return the new face.  NOTE: This method is
-  // responsible for updating the *connectivity* of the mesh only---it does not
-  // need to update the vertex positions.  These positions will be updated in
-  // HalfedgeMesh::bevelEdgeComputeNewPositions (which you also have to
-  // implement!)
+	// 1. collect edge
+	vector<EdgeIter> edges;
+	HalfedgeIter heArr[2] = { e->halfedge() , e->halfedge()->twin() };
+	for (int i = 0; i < 2; i++) {
+		HalfedgeIter he = heArr[i]->twin()->next();
+		do {
+			edges.push_back(he->edge());
+			he = he->twin()->next();
+		} while (he->edge() != e);
+	}
 
-  showError("bevelEdge() not implemented.");
-  return facesBegin();
+	// 2. insert V
+	vector<VertexIter> newV;
+	for (size_t i = 0; i < edges.size(); i++)
+		newV.push_back(InsertVertex(edges[i]));
+
+	// 3. connect V
+	for (size_t i = 0; i < newV.size(); i++) {
+		VertexIter v0 = newV[i];
+		VertexIter v1 = newV[(i + 1) % newV.size()];
+		ConnectVertex(v0, v1);
+	}
+	
+	VertexIter v0 = e->halfedge()->vertex();
+	VertexIter v1 = e->halfedge()->twin()->vertex();
+	eraseVertex(v0);
+	return eraseVertex(v1);
 }
 
 FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
@@ -983,11 +1047,11 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
 		VertexIter v0 = newHalfedges[i]->vertex();
 		VertexIter v1 = newHalfedges[i]->twin()->vertex();
 
-		Vector3D dir0 = v0->position - originalVertexPosition;
-		Vector3D dir1 = v1->position - originalVertexPosition;
-		Vector3D delta = dir1 * scale0 * tangentialInset;
+		Vector3D dir = v1->position - originalVertexPosition;
+		Vector3D delta = dir * scale0 * tangentialInset;
 		
-		if (tangentialInset < 0 && delta.norm2() >= dir0.norm2())
+		if ((tangentialInset < 0 && delta.norm2() >= (v0->position - originalVertexPosition).norm2())
+			|| (tangentialInset > 0 && delta.norm2() >= (v1->position - v0->position).norm2()))
 			return;
 		
 		deltas.push_back(delta);

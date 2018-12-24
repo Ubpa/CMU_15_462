@@ -1047,6 +1047,16 @@ class HalfedgeMesh {
   list<Face> faces;
   list<Face> boundaries;
 
+  private:
+	/**
+	 * Insert a vertex on the middle of edge.
+	 */
+    VertexIter InsertVertex(EdgeIter e);
+	/**
+	 * Connect two verties in a face.
+	 */
+	EdgeIter ConnectVertex(VertexIter v0, VertexIter v1);
+
 };  // class HalfedgeMesh
 
 inline Halfedge* HalfedgeElement::getHalfedge() {
