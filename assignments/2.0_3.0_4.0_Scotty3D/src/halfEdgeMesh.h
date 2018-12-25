@@ -1049,6 +1049,28 @@ class HalfedgeMesh {
 
   private:
 	/**
+	 * Collect all halfedges of v
+	 * the halfedges' vertex is v
+	 */
+	vector<HalfedgeIter> AllHalfedgesOf(VertexIter v);
+
+	/**
+	 * Collect all edges of v
+	 */
+	vector<EdgeIter> AllEdgesOf(VertexIter v);
+
+	/**
+	 * Collect all faces of v
+	 */
+	vector<FaceIter> AllFacesOf(VertexIter v);
+
+	/**
+	 * if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
+	 * the inner face is not a boundary
+	 */
+	FaceIter InSameFace(VertexIter v0, VertexIter v1);
+
+	/**
 	 * Insert a vertex on the middle of edge.
 	 */
     VertexIter InsertVertex(EdgeIter e);

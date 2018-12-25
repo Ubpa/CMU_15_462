@@ -8,6 +8,65 @@
 
 using namespace CMU462;
 
+vector<HalfedgeIter> HalfedgeMesh::AllHalfedgesOf(VertexIter v) {
+	// Collect all halfedges of v
+	// the halfedges' vertex is v
+
+	vector<HalfedgeIter> halfedges;
+
+	HalfedgeIter he = v->halfedge();
+	do {
+		halfedges.push_back(he);
+		he = he->twin()->next();
+	} while (he->edge() != v->halfedge()->edge());
+
+	return halfedges;
+}
+
+vector<EdgeIter> HalfedgeMesh::AllEdgesOf(VertexIter v) {
+	// Collect all edges of v
+
+	vector<EdgeIter> edges;
+
+	HalfedgeIter he = v->halfedge();
+	do {
+		edges.push_back(he->edge());
+		he = he->twin()->next();
+	} while (he->edge() != v->halfedge()->edge());
+
+	return edges;
+}
+
+vector<FaceIter> HalfedgeMesh::AllFacesOf(VertexIter v) {
+	// Collect all faces of v
+
+	vector<FaceIter> faces;
+
+	HalfedgeIter he = v->halfedge();
+	do {
+		faces.push_back(he->face());
+		he = he->twin()->next();
+	} while (he->edge() != v->halfedge()->edge());
+
+	return faces;
+}
+
+FaceIter HalfedgeMesh::InSameFace(VertexIter v0, VertexIter v1) {
+	// if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
+	// the inner face is not a boundary
+
+	vector<FaceIter> facesOfv0 = AllFacesOf(v0);
+	vector<FaceIter> facesOfv1 = AllFacesOf(v1);
+
+	for (auto & f : facesOfv0) {
+		auto target = find(facesOfv1.begin(), facesOfv1.end(), f);
+		if (target != facesOfv1.end() && !(*target)->isBoundary())
+			return *target;
+	}
+
+	return faces.end();
+}
+
 VertexIter HalfedgeMesh::InsertVertex(EdgeIter e) {
 	// Insert a vertex on the middle of edge.
 
@@ -66,33 +125,31 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	// he1(¡ý)                                 (¡ü)he2
 	//  |                                        |
 
-	// let halfedges of v0 and v1 to be their left-up halfedge
-	{
-		FaceIter f00 = v0->halfedge()->face();
-		FaceIter f01 = v0->halfedge()->twin()->face();
-		FaceIter f10 = v1->halfedge()->face();
-		FaceIter f11 = v1->halfedge()->twin()->face();
-		if (f00 == f10) {
-			v0->halfedge() = v0->halfedge()->pre()->twin();
-		}
-		else if (f00 == f11) {
-			v0->halfedge() = v0->halfedge()->pre()->twin();
-			v1->halfedge() = v1->halfedge()->twin()->next();
-		}
-		else if (f01 == f10) {
-			// do nothing
-		}
-		else if (f01 == f11) {
-			v1->halfedge() = v1->halfedge()->twin()->next();
-		}
-		else {
-			showError("v0 and v1 are not in same face");
+	FaceIter f = InSameFace(v0, v1);
+	if (f == faces.end()) {
+		showError("v0 and v1 are not in same face, connect failed");
+		return edges.end();
+	}
+
+	vector<HalfedgeIter> halfedgesV0 = AllHalfedgesOf(v0);
+	vector<HalfedgeIter> halfedgesV1 = AllHalfedgesOf(v1);
+
+	HalfedgeIter he1, he3;
+	for (auto he : halfedgesV0) {
+		if (he->face() == f) {
+			he1 = he;
+			break;
 		}
 	}
 
-	HalfedgeIter he0 = v0->halfedge()->twin();
-	HalfedgeIter he1 = he0->next();
-	HalfedgeIter he3 = v1->halfedge();
+	for (auto he : halfedgesV1) {
+		if (he->face() == f) {
+			he3 = he;
+			break;
+		}
+	}
+
+	HalfedgeIter he0 = he1->pre();
 	HalfedgeIter he2 = he3->pre();
 
 
@@ -138,15 +195,15 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	return newE;
 }
 
-VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
+VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	// TODO: (meshEdit)
 	// This method should split the given edge and return an iterator to the
 	// newly inserted vertex. The halfedge of this vertex should point along
 	// the edge that was split, rather than the new edges.
 
 	// [Note:this method is for triangle meshes only!]
-	if (e0->halfedge()->face()->degree() != 3
-		|| e0->halfedge()->twin()->face()->degree() != 3) {
+	if (e->halfedge()->face()->degree() != 3
+		|| e->halfedge()->twin()->face()->degree() != 3) {
 		showError("splitEdge is for triangle meshes only!");
 		return vertices.end();
 	}
@@ -155,181 +212,57 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e0) {
 	// and the new vertex v is connected to the two opposite vertices
 	// (or one in the case of a surface with boundary)
 
-	VertexIter newV = newVertex();
-	newV->position = e0->centroid();
+	// e is boundary
+	if (e->isBoundary()) {
+		//         --[vv]                              --[vv]
+		//       --  |  |                            --  |  |
+		//     --    |  |                          --    |  |
+		//   --      |  |                        --      |e1|
+		// --        |ee|                      --        |  |
+		//[v0]     he|  |            ===>     [v0]-------[v1]
+		// --        |  |                      --        |  | 
+		//   --      |  | {boundary}             --      |e0| {boundary}
+		//     --    |  |                          --    |  |
+		//       --  |  |                            --  |  |
+		//         --[vv]                              --[vv]
 
-	if (e0->isBoundary()) {
-		// boundary is also a face
+		HalfedgeIter he = e->halfedge()->isBoundary() ? e->halfedge() : e->halfedge()->twin();
+		VertexIter v0 = he->next()->next()->vertex();
 
-		// flip edge->halfedge
-		if (e0->halfedge()->isBoundary())
-			e0->halfedge() = e0->halfedge()->twin();
+		VertexIter v1 = InsertVertex(e);
 
-		VertexIter oldV = e0->halfedge()->vertex();
-		newV->halfedge() = e0->halfedge();
+		ConnectVertex(v0, v1);
 
-		// 0. new 
-		constexpr size_t newENum = 2;
-		constexpr size_t newFNum = 1;
-		constexpr size_t newHENum = 4;
-
-		HalfedgeIter newHEs[newHENum];
-		for (size_t i = 0; i < newHENum; i++)
-			newHEs[i] = newHalfedge();
-
-		EdgeIter newEs[newENum];
-		for (size_t i = 0; i < newENum; i++)
-			newEs[i] = newEdge();
-
-		FaceIter newFs[newFNum];
-		for (size_t i = 0; i < newFNum; i++)
-			newFs[i] = newFace();
-
-		// 1. edge
-		for (size_t i = 0; i < newENum; i++)
-			newEs[i]->halfedge() = newHEs[i * 2];
-
-		// 2. halfedge
-		HalfedgeIter oldE[6];
-		oldE[0] = e0->halfedge();
-		oldE[1] = oldE[0]->next();
-		oldE[2] = oldE[1]->next();
-
-		// 2.1 halfedge->twin and edge
-		for (size_t i = 0; i < newENum; i++) {
-			newHEs[2 * i]->twin() = newHEs[2 * i + 1];
-			newHEs[2 * i + 1]->twin() = newHEs[2 * i];
-
-			newHEs[2 * i]->edge() = newEs[i];
-			newHEs[2 * i + 1]->edge() = newEs[i];
-		}
-
-		// 2.2 halfedge->face
-		newEs[0]->halfedge()->face() = e0->halfedge()->twin()->face();//boundary
-		newEs[0]->halfedge()->twin()->face() = newFs[0];
-
-		newEs[1]->halfedge()->face() = newFs[0]; ;
-		newEs[1]->halfedge()->twin()->face() = e0->halfedge()->face();
-
-		oldE[2]->face() = newFs[0];
-
-		// 2.3 halfedge->vertex
-		newEs[0]->halfedge()->vertex() = newV;
-		newEs[0]->halfedge()->twin()->vertex() = oldE[0]->vertex();
-		newEs[1]->halfedge()->vertex() = newV;
-		newEs[1]->halfedge()->twin()->vertex() = oldE[2]->vertex();
-
-		e0->halfedge()->vertex() = newV;
-
-		// 2.4 halfedge->next
-		oldE[1]->next() = newEs[1]->halfedge()->twin();
-		oldE[2]->next() = newEs[0]->halfedge()->twin();
-
-		newEs[0]->halfedge()->next() = e0->halfedge()->twin()->next();//boundary
-		e0->halfedge()->twin()->next() = newEs[0]->halfedge();
-		newEs[0]->halfedge()->twin()->next() = newEs[1]->halfedge();
-		newEs[1]->halfedge()->next() = oldE[2];
-		newEs[1]->halfedge()->twin()->next() = oldE[0];
-
-		// 3. face
-		newFs[0]->halfedge() = newEs[0]->halfedge()->twin();
-		e0->halfedge()->face()->halfedge() = e0->halfedge();
-
-		// 4. vertex
-		if (oldV->halfedge() == e0->halfedge())
-			oldV->halfedge() = newEs[0]->halfedge()->twin();
-	}
-	else {
-		VertexIter oldV = e0->halfedge()->vertex();
-		newV->halfedge() = e0->halfedge();
-
-		// 0. new 
-		constexpr size_t newENum = 3;
-		constexpr size_t newFNum = 2;
-		constexpr size_t newHENum = 6;
-
-		HalfedgeIter newHEs[newHENum];
-		for (size_t i = 0; i < newHENum; i++)
-			newHEs[i] = newHalfedge();
-
-		EdgeIter newEs[newENum];
-		for (size_t i = 0; i < newENum; i++)
-			newEs[i] = newEdge();
-
-		FaceIter newFs[newFNum];
-		for (size_t i = 0; i < newFNum; i++)
-			newFs[i] = newFace();
-
-		// 1. edge
-		for (size_t i = 0; i < newENum; i++)
-			newEs[i]->halfedge() = newHEs[i * 2];
-
-		// 2. halfedge
-		HalfedgeIter oldE[6];
-		oldE[0] = e0->halfedge();
-		oldE[1] = oldE[0]->next();
-		oldE[2] = oldE[1]->next();
-		oldE[3] = e0->halfedge()->twin();
-		oldE[4] = oldE[3]->next();
-		oldE[5] = oldE[4]->next();
-
-		// 2.1 halfedge->twin and edge
-		for (size_t i = 0; i < newENum; i++) {
-			newHEs[2 * i]->twin() = newHEs[2 * i + 1];
-			newHEs[2 * i + 1]->twin() = newHEs[2 * i];
-
-			newHEs[2 * i]->edge() = newEs[i];
-			newHEs[2 * i + 1]->edge() = newEs[i];
-		}
-
-		// 2.2 halfedge->face
-		newEs[0]->halfedge()->face() = newFs[1];
-		newEs[0]->halfedge()->twin()->face() = newFs[0];
-
-		newEs[1]->halfedge()->face() = newFs[0]; ;
-		newEs[1]->halfedge()->twin()->face() = e0->halfedge()->face();
-
-		newEs[2]->halfedge()->face() = e0->halfedge()->twin()->face();
-		newEs[2]->halfedge()->twin()->face() = newFs[1];
-
-		oldE[2]->face() = newFs[0];
-		oldE[4]->face() = newFs[1];
-
-		// 2.3 halfedge->vertex
-		newEs[0]->halfedge()->vertex() = newV;
-		newEs[0]->halfedge()->twin()->vertex() = oldE[0]->vertex();
-		newEs[1]->halfedge()->vertex() = newV;
-		newEs[1]->halfedge()->twin()->vertex() = oldE[2]->vertex();
-		newEs[2]->halfedge()->vertex() = newV;
-		newEs[2]->halfedge()->twin()->vertex() = oldE[5]->vertex();
-
-		e0->halfedge()->vertex() = newV;
-
-		// 2.4 halfedge->next
-		oldE[1]->next() = newEs[1]->halfedge()->twin();
-		oldE[2]->next() = newEs[0]->halfedge()->twin();
-		oldE[3]->next() = newEs[2]->halfedge();
-		oldE[4]->next() = newEs[2]->halfedge()->twin();
-
-		newEs[0]->halfedge()->next() = oldE[4];
-		newEs[0]->halfedge()->twin()->next() = newEs[1]->halfedge();
-		newEs[1]->halfedge()->next() = oldE[2];
-		newEs[1]->halfedge()->twin()->next() = oldE[0];
-		newEs[2]->halfedge()->next() = oldE[5];
-		newEs[2]->halfedge()->twin()->next() = newEs[0]->halfedge();
-
-		// 3. face
-		newFs[0]->halfedge() = newEs[0]->halfedge()->twin();
-		newFs[1]->halfedge() = newEs[0]->halfedge();
-		e0->halfedge()->face()->halfedge() = e0->halfedge();
-		e0->halfedge()->twin()->face()->halfedge() = e0->halfedge()->twin();
-
-		// 4. vertex
-		if (oldV->halfedge() == e0->halfedge())
-			oldV->halfedge() = newEs[0]->halfedge()->twin();
+		return v1;
 	}
 
-	return newV;
+	// normal case
+	//
+	//         --[vv]--                                --[vv]--
+	//       --  |  |  --                            --  |  |  --
+	//     --    |  |    --                        --    |  |    --
+	//   --      |  |      --                    --      |e1|      --
+	// --        |ee|        --                --        |  |        --
+	//[v0]     he|  |twin   [v1]     ===>     [v0]-------[v2]-------[v1]
+	// --        |  |        --                --        |  |        --
+	//   --      |  |      --                    --      |e0|      --
+	//     --    |  |    --                        --    |  |    --
+	//       --  |  |  --                            --  |  |  --
+	//         --[vv]--                                --[vv]--
+
+
+	HalfedgeIter he = e->halfedge()->isBoundary() ? e->halfedge() : e->halfedge()->twin();
+	HalfedgeIter twin = he->twin();
+	VertexIter v0 = he->next()->next()->vertex();
+	VertexIter v1 = twin->next()->next()->vertex();
+
+	VertexIter v2 = InsertVertex(e);
+	ConnectVertex(v0, v2);
+	ConnectVertex(v1, v2);
+
+	return v2;
+
+
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
@@ -498,22 +431,21 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
-	// TODO: (meshEdit)
 	// This method should replace the given vertex and all its neighboring
 	// edges and faces with a single face, returning the new face.
-	
-	HalfedgeIter he = v->halfedge()->twin()->next();
 
-	FaceIter f;
-	while (true) {
-		EdgeIter e = he->edge();
-		e->halfedge() = he;
-		he = he->twin()->next();
-		bool end = he == v->halfedge();
-		f = eraseEdge(e);
-		if (end)
-			break;
+	if (v->isBoundary()) {
+		showError("Can't erase a boundary vertex");
+		return faces.end();
 	}
+
+	vector<EdgeIter> edges = AllEdgesOf(v);
+	FaceIter f;
+	for (auto & edge : edges)
+		f = eraseEdge(edge);
+
+	// no need to erase vertex
+	// it will be erased by the final call of eraseEdge
 
 	return f;
 }
@@ -524,167 +456,113 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
 	// merged face.
 
 	// The selected edge e will be replaced with the union of the faces containing it
-	// producing a new face e.
-	
-	// boundary
+	// producing a new face e.(if e is a boundary edge, nothing happens).
+
 	if (e->isBoundary()) {
-		if (!e->halfedge()->face()->isBoundary())
-			e->halfedge() = e->halfedge()->twin();
+		showError("Can't erase a boundary edge");
+		return faces.end();
 	}
 
-	FaceIter f0 = e->halfedge()->face();
-
-	// degeneration
-	if (e->halfedge()->next() == e->halfedge()->twin()
-		|| e->halfedge()->twin()->next() == e->halfedge()) {
-		if (e->halfedge()->next() != e->halfedge()->twin())
-			e->halfedge() = e->halfedge()->twin();
-
-		// vertex
-		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
-			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
-
-		// face
-		if (e->halfedge()->face()->halfedge() == e->halfedge()
-			|| e->halfedge()->face()->halfedge() == e->halfedge()->twin())
-			e->halfedge()->face()->halfedge() = e->halfedge()->pre();
-
-		// halfedge
-		e->halfedge()->pre()->next() = e->halfedge()->next()->next();
-
-
-		// delete
-		if (e->halfedge()->twin()->next() == e->halfedge())
-			deleteVertex(e->halfedge()->vertex());
-
-		deleteVertex(e->halfedge()->twin()->vertex());
-		deleteHalfedge(e->halfedge()->twin());
-		deleteHalfedge(e->halfedge());
-		deleteEdge(e);
-	}
-	else if ((e->halfedge()->face()->isBoundary() == e->halfedge()->twin()->face()->isBoundary()
-		&& e->halfedge()->face() == e->halfedge()->twin()->face())
-		&& (e->halfedge()->next() != e->halfedge()->twin()
-			|| e->halfedge()->twin()->next() != e->halfedge())) {
-		// 1. vertex
-		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
-			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
-
-		if (e->halfedge()->twin()->vertex()->halfedge() == e->halfedge()->twin())
-			e->halfedge()->twin()->vertex()->halfedge() = e->halfedge()->next();
-
-		// 2. face
-		if (f0->halfedge() == e->halfedge())
-			f0->halfedge() = e->halfedge()->next();
-
-		// 3. edge
-		// no changes
-
-		// 4. halfedge
-		// 4.1 halfedge->next
-		HalfedgeIter hePre = e->halfedge()->pre();
-		HalfedgeIter heTwinPre = e->halfedge()->twin()->pre();
-		hePre->next() = e->halfedge()->twin()->next();
-		heTwinPre->next() = e->halfedge()->next();
-
-		// 4.2 halfedge->face
-		FaceIter bound[2] = { newBoundary(),newBoundary() };
-
-		deleteFace(e->halfedge()->face());
-		HalfedgeIter he = e->halfedge()->next();
-		bound[0]->halfedge() = he;
-		do
-		{
-			he->face() = bound[0];
-			he = he->next();
-		} while (he != e->halfedge()->next());
-
-		he = e->halfedge()->twin()->next();
-		bound[1]->halfedge() = he;
-		do
-		{
-			he->face() = bound[1];
-			he = he->next();
-		} while (he != e->halfedge()->twin()->next());
-
-		// 5. delete
-		deleteHalfedge(e->halfedge()->twin());
-		deleteHalfedge(e->halfedge());
-		deleteEdge(e);
-
-		f0 = faces.end();
-	}
-	// normal, delete e->halfedge->twin->face
-	else {
-		// 1. vertex
-		if (e->halfedge()->vertex()->halfedge() == e->halfedge())
-			e->halfedge()->vertex()->halfedge() = e->halfedge()->twin()->next();
-
-		if (e->halfedge()->twin()->vertex()->halfedge() == e->halfedge()->twin())
-			e->halfedge()->twin()->vertex()->halfedge() = e->halfedge()->next();
-
-		// 2. face
-		if (f0->halfedge() == e->halfedge())
-			f0->halfedge() = e->halfedge()->next();
-
-		// 3. edge
-		// no changes
-
-		// 4. halfedge
-		// 4.1 halfedge->face
-		for (HalfedgeIter he = e->halfedge()->twin()->next(); he != e->halfedge()->twin(); he = he->next())
-			he->face() = e->halfedge()->face();
-
-		// 4.2 halfedge->next
-		e->halfedge()->pre()->next() = e->halfedge()->twin()->next();
-		e->halfedge()->twin()->pre()->next() = e->halfedge()->next();
-
-		// delete
-		deleteFace(e->halfedge()->twin()->face());
-		deleteHalfedge(e->halfedge()->twin());
-		deleteHalfedge(e->halfedge());
-		deleteEdge(e);
-
-		// single line
-		if (delSingleLine) {
-			HalfedgeIter he = f0->halfedge();
-			HalfedgeIter next;
-			do {
-				if (he->next() == he->twin()) {
-					next = he->next()->next();
-					bool needDelF = next == he;
-					eraseEdge(he->edge());
-					if (needDelF) {
-						if (f0->isBoundary())
-							deleteBoundary(f0);
-						else
-							deleteFace(f0);
-						return faces.end();
-					}
-				}
-				else
-					next = he->next();
-
-				he = next;
-			} while (he != f0->halfedge());
+	// same face
+	if (e->halfedge()->face() == e->halfedge()->twin()->face()) {
+		if (e->halfedge()->next() != e->halfedge()->twin()
+			&& e->halfedge()->twin()->next() != e->halfedge()) {
+			showError("Can't erase a strange case edge");
+			return faces.end();
 		}
+
+		//         [v1]
+		//         |  |
+		//         |ee|
+		//    (¡ü)he|  |twin(¡ý)
+		//         |  |
+		// (¡ú)     |  |     (¡ú)
+		// he0 ----[v0]---- he1
+
+		HalfedgeIter he = e->halfedge()->next() == e->halfedge()->twin() ? e->halfedge() : e->halfedge()->twin();
+		HalfedgeIter twin = he->twin();
+		HalfedgeIter he0 = he->pre();
+		HalfedgeIter he1 = twin->next();
+
+		VertexIter v0 = he->vertex();
+		VertexIter v1 = twin->vertex();
+
+		FaceIter f = he->face();
+
+		if (v0->halfedge() == he)
+			v0->halfedge() = he1;
+
+		if (f->halfedge() == he || f->halfedge() == twin)
+			f->halfedge() = he0;
+
+		he0->next() = he1;
+		
+		deleteVertex(v1);
+		deleteHalfedge(he);
+		deleteHalfedge(twin);
+		deleteEdge(e);
+		return f;
 	}
 
-	//if (f0->isBoundary())
-	//	f0 = faces.end();
+	// normal case
+	
+	// -----------[v1]-------------
+	//     he1    |  |     he2
+	//     (¡û)    |  |     (¡û)
+	//            |ee|
+	// {f0}  (¡ü)he|  |twin(¡ý)  {f1}
+	//            |  |
+	//     (¡ú)    |  |     (¡ú)
+	//     he0    |  |     he3
+	// -----------[v0]-------------
+
+	HalfedgeIter he = e->halfedge();
+	HalfedgeIter twin = he->twin();
+	HalfedgeIter he0 = he->pre();
+	HalfedgeIter he1 = he->next();
+	HalfedgeIter he2 = twin->pre();
+	HalfedgeIter he3 = twin->next();
+
+	VertexIter v0 = he->vertex();
+	VertexIter v1 = twin->vertex();
+
+	FaceIter f0 = he->face();
+	FaceIter f1 = twin->face();
+
+	if (v0->halfedge() == he)
+		v0->halfedge() = he3;
+
+	if (v1->halfedge() == twin)
+		v1->halfedge() = he1;
+
+	if (f0->halfedge() == he)
+		f0->halfedge() = he0;
+
+	for (HalfedgeIter curHe = he3; curHe != twin; curHe = curHe->next())
+		curHe->face() = f0;
+
+	he0->next() = he3;
+	he2->next() = he1;
+
+	deleteHalfedge(he);
+	deleteHalfedge(twin);
+	deleteEdge(e);
+	deleteFace(f1);
+
 	return f0;
 }
 
 EdgeIter HalfedgeMesh::flipEdge(EdgeIter e0) {
-	// TODO: (meshEdit)
 	// This method should flip the given edge and return an iterator to the
 	// flipped edge.
 
 	// The selected edge e is "rotated" around the face, 
 	// in the sense that each endpoint moves to the next vertex (in counter-clockwise order)
 	// along the boundary of the two polygons containing e.
-	if (e0->isBoundary())
+	if (e0->isBoundary()) {
+		showError("Can't flip boundary edge");
 		return e0;
+	}
 
 	HalfedgeIter he = e0->halfedge();
 	HalfedgeIter twin = he->twin();
@@ -934,14 +812,7 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 
 
 	// 1. collect edge
-	vector<EdgeIter> edges;
-	{
-		HalfedgeIter he = v->halfedge();
-		do {
-			edges.push_back(he->edge());
-			he = he->twin()->next();
-		} while (he->edge() != v->halfedge()->edge());
-	}
+	vector<EdgeIter> edges = AllEdgesOf(v);
 
 	// 2. insert V
 	vector<VertexIter> newV;
