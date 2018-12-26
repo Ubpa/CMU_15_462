@@ -86,7 +86,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] eraseVertex
     - [x] eraseEdge
     - [x] bevelVertex
-    - [ ] bevelEdge
+    - [x] bevelEdge
     - [ ] bevelFace
   - [ ] Global
 - [ ] 3.0 PathTracer

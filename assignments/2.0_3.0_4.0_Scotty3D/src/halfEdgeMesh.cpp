@@ -713,9 +713,24 @@ float Vertex::laplacian() const {
   return 0.0;
 }
 
+vector<VertexIter> Vertex::AdjVertices() {
+	// Collect all ordered adjacent vertices
+	
+	vector<VertexIter> vertices;
+
+	HalfedgeIter he = this->halfedge();
+
+	do {
+		vertices.push_back(he->twin()->vertex());
+		he = he->twin()->next();
+	} while (he != this->halfedge());
+
+	return vertices;
+}
+
 vector<HalfedgeIter> Vertex::AdjHalfedges() {
-	// Collect all ordered adjacent halfedges of v
-	// the halfedges' vertex is v
+	// Collect all ordered adjacent halfedges
+	// the halfedges' vertex is this
 
 	vector<HalfedgeIter> halfedges;
 	
@@ -819,6 +834,45 @@ bool Edge::IsBridge() {
 	} while (he != this->halfedge());
 
 	return false;
+}
+
+set<EdgeIter> Edge::AdjEdges() {
+	// Collect all unordered adjacent edges
+
+	set<EdgeIter> adjEs;
+
+	auto adjEs1 = this->halfedge()->vertex()->AdjEdges();
+	auto adjEs2 = this->halfedge()->twin()->vertex()->AdjEdges();
+
+	for (auto adjE : adjEs1)
+		adjEs.insert(adjE);
+
+	for (auto adjE : adjEs2)
+		adjEs.insert(adjE);
+
+	adjEs.erase(this->halfedge()->edge());
+
+	return adjEs;
+}
+
+set<VertexIter> Edge::AdjVertices() {
+	// Collect all unordered adjacent vertices
+
+	set<VertexIter> adjVs;
+
+	auto adjVs1 = this->halfedge()->vertex()->AdjVertices();
+	auto adjVs2 = this->halfedge()->twin()->vertex()->AdjVertices();
+
+	for (auto adjV : adjVs1)
+		adjVs.insert(adjV);
+
+	for (auto adjV : adjVs2)
+		adjVs.insert(adjV);
+
+	adjVs.erase(this->halfedge()->vertex());
+	adjVs.erase(this->halfedge()->twin()->vertex());
+
+	return adjVs;
 }
 
 void Face::getAxes(vector<Vector3D>& axes) const {
