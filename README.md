@@ -78,7 +78,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 8 Alpha Compositing
   - [x] 9 Draw Something!!!
 - [ ] 2.0 MeshEdit
-  - [ ] Local
+  - [x] Local
     - [x] flipEdge
     - [x] splitEdge
     - [x] collapseEdge
@@ -87,8 +87,12 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] eraseEdge
     - [x] bevelVertex
     - [x] bevelEdge
-    - [ ] bevelFace
+    - [x] bevelFace
   - [ ] Global
+    - [ ] Triangulation
+    - [ ] Subdivision
+    - [ ] Simplification
+    - [ ] Isotropic Remeshing
 - [ ] 3.0 PathTracer
 - [ ] 4.0 Animation
 

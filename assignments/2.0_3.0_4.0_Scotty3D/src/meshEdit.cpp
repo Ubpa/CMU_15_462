@@ -137,6 +137,7 @@ VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 		e = e2;
 
 	VertexIter v = InsertVertex(e);
+
 	for (size_t i = 2; i < verticesOfFace.size(); i++)
 		ConnectVertex(v, verticesOfFace[i]);
 
@@ -227,7 +228,6 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 }
 
 VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
-	// TODO: (meshEdit)
 	// This method should split the given edge and return an iterator to the
 	// newly inserted vertex. The halfedge of this vertex should point along
 	// the edge that was split, rather than the new edges.
@@ -769,7 +769,7 @@ void HalfedgeMesh::buildSubdivisionFaceList(vector<vector<Index> >& subDFaces) {
 }
 
 FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
-	// TODO This method should replace the vertex v with a face, corresponding to
+	// This method should replace the vertex v with a face, corresponding to
 	// a bevel operation. It should return the new face.  NOTE: This method is
 	// responsible for updating the *connectivity* of the mesh only---it does not
 	// need to update the vertex positions.  These positions will be updated in
@@ -834,6 +834,8 @@ FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
 	// HalfedgeMesh::bevelFaceComputeNewPositions (which you also have to
 	// implement!)
 
+	HalfedgeIter he = f->halfedge();
+
 	if (f->isBoundary()) {
 		showError("Can't bevel a boundary face");
 		return faces.end();
@@ -841,7 +843,17 @@ FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
 
 	VertexIter v = InsertVertex(f);
 
-	return bevelVertex(v);
+	FaceIter rstF = bevelVertex(v);
+
+	auto hesOfFace = rstF->Halfedges();
+	for (auto heOfFace : hesOfFace) {
+		if (heOfFace->twin()->next()->next() == he) {
+			rstF->halfedge() = heOfFace;
+			break;
+		}
+	}
+
+	return rstF;
 }
 
 
@@ -900,7 +912,7 @@ void HalfedgeMesh::bevelFaceComputeNewPositions(
 void HalfedgeMesh::bevelVertexComputeNewPositions(
 	Vector3D originalVertexPosition, vector<HalfedgeIter>& newHalfedges,
 	double tangentialInset) {
-	// TODO Compute new vertex positions for the vertices of the beveled vertex.
+	// Compute new vertex positions for the vertices of the beveled vertex.
 	//
 	// These vertices can be accessed via newHalfedges[i]->vertex()->position for
 	// i = 1, ..., hs.size()-1.
