@@ -30,6 +30,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 ## 资源文件
 
 > 包含 slides, notes/assets 等，按需下载，持续更新中
+>
+> 现已将图片压缩上传至 github
 
 链接：https://pan.baidu.com/s/1gjXbqJYDD_66fGo8Ce9Txw 
 
