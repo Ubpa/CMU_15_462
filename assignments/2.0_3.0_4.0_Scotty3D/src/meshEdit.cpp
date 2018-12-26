@@ -826,44 +826,75 @@ FaceIter HalfedgeMesh::bevelEdge(EdgeIter e) {
 }
 
 FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
-  // TODO This method should replace the face f with an additional, inset face
-  // (and ring of faces around it), corresponding to a bevel operation. It
-  // should return the new face.  NOTE: This method is responsible for updating
-  // the *connectivity* of the mesh only---it does not need to update the vertex
-  // positions.  These positions will be updated in
-  // HalfedgeMesh::bevelFaceComputeNewPositions (which you also have to
-  // implement!)
+	// This method should replace the face f with an additional, inset face
+	// (and ring of faces around it), corresponding to a bevel operation. It
+	// should return the new face.  NOTE: This method is responsible for updating
+	// the *connectivity* of the mesh only---it does not need to update the vertex
+	// positions.  These positions will be updated in
+	// HalfedgeMesh::bevelFaceComputeNewPositions (which you also have to
+	// implement!)
 
-  showError("bevelFace() not implemented.");
-  return facesBegin();
+	if (f->isBoundary()) {
+		showError("Can't bevel a boundary face");
+		return faces.end();
+	}
+
+	VertexIter v = InsertVertex(f);
+
+	return bevelVertex(v);
 }
 
 
 void HalfedgeMesh::bevelFaceComputeNewPositions(
-    vector<Vector3D>& originalVertexPositions,
-    vector<HalfedgeIter>& newHalfedges, double normalShift,
-    double tangentialInset) {
-  // TODO Compute new vertex positions for the vertices of the beveled face.
-  //
-  // These vertices can be accessed via newHalfedges[i]->vertex()->position for
-  // i = 1, ..., newHalfedges.size()-1.
-  //
-  // The basic strategy here is to loop over the list of outgoing halfedges,
-  // and use the preceding and next vertex position from the original mesh
-  // (in the originalVertexPositions array) to compute an offset vertex
-  // position.
-  //
-  // Note that there is a 1-to-1 correspondence between halfedges in
-  // newHalfedges and vertex positions
-  // in orig.  So, you can write loops of the form
-  //
-  // for( int i = 0; i < newHalfedges.size(); hs++ )
-  // {
-  //    Vector3D pi = originalVertexPositions[i]; // get the original vertex
-  //    position correponding to vertex i
-  // }
-  //
+	vector<Vector3D>& originalVertexPositions,
+	vector<HalfedgeIter>& newHalfedges, double normalShift,
+	double tangentialInset) {
+	// Compute new vertex positions for the vertices of the beveled face.
+	//
+	// These vertices can be accessed via newHalfedges[i]->vertex()->position for
+	// i = 1, ..., newHalfedges.size()-1.
+	//
+	// The basic strategy here is to loop over the list of outgoing halfedges,
+	// and use the preceding and next vertex position from the original mesh
+	// (in the originalVertexPositions array) to compute an offset vertex
+	// position.
+	//
+	// Note that there is a 1-to-1 correspondence between halfedges in
+	// newHalfedges and vertex positions
+	// in orig.  So, you can write loops of the form
+	//
+	// for( int i = 0; i < newHalfedges.size(); hs++ )
+	// {
+	//    Vector3D pi = originalVertexPositions[i]; // get the original vertex
+	//    position correponding to vertex i
+	// }
+	//
 
+	size_t n = newHalfedges.size();
+	Vector3D norm(0, 0, 0);
+
+	for (size_t i = 0; i < n - 2; i++) {
+		Vector3D p0 = newHalfedges[i]->twin()->vertex()->position;
+		Vector3D p1 = newHalfedges[i + 1]->twin()->vertex()->position;
+		Vector3D p2 = newHalfedges[i + 2]->twin()->vertex()->position;
+		Vector3D a = p1 - p0;
+		Vector3D b = p2 - p0;
+		norm += cross(a, b);
+	}
+
+	Vector3D centerPos(0, 0, 0);
+	for (auto pos : originalVertexPositions)
+		centerPos += pos;
+
+	centerPos *= 1.0 / n;
+
+	norm.normalize();
+
+	double scale = 5.0;
+	for (size_t i = 0; i < n; i++) {
+		Vector3D dir = originalVertexPositions[i] - centerPos;
+		newHalfedges[i]->vertex()->position += scale * (tangentialInset * dir + normalShift * norm);
+	}
 }
 
 void HalfedgeMesh::bevelVertexComputeNewPositions(
@@ -920,23 +951,27 @@ void HalfedgeMesh::bevelEdgeComputeNewPositions(
 	//    position correponding to vertex i
 	// }
 	//
-	size_t n = newHalfedges.size();
-	Vector3D norm(0, 0, 0);
 
-	for (size_t i = 0; i < n - 2; i++) {
-		Vector3D p0 = newHalfedges[i]->vertex()->position;
-		Vector3D p1 = newHalfedges[i+1]->vertex()->position;
-		Vector3D p2 = newHalfedges[i+2]->vertex()->position;
-		Vector3D a = p0 - p1;
-		Vector3D b = p0 - p2;
-		norm += cross(a, b);
+	vector<Vector3D> deltas;
+	double scale0 = 5.0;
+	for (size_t i = 0; i < newHalfedges.size(); i++) {
+		VertexIter v0 = newHalfedges[i]->vertex();
+		VertexIter v1 = newHalfedges[i]->twin()->vertex();
+
+		Vector3D origPos = 2 * originalVertexPositions[i] - v1->position;
+
+		Vector3D dir = v1->position - origPos;
+		Vector3D delta = dir * scale0 * tangentialInset;
+
+		if ((tangentialInset < 0 && delta.norm2() >= (v0->position - origPos).norm2())
+			|| (tangentialInset > 0 && delta.norm2() >= (v1->position - v0->position).norm2()))
+			return;
+
+		deltas.push_back(delta);
 	}
 
-	norm.normalize();
-
-	double scale = 10;
-	for (size_t i = 0; i < n; i++)
-		newHalfedges[i]->vertex()->position += tangentialInset * scale * norm;
+	for (size_t i = 0; i < newHalfedges.size(); i++)
+		newHalfedges[i]->vertex()->position += deltas[i];
 }
 
 void HalfedgeMesh::splitPolygons(vector<FaceIter>& fcs) {
