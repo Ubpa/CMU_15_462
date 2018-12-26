@@ -92,10 +92,10 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] bevelFace
   - [ ] Global
     - [x] Triangulation
-    - [ ] Subdivision
+    - [x] Subdivision
       - [x] Linear Subdivision
       - [x] Catmull-Clark Subdivision
-      - [ ] Loop Subdivision
+      - [x] Loop Subdivision
     - [ ] Simplification
     - [ ] Isotropic Remeshing
 - [ ] 3.0 PathTracer

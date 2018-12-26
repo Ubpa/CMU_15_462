@@ -27,6 +27,12 @@
 
 ![1544789524777](assets/1544789524777.jpg)
 
+>  [Wikipedia](https://en.wikipedia.org/wiki/Catmull-Clark_subdivision_surface) 
+>
+> R 是对 edge 的 原中心 进行计算
+
+
+
 > 适用于四边形网格，在三角网格上效果不好
 >
 > ![1544789663802](assets/1544789663802.jpg)
@@ -41,11 +47,20 @@
 
 - Algorithm:
 
-  - Split each triangle into four ![1544789948016](assets/1544789948016.jpg)
+  - Split each triangle into four (4-1 subdivision)![1544789948016](assets/1544789948016.jpg)
 
   - Assign new vertex positions according to weights
 
     ![1544789965349](assets/1544789965349.jpg)
+
+    > 先进行原顶点的更新（右图），在进行新顶点的更新（左图）
+
+- 4-1 subdivision
+
+  1. Split every edge of the mesh *in any order whatsoever*.
+  2. Flip any new edge that touches a new vertex and an old vertex.
+
+  ![Subdivision via flipping](assets/FlippingSubdivision.jog)
 
 ## 11.2 Simplification
 
