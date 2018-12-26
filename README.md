@@ -93,6 +93,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [ ] Global
     - [x] Triangulation
     - [ ] Subdivision
+      - [x] Linear Subdivision
+      - [ ] Catmull-Clark Subdivision
+      - [ ] Loop Subdivision
     - [ ] Simplification
     - [ ] Isotropic Remeshing
 - [ ] 3.0 PathTracer

@@ -595,7 +595,7 @@ void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
   // efficient) than incrementally modifying the existing one.  These steps are
   // detailed below.
 
-  // TODO Step I: Compute the vertex positions for the subdivided mesh.  Here
+  // Step I: Compute the vertex positions for the subdivided mesh.  Here
   // we're
   // going to do something a little bit strange: since we will have one vertex
   // in
@@ -605,14 +605,13 @@ void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
   // edges,
   // and faces of the original mesh.  These positions can then be conveniently
   // copied into the new, subdivided mesh.
-  // [See subroutines for actual "TODO"s]
   if (useCatmullClark) {
     computeCatmullClarkPositions();
   } else {
     computeLinearSubdivisionPositions();
   }
 
-  // TODO Step II: Assign a unique index (starting at 0) to each vertex, edge,
+  // Step II: Assign a unique index (starting at 0) to each vertex, edge,
   // and
   // face in the original mesh.  These indices will be the indices of the
   // vertices
@@ -624,10 +623,9 @@ void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
   // plus edges plus faces in the original mesh.  Basically we just need a
   // one-to-one
   // mapping between original mesh elements and subdivided mesh vertices.
-  // [See subroutine for actual "TODO"s]
   assignSubdivisionIndices();
 
-  // TODO Step III: Build a list of quads in the new (subdivided) mesh, as
+  // Step III: Build a list of quads in the new (subdivided) mesh, as
   // tuples of
   // the element indices defined above.  In other words, each new quad should be
   // of
@@ -637,7 +635,6 @@ void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
   // here: (i,j,k,l) is not the same as (l,k,j,i).  Indices of new faces should
   // circulate in the same direction as old faces (think about the right-hand
   // rule).
-  // [See subroutines for actual "TODO"s]
   vector<vector<Index> > subDFaces;
   vector<Vector3D> subDVertices;
   buildSubdivisionFaceList(subDFaces);
@@ -661,16 +658,21 @@ void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
  * centroids.
  */
 void HalfedgeMesh::computeLinearSubdivisionPositions() {
-  // TODO For each vertex, assign Vertex::newPosition to
-  // its original position, Vertex::position.
+	// For each vertex, assign Vertex::newPosition to
+	// its original position, Vertex::position.
+	for (auto & v : vertices)
+		v.newPosition = v.position;
 
-  // TODO For each edge, assign the midpoint of the two original
-  // positions to Edge::newPosition.
+	// For each edge, assign the midpoint of the two original
+	// positions to Edge::newPosition.
+	for (auto & e : edges)
+		e.newPosition = e.centroid();
 
-  // TODO For each face, assign the centroid (i.e., arithmetic mean)
-  // of the original vertex positions to Face::newPosition.  Note
-  // that in general, NOT all faces will be triangles!
-  showError("computeLinearSubdivisionPositions() not implemented.");
+	// For each face, assign the centroid (i.e., arithmetic mean)
+	// of the original vertex positions to Face::newPosition.  Note
+	// that in general, NOT all faces will be triangles!
+	for (auto & f : faces)
+		f.newPosition = f.centroid();
 }
 
 /**
@@ -703,15 +705,21 @@ void HalfedgeMesh::computeCatmullClarkPositions() {
  * subdivided using Catmull-Clark (or linear) subdivision.
  */
 void HalfedgeMesh::assignSubdivisionIndices() {
-  // TODO Start a counter at zero; if you like, you can use the
-  // "Index" type (defined in halfedgeMesh.h)
+	// Start a counter at zero; if you like, you can use the
+	// "Index" type (defined in halfedgeMesh.h)
+	size_t cnt = 0;
 
-  // TODO Iterate over vertices, assigning values to Vertex::index
+	// Iterate over vertices, assigning values to Vertex::index
+	for (auto &v : vertices)
+		v.index = cnt++;
 
-  // TODO Iterate over edges, assigning values to Edge::index
+	// Iterate over edges, assigning values to Edge::index
+	for (auto &e : edges)
+		e.index = cnt++;
 
-  // TODO Iterate over faces, assigning values to Face::index
-  showError("assignSubdivisionIndices() not implemented.");
+	// Iterate over faces, assigning values to Face::index
+	for (auto &f : faces)
+		f.index = cnt++;
 }
 
 /**
@@ -722,17 +730,23 @@ void HalfedgeMesh::assignSubdivisionIndices() {
  * and Face::newPosition.
  */
 void HalfedgeMesh::buildSubdivisionVertexList(vector<Vector3D>& subDVertices) {
-  // TODO Resize the vertex list so that it can hold all the vertices.
+	// Resize the vertex list so that it can hold all the vertices.
+	subDVertices.resize(vertices.size() + edges.size() + faces.size());
 
-  // TODO Iterate over vertices, assigning Vertex::newPosition to the
-  // appropriate location in the new vertex list.
+	// Iterate over vertices, assigning Vertex::newPosition to the
+	// appropriate location in the new vertex list.
+	for (auto & v : vertices)
+		subDVertices[v.index] = v.newPosition;
 
-  // TODO Iterate over edges, assigning Edge::newPosition to the appropriate
-  // location in the new vertex list.
+	// Iterate over edges, assigning Edge::newPosition to the appropriate
+	// location in the new vertex list.
+	for (auto & e : edges)
+		subDVertices[e.index] = e.newPosition;
 
-  // TODO Iterate over faces, assigning Face::newPosition to the appropriate
-  // location in the new vertex list.
-  showError("buildSubdivisionVertexList() not implemented.");
+	// Iterate over faces, assigning Face::newPosition to the appropriate
+	// location in the new vertex list.
+	for (auto & f : faces)
+		subDVertices[f.index] = f.newPosition;
 }
 
 /**
@@ -747,25 +761,38 @@ void HalfedgeMesh::buildSubdivisionVertexList(vector<Vector3D>& subDVertices) {
  * will look like a bowtie.
  */
 void HalfedgeMesh::buildSubdivisionFaceList(vector<vector<Index> >& subDFaces) {
-  // TODO This routine is perhaps the most tricky step in the construction of
-  // a subdivision mesh (second, perhaps, to computing the actual Catmull-Clark
-  // vertex positions).  Basically what you want to do is iterate over faces,
-  // then for each for each face, append N quads to the list (where N is the
-  // degree of the face).  For this routine, it may be more convenient to simply
-  // append quads to the end of the list (rather than allocating it ahead of
-  // time), though YMMV.  You can of course iterate around a face by starting
-  // with its first halfedge and following the "next" pointer until you get
-  // back to the beginning.  The tricky part is making sure you grab the right
-  // indices in the right order---remember that there are indices on vertices,
-  // edges, AND faces of the original mesh.  All of these should get used.  Also
-  // remember that you must have FOUR indices per face, since you are making a
-  // QUAD mesh!
+	// This routine is perhaps the most tricky step in the construction of
+	// a subdivision mesh (second, perhaps, to computing the actual Catmull-Clark
+	// vertex positions).  Basically what you want to do is iterate over faces,
+	// then for each for each face, append N quads to the list (where N is the
+	// degree of the face).  For this routine, it may be more convenient to simply
+	// append quads to the end of the list (rather than allocating it ahead of
+	// time), though YMMV.  You can of course iterate around a face by starting
+	// with its first halfedge and following the "next" pointer until you get
+	// back to the beginning.  The tricky part is making sure you grab the right
+	// indices in the right order---remember that there are indices on vertices,
+	// edges, AND faces of the original mesh.  All of these should get used.  Also
+	// remember that you must have FOUR indices per face, since you are making a
+	// QUAD mesh!
 
-  // TODO iterate over faces
-  // TODO loop around face
-  // TODO build lists of four indices for each sub-quad
-  // TODO append each list of four indices to face list
-  showError("buildSubdivisionFaceList() not implemented.");
+	// iterate over faces
+	for (auto & f : faces) {
+		// loop around face
+		HalfedgeIter he = f.halfedge();
+		do {
+			// build lists of four indices for each sub-quad
+			Index i = he->edge()->index;
+			Index j = he->twin()->vertex()->index;
+			Index k = he->next()->edge()->index;
+			Index l = f.index;
+			vector<Index> quadIndices({ i,j,k,l });
+
+			// append each list of four indices to face list
+			subDFaces.push_back(quadIndices);
+
+			he = he->next();
+		} while (he != f.halfedge());
+	}
 }
 
 FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
@@ -992,6 +1019,7 @@ void HalfedgeMesh::splitPolygons(vector<FaceIter>& fcs) {
 
 void HalfedgeMesh::splitPolygon(FaceIter f) {
 	// Triangulate a polygonal face
+	// zig-zag
 	
 	if (f->isBoundary()) {
 		showError("Can't triangulate a boundary face");
