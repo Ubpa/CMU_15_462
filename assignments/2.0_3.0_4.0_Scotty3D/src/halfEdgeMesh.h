@@ -519,6 +519,29 @@ class Face : public HalfedgeElement {
 
   Matrix4x4 quadric;
 
+
+  /**
+   * Collect all ordered vertices
+   */
+  vector<VertexIter> Vertices();
+
+
+  /**
+   * Collect all ordered halfedges
+   */
+  vector<HalfedgeIter> Halfedges();
+
+  /**
+   * Collect all ordered edges
+   */
+  vector<EdgeIter> Edges();
+  
+  /**
+   * Collect all unordered adjacent edges of f
+   */
+  set<EdgeIter> AdjEdges();
+
+
  protected:
   HalfedgeIter _halfedge;  ///< one of the halfedges of this face
   bool _isBoundary;        ///< boundary flag
@@ -694,6 +717,23 @@ class Vertex : public HalfedgeElement {
   }
 
   Matrix4x4 quadric;
+
+
+  /**
+   * Collect all ordered adjacent halfedges of v
+   * the halfedges' vertex is v
+   */
+  vector<HalfedgeIter> AdjHalfedges();
+
+  /**
+   * Collect all ordered adjacent edges
+   */
+  vector<EdgeIter> AdjEdges();
+
+  /**
+   * Collect all ordered adjacent faces
+   */
+  vector<FaceIter> AdjFaces();
 
  protected:
   /**
@@ -1048,32 +1088,29 @@ class HalfedgeMesh {
   list<Face> boundaries;
 
   private:
-	/**
-	 * Collect all halfedges of v
-	 * the halfedges' vertex is v
-	 */
-	vector<HalfedgeIter> AllHalfedgesOf(VertexIter v);
-
-	/**
-	 * Collect all edges of v
-	 */
-	vector<EdgeIter> AllEdgesOf(VertexIter v);
-
-	/**
-	 * Collect all faces of v
-	 */
-	vector<FaceIter> AllFacesOf(VertexIter v);
-
+	
 	/**
 	 * if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
 	 * the inner face is not a boundary
 	 */
-	FaceIter InSameFace(VertexIter v0, VertexIter v1);
+	FaceIter GetSameFace(VertexIter v0, VertexIter v1);
 
 	/**
-	 * Insert a vertex on the middle of edge.
+	 * if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
+	 */
+	EdgeIter GetSameEdge(VertexIter v0, VertexIter v1);
+
+	/**
+	 * Insert a vertex on the middle position of edge.
 	 */
     VertexIter InsertVertex(EdgeIter e);
+
+	/**
+	 * Insert a vertex on the center of face.
+     * f should not be a boundary
+	 */
+	VertexIter InsertVertex(FaceIter f);
+
 	/**
 	 * Connect two verties in a face.
 	 */

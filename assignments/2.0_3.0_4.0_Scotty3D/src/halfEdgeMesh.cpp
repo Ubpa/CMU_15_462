@@ -52,6 +52,68 @@ Vector3D Face::normal() const {
   return N.unit();
 }
 
+vector<VertexIter> Face::Vertices() {
+	// Collect all ordered vertices
+
+	vector<VertexIter> vertices;
+
+	HalfedgeIter he = this->halfedge();
+	do {
+		vertices.push_back(he->vertex());
+		he = he->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return vertices;
+
+}
+
+vector<HalfedgeIter> Face::Halfedges() {
+	// Collect all ordered halfedges
+
+	vector<HalfedgeIter> halfedges;
+
+	HalfedgeIter he = this->halfedge();
+	do {
+		halfedges.push_back(he);
+		he = he->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return halfedges;
+}
+
+vector<EdgeIter> Face::Edges() {
+	// Collect all ordered edges
+
+	vector<EdgeIter> edges;
+
+	HalfedgeIter he = this->halfedge();
+	do {
+		edges.push_back(he->edge());
+		he = he->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return edges;
+}
+
+set<EdgeIter> Face::AdjEdges() {
+	// Collect all unordered adjacent edges
+
+	set<EdgeIter> adjEs;
+
+	vector<VertexIter> vertices = this->Vertices();
+	for (auto v : vertices) {
+		vector<EdgeIter> adjEsOfV = v->AdjEdges();
+		for (auto adjE : adjEsOfV)
+			adjEs.insert(adjE);
+	}
+
+	vector<EdgeIter> edges = this->Edges();
+	for (auto e : edges)
+		adjEs.erase(e);
+
+	return adjEs;
+}
+
 void HalfedgeMesh::build(const vector<vector<Index> >& polygons,
                          const vector<Vector3D>& vertexPositions)
 // This method initializes the halfedge data structure from a raw list of
@@ -649,6 +711,51 @@ BBox Halfedge::bounds() const { return edge()->bounds(); }
 float Vertex::laplacian() const {
   // TODO (Animation) Task 4
   return 0.0;
+}
+
+vector<HalfedgeIter> Vertex::AdjHalfedges() {
+	// Collect all ordered adjacent halfedges of v
+	// the halfedges' vertex is v
+
+	vector<HalfedgeIter> halfedges;
+	
+	HalfedgeIter he = this->halfedge();
+	do {
+		halfedges.push_back(he);
+		he = he->twin()->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return halfedges;
+}
+
+
+
+vector<EdgeIter> Vertex::AdjEdges() {
+	// Collect all ordered adjacent edges
+
+	vector<EdgeIter> edges;
+
+	HalfedgeIter he = this->halfedge();
+	do {
+		edges.push_back(he->edge());
+		he = he->twin()->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return edges;
+}
+
+vector<FaceIter> Vertex::AdjFaces() {
+	// Collect all ordered adjacent faces
+
+	vector<FaceIter> faces;
+
+	HalfedgeIter he = this->halfedge();
+	do {
+		faces.push_back(he->face());
+		he = he->twin()->next();
+	} while (he->edge() != this->halfedge()->edge());
+
+	return faces;
 }
 
 void Vertex::getAxes(vector<Vector3D>& axes) const {

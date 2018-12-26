@@ -4,114 +4,145 @@
 #include "mutablePriorityQueue.h"
 #include "error_dialog.h"
 
+//#include <set>
 #include <deque>
 
 using namespace CMU462;
 
-vector<HalfedgeIter> HalfedgeMesh::AllHalfedgesOf(VertexIter v) {
-	// Collect all halfedges of v
-	// the halfedges' vertex is v
+EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
+	// if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
 
-	vector<HalfedgeIter> halfedges;
+	vector<EdgeIter> adjEdgesOfV0 = v0->AdjEdges();
+	vector<EdgeIter> adjEdgesOfV1 = v1->AdjEdges();
 
-	HalfedgeIter he = v->halfedge();
-	do {
-		halfedges.push_back(he);
-		he = he->twin()->next();
-	} while (he->edge() != v->halfedge()->edge());
+	for (auto adjE : adjEdgesOfV0) {
+		auto target = find(adjEdgesOfV1.begin(), adjEdgesOfV1.end(), adjE);
+		if (target != adjEdgesOfV1.end())
+			return *target;
+	}
 
-	return halfedges;
+	return edges.end();
 }
 
-vector<EdgeIter> HalfedgeMesh::AllEdgesOf(VertexIter v) {
-	// Collect all edges of v
-
-	vector<EdgeIter> edges;
-
-	HalfedgeIter he = v->halfedge();
-	do {
-		edges.push_back(he->edge());
-		he = he->twin()->next();
-	} while (he->edge() != v->halfedge()->edge());
-
-	return edges;
-}
-
-vector<FaceIter> HalfedgeMesh::AllFacesOf(VertexIter v) {
-	// Collect all faces of v
-
-	vector<FaceIter> faces;
-
-	HalfedgeIter he = v->halfedge();
-	do {
-		faces.push_back(he->face());
-		he = he->twin()->next();
-	} while (he->edge() != v->halfedge()->edge());
-
-	return faces;
-}
-
-FaceIter HalfedgeMesh::InSameFace(VertexIter v0, VertexIter v1) {
+FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
 	// the inner face is not a boundary
 
-	vector<FaceIter> facesOfv0 = AllFacesOf(v0);
-	vector<FaceIter> facesOfv1 = AllFacesOf(v1);
+	vector<FaceIter> facesOfv0 = v0->AdjFaces();
+	vector<FaceIter> facesOfv1 = v1->AdjFaces();
 
-	for (auto & f : facesOfv0) {
-		auto target = find(facesOfv1.begin(), facesOfv1.end(), f);
-		if (target != facesOfv1.end() && !(*target)->isBoundary())
-			return *target;
+	for (auto f0 : facesOfv0) {
+		if (f0->isBoundary())
+			continue;
+
+		for (auto f1 : facesOfv1) {
+			if (f1->isBoundary())
+				continue;
+
+			if (f0 == f1)
+				return f0;
+		}
 	}
 
 	return faces.end();
 }
 
-VertexIter HalfedgeMesh::InsertVertex(EdgeIter e) {
-	// Insert a vertex on the middle of edge.
+VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
+	// Insert a vertex on the middle position of edge.
+	
+	//         |  |                           |  |
+	//   (¡ü)he2|  |                     (¡ü)he2|  |
+	//         |  |                           |  |
+	//         [vv]                           [vv]
+	//         |  |                           |  |
+	//         |  |he3(¡ý)               (¡ü)he1|  |he3(¡ý)
+	//         |  |                           |e1|
+	//  {f0}   |  |   {f1}  =====>     {f0}   [v0]   {f1}
+	//         |e0|                           |e0|
+	//   (¡ü)he0|  |                     (¡ü)he0|  |he4(¡ý)
+	//         |  |                           |  |
+	//         [vv]                           [vv]
+	//         |  |                           |  |
+	//         |  |he5(¡ý)                     |  |he5(¡ý)
+	//         |  |                           |  |
 
-	VertexIter v0 = e->halfedge()->vertex();
-	VertexIter v1 = e->halfedge()->twin()->vertex();
-	HalfedgeIter he = e->halfedge();
+	VertexIter v0 = newVertex();
+	
+	EdgeIter e1 = newEdge();
 
-	// pre backup
-	HalfedgeIter hePre = he->pre();
-	HalfedgeIter twin = he->twin();
-	HalfedgeIter twinNext = he->twin()->next();
-	Vector3D pos = he->edge()->centroid();
+	FaceIter f0 = e0->halfedge()->face();
+	FaceIter f1 = e0->halfedge()->twin()->face();
 
-	VertexIter newV = newVertex();
-	he->vertex() = newV;
+	HalfedgeIter he0 = e0->halfedge();
+	HalfedgeIter he2 = he0->next();
+	HalfedgeIter he3 = he0->twin();
+	HalfedgeIter he5 = he3->next();
 
-	newV->position = pos;
-	newV->halfedge() = he;
-
-	HalfedgeIter he0 = newHalfedge();
 	HalfedgeIter he1 = newHalfedge();
+	HalfedgeIter he4 = newHalfedge();
 
-	he0->vertex() = v0;
-	he1->vertex() = newV;
 
-	EdgeIter newE = newEdge();
-	newE->halfedge() = he0;
-	he0->edge() = newE;
-	he1->edge() = newE;
+	v0->position = e0->centroid();
+	v0->halfedge() = he1;
 
-	he0->twin() = he1;
-	he1->twin() = he0;
+	if (e0->halfedge() == he3)
+		e0->halfedge() = he4;
 
-	he0->face() = he->face();
-	he1->face() = twin->face();
+	e1->halfedge() = he1;
 
-	he0->next() = he;
-	hePre->next() = he0;
-	he1->next() = twinNext;
-	twin->next() = he1;
+	he1->vertex() = v0;
+	he4->vertex() = v0;
 
-	if (v0->halfedge() == he)
-		v0->halfedge() = he0;
+	he1->edge() = e1;
+	he3->edge() = e1;
+	he4->edge() = e0;
+	
+	he1->face() = f0;
+	he4->face() = f1;
 
-	return newV;
+	he0->twin() = he4;
+	he1->twin() = he3;
+	he3->twin() = he1;
+	he4->twin() = he0;
+	
+	he0->next() = he1;
+	he1->next() = he2;
+	he3->next() = he4;
+	he4->next() = he5;
+
+	return v0;
+}
+
+VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
+	// Insert a vertex on the center of f
+	// f should not be a boundary
+
+	if (f->isBoundary()) {
+		showError("Can't insert vertex for a boundary face");
+		return vertices.end();
+	}
+	
+	vector<VertexIter> verticesOfFace = f->Vertices();
+
+	Vector3D centerPos = f->centroid();
+
+	EdgeIter e1 = GetSameEdge(verticesOfFace[0], verticesOfFace[1]);
+	EdgeIter e2 = ConnectVertex(verticesOfFace[0], verticesOfFace[1]);
+	// e's face is f
+	EdgeIter e;
+	if ((!e1->halfedge()->face()->isBoundary() && e1->halfedge()->face() == f)
+		|| (!e1->halfedge()->twin()->face()->isBoundary() && e1->halfedge()->twin()->face() == f))
+		e = e1;
+	else
+		e = e2;
+
+	VertexIter v = InsertVertex(e);
+	for (size_t i = 2; i < verticesOfFace.size(); i++)
+		ConnectVertex(v, verticesOfFace[i]);
+
+	v->position = centerPos;
+
+	return v;
 }
 
 EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
@@ -125,14 +156,14 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	// he1(¡ý)                                 (¡ü)he2
 	//  |                                        |
 
-	FaceIter f = InSameFace(v0, v1);
+	FaceIter f = GetSameFace(v0, v1);
 	if (f == faces.end()) {
 		showError("v0 and v1 are not in same face, connect failed");
 		return edges.end();
 	}
 
-	vector<HalfedgeIter> halfedgesV0 = AllHalfedgesOf(v0);
-	vector<HalfedgeIter> halfedgesV1 = AllHalfedgesOf(v1);
+	vector<HalfedgeIter> halfedgesV0 = v0->AdjHalfedges();
+	vector<HalfedgeIter> halfedgesV1 = v1->AdjHalfedges();
 
 	HalfedgeIter he1, he3;
 	for (auto he : halfedgesV0) {
@@ -251,22 +282,19 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	//         --[vv]--                                --[vv]--
 
 
-	HalfedgeIter he = e->halfedge()->isBoundary() ? e->halfedge() : e->halfedge()->twin();
+	HalfedgeIter he = e->halfedge();
 	HalfedgeIter twin = he->twin();
 	VertexIter v0 = he->next()->next()->vertex();
 	VertexIter v1 = twin->next()->next()->vertex();
 
 	VertexIter v2 = InsertVertex(e);
 	ConnectVertex(v0, v2);
-	ConnectVertex(v1, v2);
+	ConnectVertex(v2, v1);
 
 	return v2;
-
-
 }
 
 VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
-	// TODO: (meshEdit)
 	// This method should collapse the given edge and return an iterator to
 	// the new vertex created by the collapse.
 
@@ -354,7 +382,6 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 }
 
 VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
-	// TODO: (meshEdit)
 	// This method should collapse the given face and return an iterator to
 	// the new vertex created by the collapse.
 	
@@ -439,7 +466,7 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 		return faces.end();
 	}
 
-	vector<EdgeIter> edges = AllEdgesOf(v);
+	vector<EdgeIter> edges = v->AdjEdges();
 	FaceIter f;
 	for (auto & edge : edges)
 		f = eraseEdge(edge);
@@ -812,7 +839,7 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 
 
 	// 1. collect edge
-	vector<EdgeIter> edges = AllEdgesOf(v);
+	vector<EdgeIter> edges = v->AdjEdges();
 
 	// 2. insert V
 	vector<VertexIter> newV;
