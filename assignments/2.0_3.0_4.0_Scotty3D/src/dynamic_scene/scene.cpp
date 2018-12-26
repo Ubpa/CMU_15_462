@@ -11,6 +11,8 @@ using std::endl;
 namespace CMU462 {
 namespace DynamicScene {
 
+	bool Selection::draw = true;;
+
 Scene::Scene(std::vector<SceneObject *> _objects,
              std::vector<SceneLight *> _lights) {
   for (int i = 0; i < _objects.size(); i++) {

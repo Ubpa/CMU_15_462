@@ -179,6 +179,7 @@ class Selection {
   HalfedgeElement *element;  // unused unless object is a mesh
   Vector3D coordinates;      // for optionally selecting a single point
   Axis axis;                 // for optionally selecting an axis
+  static bool draw;
 };
 
 /**

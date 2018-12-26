@@ -167,14 +167,14 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 
 	HalfedgeIter he1, he3;
 	for (auto he : halfedgesV0) {
-		if (he->face() == f) {
+		if (!he->face()->isBoundary() && he->face() == f) {
 			he1 = he;
 			break;
 		}
 	}
 
 	for (auto he : halfedgesV1) {
-		if (he->face() == f) {
+		if (!he->face()->isBoundary() && he->face() == f) {
 			he3 = he;
 			break;
 		}
@@ -388,73 +388,64 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	// The selected face f is replaced by a single vertex v.
 	// All edges previously connected to vertices of f are now connected directly to v.
 
-	Vector3D pos(0, 0, 0);
-	HalfedgeIter he = f->halfedge();
-	deque<EdgeIter> faceEdges;
-	do {
-		pos += he->vertex()->position;
-		he->edge()->halfedge() = he;
-		faceEdges.push_back(he->edge());
-		he = he->next();
-	} while (he != f->halfedge());
-	pos *= 1.0 / faceEdges.size();
+	vector<EdgeIter> edgesOfFace = f->Edges();
 
-	while (faceEdges.size() > 3) {
-		HalfedgeIter he = faceEdges.front()->halfedge();
-		// triangle
-		if (he->next() == he->twin()->next()->next()->twin()) {
-			faceEdges.pop_front();
-			faceEdges.insert(faceEdges.begin()+1, he->twin()->next()->edge());
-			he->twin()->next()->edge()->halfedge() = he->twin()->next();
+	for (auto e : edgesOfFace) {
+		if (e->isBoundary()) {
+			showError("Can't collapse face with boundary vertex");
+			return vertices.end();
 		}
-		collapseEdge(he->edge());
-		faceEdges.pop_front();
-	}
-	collapseEdge(faceEdges.front());
-	faceEdges.pop_front();
-	faceEdges.pop_front();
-	VertexIter v = collapseEdge(faceEdges.front());
-	if (v == vertices.end())
-		return v;
 
-	faceEdges.pop_front();
-
-	v->position = pos;
-	he = v->halfedge();
-	int n = v->degree() + (v->isBoundary() ? 1 : 0);
-	while (n-- > 0) {
-		// degeneration
-		if (he->next()->next() == he) {
-			if (he->edge() != he->next()->edge()) {
-				if (v->halfedge() == he)
-					v->halfedge() = he->twin()->next();
-				he->next()->edge()->halfedge() = he->next()->twin();
-				he->twin()->edge() = he->next()->edge();
-				he->twin()->twin() = he->next()->twin();
-				he->next()->twin()->twin() = he->twin();
-
-				HalfedgeIter next = he->twin()->next();
-				deleteFace(he->face());
-				deleteHalfedge(he->next());
-				deleteEdge(he->edge());
-				deleteHalfedge(he);
-				he = next;
-			}
-			else {
-				deleteVertex(he->twin()->vertex());
-				deleteVertex(he->vertex());
-				deleteFace(he->face());
-				deleteEdge(he->edge());
-				deleteHalfedge(he->twin());
-				deleteHalfedge(he);
-				v = vertices.end();
-			}
+		if (e->isBoundary()) {
+			showError("Can't collapse face with bridge edge");
+			return vertices.end();
 		}
-		else
-			he = he->twin()->next();
 	}
 	
-	return v;
+	set<EdgeIter> adjEsOfFace = f->AdjEdges();
+	for (auto adjE :adjEsOfFace) {
+		if (adjE->isBoundary()) {
+			showError("Can't collapse face with boundary vertex");
+			return vertices.end();
+		}
+
+		if (adjE->IsBridge()) {
+			showError("Can't collapse face with adjacent bridge edge");
+			return vertices.end();
+		}
+	}
+
+	while (edgesOfFace.size() > 0) {
+		size_t origSize = edgesOfFace.size();
+		for (int i = edgesOfFace.size() - 1; i >= 0; i--) {
+			EdgeIter e = edgesOfFace[i];
+			if (!e->isBoundary()) {
+				edgesOfFace.erase(edgesOfFace.begin() + i);
+				eraseEdge(e);
+			}
+		}
+		if (origSize == edgesOfFace.size()) {
+			showError("Can't delete more edges when collapsing face");
+			return vertices.end();
+		}
+	}
+
+	while (adjEsOfFace.size() > 0) {
+		size_t origSize = adjEsOfFace.size();
+		for (auto adjE : adjEsOfFace) {
+			if (!adjE->IsBridge()) {
+				adjEsOfFace.erase(adjE);
+				f = eraseEdge(adjE);
+				break;// must break here because iterator has been destroy
+			}
+		}
+		if (origSize == adjEsOfFace.size()) {
+			showError("Can't delete more adjacent edges when collapsing face");
+			return vertices.end();
+		}
+	}
+
+	return InsertVertex(f);
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
@@ -466,10 +457,17 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 		return faces.end();
 	}
 
-	vector<EdgeIter> edges = v->AdjEdges();
+	vector<EdgeIter> adjEs = v->AdjEdges();
+	for (auto adjE : adjEs) {
+		if (adjE->IsBridge()) {
+			showError("Can't erase a vertex with adjacent bridge edge");
+			return faces.end();
+		}
+	}
+
 	FaceIter f;
-	for (auto & edge : edges)
-		f = eraseEdge(edge);
+	for (auto adjE : adjEs)
+		f = eraseEdge(adjE);
 
 	// no need to erase vertex
 	// it will be erased by the final call of eraseEdge
@@ -478,7 +476,6 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 }
 
 FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
-	// TODO: (meshEdit)
 	// This method should erase the given edge and return an iterator to the
 	// merged face.
 
@@ -490,14 +487,13 @@ FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
 		return faces.end();
 	}
 
+	if (e->IsBridge()) {
+		showError("Can't erase a bridge edge");
+		return faces.end();
+	}
+
 	// same face
 	if (e->halfedge()->face() == e->halfedge()->twin()->face()) {
-		if (e->halfedge()->next() != e->halfedge()->twin()
-			&& e->halfedge()->twin()->next() != e->halfedge()) {
-			showError("Can't erase a strange case edge");
-			return faces.end();
-		}
-
 		//         [v1]
 		//         |  |
 		//         |ee|

@@ -793,6 +793,11 @@ class Edge : public HalfedgeElement {
   virtual void getAxes(vector<Vector3D>& axes) const;
 
   /**
+   * if the edge is a bridge, return true, otherwise return false
+   */
+  bool IsBridge();
+  
+  /**
    * For subdivision, this will be the position for the edge midpoint
    */
   Vector3D newPosition;
@@ -1121,9 +1126,7 @@ class HalfedgeMesh {
 inline Halfedge* HalfedgeElement::getHalfedge() {
   return dynamic_cast<Halfedge*>(this);
 }
-inline Vertex* HalfedgeElement::getVertex() {
-  return dynamic_cast<Vertex*>(this);
-}
+inline Vertex* HalfedgeElement::getVertex() { return dynamic_cast<Vertex*>(this); }
 inline Edge* HalfedgeElement::getEdge() { return dynamic_cast<Edge*>(this); }
 inline Face* HalfedgeElement::getFace() { return dynamic_cast<Face*>(this); }
 

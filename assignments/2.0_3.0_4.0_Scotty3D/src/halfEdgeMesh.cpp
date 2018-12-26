@@ -61,7 +61,7 @@ vector<VertexIter> Face::Vertices() {
 	do {
 		vertices.push_back(he->vertex());
 		he = he->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return vertices;
 
@@ -76,7 +76,7 @@ vector<HalfedgeIter> Face::Halfedges() {
 	do {
 		halfedges.push_back(he);
 		he = he->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return halfedges;
 }
@@ -90,7 +90,7 @@ vector<EdgeIter> Face::Edges() {
 	do {
 		edges.push_back(he->edge());
 		he = he->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return edges;
 }
@@ -723,12 +723,10 @@ vector<HalfedgeIter> Vertex::AdjHalfedges() {
 	do {
 		halfedges.push_back(he);
 		he = he->twin()->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return halfedges;
 }
-
-
 
 vector<EdgeIter> Vertex::AdjEdges() {
 	// Collect all ordered adjacent edges
@@ -739,7 +737,7 @@ vector<EdgeIter> Vertex::AdjEdges() {
 	do {
 		edges.push_back(he->edge());
 		he = he->twin()->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return edges;
 }
@@ -753,7 +751,7 @@ vector<FaceIter> Vertex::AdjFaces() {
 	do {
 		faces.push_back(he->face());
 		he = he->twin()->next();
-	} while (he->edge() != this->halfedge()->edge());
+	} while (he != this->halfedge());
 
 	return faces;
 }
@@ -802,6 +800,25 @@ void Edge::getAxes(vector<Vector3D>& axes) const {
 
   // Choose the Y direction so that X x Y = Z
   axes[1] = cross(axes[2], axes[0]);
+}
+
+bool Edge::IsBridge() {
+	// if the edge is a bridge, return true, otherwise return false
+	
+	HalfedgeIter he = this->halfedge();
+	HalfedgeIter twin = he->twin();
+
+	if (he->next() == twin || twin->next() == he)
+		return false;
+
+	do {
+		if (he == twin)
+			return true;
+		
+		he = he->next();
+	} while (he != this->halfedge());
+
+	return false;
 }
 
 void Face::getAxes(vector<Vector3D>& axes) const {
