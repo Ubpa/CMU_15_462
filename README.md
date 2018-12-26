@@ -94,7 +94,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] Triangulation
     - [ ] Subdivision
       - [x] Linear Subdivision
-      - [ ] Catmull-Clark Subdivision
+      - [x] Catmull-Clark Subdivision
       - [ ] Loop Subdivision
     - [ ] Simplification
     - [ ] Isotropic Remeshing

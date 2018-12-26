@@ -684,18 +684,55 @@ void HalfedgeMesh::computeLinearSubdivisionPositions() {
  * the Catmull-Clark rules for subdivision.
  */
 void HalfedgeMesh::computeCatmullClarkPositions() {
-  // TODO The implementation for this routine should be
-  // a lot like HalfedgeMesh::computeLinearSubdivisionPositions(),
-  // except that the calculation of the positions themsevles is
-  // slightly more involved, using the Catmull-Clark subdivision
-  // rules. (These rules are outlined in the Developer Manual.)
+	// The implementation for this routine should be
+	// a lot like HalfedgeMesh::computeLinearSubdivisionPositions(),
+	// except that the calculation of the positions themsevles is
+	// slightly more involved, using the Catmull-Clark subdivision
+	// rules. (These rules are outlined in the Developer Manual.)
 
-  // TODO face
+	if (boundaries.size() > 0) {
+		showError("Can't support meshes with boundary");
+		return;
+	}
 
-  // TODO edges
+	// face
+	for (auto & f : faces)
+		f.newPosition = f.centroid();
 
-  // TODO vertices
-  showError("computeCatmullClarkPositions() not implemented.");
+	// edges
+	for (auto & e : edges) {
+		e.newPosition = 0.25 *
+			(e.halfedge()->face()->newPosition
+				+ e.halfedge()->twin()->face()->newPosition
+				+ e.halfedge()->vertex()->position
+				+ e.halfedge()->twin()->vertex()->position);
+	}
+
+	// vertices
+	for (auto & v : vertices) {
+		// Q
+		Vector3D Q(0, 0, 0);
+		vector<FaceIter> adjFs = v.AdjFaces();
+		for (auto adjF : adjFs)
+			Q += adjF->newPosition;
+
+		Q *= 1.0 / adjFs.size();
+
+		// R
+		Vector3D R(0, 0, 0);
+		vector<EdgeIter> adjEs = v.AdjEdges();
+		for (auto adjE : adjEs)
+			R += adjE->centroid();// [original] edge midpoints
+
+		R *= 1.0 / adjEs.size();
+
+		// S
+		Vector3D S = v.position;
+
+		// Vertex::newPosition
+		size_t n = v.degree();
+		v.newPosition = (Q + 2 * R + (n - 3) * S) / n;
+	}
 }
 
 /**
