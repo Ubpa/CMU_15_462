@@ -91,7 +91,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] bevelEdge
     - [x] bevelFace
   - [ ] Global
-    - [ ] Triangulation
+    - [x] Triangulation
     - [ ] Subdivision
     - [ ] Simplification
     - [ ] Isotropic Remeshing

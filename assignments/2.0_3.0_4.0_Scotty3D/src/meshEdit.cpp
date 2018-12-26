@@ -944,7 +944,7 @@ void HalfedgeMesh::bevelVertexComputeNewPositions(
 void HalfedgeMesh::bevelEdgeComputeNewPositions(
 	vector<Vector3D>& originalVertexPositions,
 	vector<HalfedgeIter>& newHalfedges, double tangentialInset) {
-	// TODO Compute new vertex positions for the vertices of the beveled edge.
+	// Compute new vertex positions for the vertices of the beveled edge.
 	//
 	// These vertices can be accessed via newHalfedges[i]->vertex()->position for
 	// i = 1, ..., newHalfedges.size()-1.
@@ -991,9 +991,18 @@ void HalfedgeMesh::splitPolygons(vector<FaceIter>& fcs) {
 }
 
 void HalfedgeMesh::splitPolygon(FaceIter f) {
-  // TODO: (meshedit) 
-  // Triangulate a polygonal face
-  showError("splitPolygon() not implemented.");
+	// Triangulate a polygonal face
+	
+	if (f->isBoundary()) {
+		showError("Can't triangulate a boundary face");
+		return;
+	}
+
+	vector<VertexIter> verticesOfFace = f->Vertices();
+
+	bool side = true;
+	for (size_t left = 1, right = verticesOfFace.size() - 1; right - left > 1; left += side, right -= !side, side != side)
+		ConnectVertex(verticesOfFace[left], verticesOfFace[right]);
 }
 
 EdgeRecord::EdgeRecord(EdgeIter& _edge) : edge(_edge) {
