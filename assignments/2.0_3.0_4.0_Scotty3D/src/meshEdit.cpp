@@ -9,13 +9,45 @@
 
 using namespace CMU462;
 
+bool HalfedgeMesh::IsValid(VertexIter v, const string & info) {
+	// Check iterator, if it is not valid, show fatal error
+
+	if (v == vertices.end()) {
+		showError(info, true);
+		return false;
+	}
+
+	return true;
+}
+
+bool HalfedgeMesh::IsValid(EdgeIter e, const string & info) {
+	// Check iterator, if it is not valid, show fatal error
+
+	if (e == edges.end()) {
+		showError(info, true);
+		return false;
+	}
+
+	return true;
+}
+
+bool HalfedgeMesh::IsValid(FaceIter f, const string & info) {
+	// Check iterator, if it is not valid, show fatal error
+
+	if (f == faces.end()) {
+		showError(info, true);
+		return false;
+	}
+
+	return true;
+}
+
 EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
 
-	if (v0 == vertices.end() || v1 == vertices.end()) {
-		showError("GetSameEdge: v0 or v1 is null");
+	if (!IsValid(v0, "GetSameEdge : v0 is null") 
+		|| !IsValid(v1, "GetSameEdge : v1 is null"))
 		return edges.end();
-	}
 
 	vector<EdgeIter> adjEdgesOfV0 = v0->AdjEdges();
 	vector<EdgeIter> adjEdgesOfV1 = v1->AdjEdges();
@@ -33,10 +65,9 @@ FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
 	// the inner face is not a boundary
 
-	if (v0 == vertices.end() || v1 == vertices.end()) {
-		showError("GetSameFace: v0 or v1 is null");
+	if (!IsValid(v0, "GetSameFace : v0 is null")
+		|| !IsValid(v1, "GetSameFace : v1 is null"))
 		return faces.end();
-	}
 
 	vector<FaceIter> facesOfv0 = v0->AdjFaces();
 	vector<FaceIter> facesOfv1 = v1->AdjFaces();
@@ -60,10 +91,8 @@ FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 	// Insert a vertex on the middle position of edge.
 
-	if (e0 == edges.end()) {
-		showError("InsertVertex: e0 is null");
+	if (!IsValid(e0, "InsertVertex : e0 is null"))
 		return vertices.end();
-	}
 	
 	//         |  |                           |  |
 	//   (¡ü)he2|  |                     (¡ü)he2|  |
@@ -129,7 +158,7 @@ VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 }
 
 VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
-	// Insert a vertex on the center position of ordered vertices in same face;
+	// Insert a vertex on the center position of [ordered] vertices in same face;
 	// the face is not a boundary
 	// this method won't check the validity of input
 	
@@ -139,7 +168,7 @@ VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
 	}
 
 	if (Vs.size() < 2) {
-		showError("InsertVertex : Vs' size is smaller than 2");
+		showError("InsertVertex : Vs' size is smaller than 2", true);
 		return vertices.end();
 	}
 	
@@ -155,13 +184,18 @@ VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
 	
 	// let e2's to be f
 	if (e1 != edges.end()) {
-		if ((!e2->halfedge()->face()->isBoundary() && !(e2->halfedge()->face() == f))
-			&& (!e2->halfedge()->twin()->face()->isBoundary() && !(e2->halfedge()->twin()->face() == f))) {
+		if (e2->halfedge()->face()->isBoundary()
+			|| e2->halfedge()->twin()->face()->isBoundary()
+			|| (!(e2->halfedge()->face() == f) && !(e2->halfedge()->twin()->face() == f))) 
+		{
 			e2->halfedge()->edge() = e1;
 			e2->halfedge()->twin()->edge() = e1;
 			e1->halfedge()->edge() = e2;
-			e2->halfedge()->twin()->edge() = e2;
-			swap(e1->halfedge(), e2->halfedge());
+			e1->halfedge()->twin()->edge() = e2;
+			
+			HalfedgeIter tmpHe = e1->halfedge();
+			e1->halfedge() = e2->halfedge();
+			e2->halfedge() = tmpHe;
 		}
 	}
 
@@ -173,6 +207,13 @@ VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
 	v->position = centerPos;
 
 	return v;
+}
+
+VertexIter HalfedgeMesh::InsertVertex(set<VertexIter> Vs, FaceIter f) {
+	// Insert a vertex on the center position of[unordered] vertices in same face
+	// the face is not a boundary
+
+	return InsertVertex(f->SortVertices(Vs), f);
 }
 
 VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
@@ -192,10 +233,9 @@ VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	// Connect two verties in a face.
 
-	if (v0 == vertices.end() || v1 == vertices.end()) {
-		showError("ConnectVertex: v0 or v1 is null");
+	if (!IsValid(v0, "ConnectVertex : v0 is null")
+		|| !IsValid(v1, "ConnectVertex : v1 is null"))
 		return edges.end();
-	}
 
 	//  |                                        |
 	// he0(¡ý)                                 (¡ü)he3
@@ -207,7 +247,7 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 
 	FaceIter f = GetSameFace(v0, v1);
 	if (f == faces.end()) {
-		showError("v0 and v1 are not in same face, connect failed");
+		showError("v0 and v1 are not in same face, connect fail");
 		return edges.end();
 	}
 
@@ -280,10 +320,8 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	// newly inserted vertex. The halfedge of this vertex should point along
 	// the edge that was split, rather than the new edges.
 
-	if (e == edges.end()) {
-		showError("splitEdge: e is null");
+	if (!IsValid(e, "splitEdge: e is null"))
 		return vertices.end();
-	}
 
 	// [Note:this method is for triangle meshes only!]
 	if (e->halfedge()->face()->degree() != 3
@@ -388,7 +426,8 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 		}
 	}
 
-	eraseEdge(e);
+	if (!IsValid(eraseEdge(e), "collapseEdge : erase edge fail"))
+		return vertices.end();
 
 	FaceIter f = faces.end();
 
@@ -398,11 +437,13 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 			if (!adjE->IsBridge()) {
 				adjEs.erase(adjE);
 				f = eraseEdge(adjE);
+				if (!IsValid(f, "collapseEdge : erase edge fail"))
+					return vertices.end();
 				break;// must break here because iterator has been destroy
 			}
 		}
 		if (origSize == adjEs.size()) {
-			showError("Can't delete more adjacent edges when collapsing face");
+			showError("Can't delete more adjacent edges when collapsing face", true);
 			return vertices.end();
 		}
 	}
@@ -410,15 +451,7 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	if (f == faces.end())
 		return vertices.end();
 
-	// sort adjacent vertices
-	vector<VertexIter> verticesOfFace = f->Vertices();
-	vector<VertexIter> orderedAdjVs;
-	for (auto vOfFace : verticesOfFace) {
-		if (adjVs.find(vOfFace) != adjVs.end())
-			orderedAdjVs.push_back(vOfFace);
-	}
-
-	return InsertVertex(orderedAdjVs, f);
+	return InsertVertex(adjVs, f);
 }
 
 VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
@@ -461,7 +494,7 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 		}
 	}
 
-	set<VertexIter> adjVs;
+	set<VertexIter> adjVs = f->AdjVertices();
 
 	while (edgesOfFace.size() > 0) {
 		size_t origSize = edgesOfFace.size();
@@ -469,11 +502,12 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 			EdgeIter e = edgesOfFace[i];
 			if (!e->isBoundary()) {
 				edgesOfFace.erase(edgesOfFace.begin() + i);
-				eraseEdge(e);
+				if (!IsValid(eraseEdge(e), "collapseFace : erase edge fail"))
+					return vertices.end();
 			}
 		}
 		if (origSize == edgesOfFace.size()) {
-			showError("Can't delete more edges when collapsing face");
+			showError("Can't delete more edges when collapsing face", true);
 			return vertices.end();
 		}
 	}
@@ -484,24 +518,18 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 			if (!adjE->IsBridge()) {
 				adjEsOfFace.erase(adjE);
 				f = eraseEdge(adjE);
+				if (!IsValid(f, "collapseFace : erase edge fail"))
+					return vertices.end();
 				break;// must break here because iterator has been destroy
 			}
 		}
 		if (origSize == adjEsOfFace.size()) {
-			showError("Can't delete more adjacent edges when collapsing face");
+			showError("Can't delete more adjacent edges when collapsing face", true);
 			return vertices.end();
 		}
 	}
 
-	// sort adjacent vertices
-	vector<VertexIter> verticesOfFace = f->Vertices();
-	vector<VertexIter> orderedAdjVs;
-	for (auto vOfFace : verticesOfFace) {
-		if (adjVs.find(vOfFace) != adjVs.end())
-			orderedAdjVs.push_back(vOfFace);
-	}
-
-	return InsertVertex(orderedAdjVs, f);
+	return InsertVertex(adjVs, f);
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
@@ -527,8 +555,12 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 	}
 
 	FaceIter f;
-	for (auto adjE : adjEs)
+	for (auto adjE : adjEs) {
 		f = eraseEdge(adjE);
+		if (f == faces.end()) {
+			showError("eraseVertex : erase edge fail", true);
+		}
+	}
 
 	// no need to erase vertex
 	// it will be erased by the final call of eraseEdge
@@ -659,10 +691,8 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e) {
 	// The selected edge e is "rotated" around the face, 
 	// in the sense that each endpoint moves to the next vertex (in counter-clockwise order)
 	// along the boundary of the two polygons containing e.
-	if (e == edges.end()) {
-		showError("flipEdge: e is null");
+	if (!IsValid(e, "flipEdge: e is null"))
 		return edges.end();
-	}
 
 	if (e->isBoundary()) {
 		showError("Can't flip boundary edge");
@@ -672,7 +702,10 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e) {
 	VertexIter v0 = e->halfedge()->next()->twin()->vertex();
 	VertexIter v1 = e->halfedge()->twin()->next()->twin()->vertex();
 
-	eraseEdge(e);
+	FaceIter f = eraseEdge(e);
+	if(!IsValid(f, "flipEdge : erase a edge fail"))
+		return edges.end();
+
 	return ConnectVertex(v0, v1);
 }
 
@@ -1345,7 +1378,7 @@ void MeshResampler::downsample(HalfedgeMesh& mesh) {
 
 		VertexIter newV = mesh.collapseEdge(eR.edge);
 		if (newV == mesh.verticesEnd()) {
-			showError("downsample : collapse an edge failed");
+			showError("downsample : collapse an edge fail");
 			return;
 		}
 		newV->position = eR.optimalPoint;

@@ -64,7 +64,25 @@ vector<VertexIter> Face::Vertices() {
 	} while (he != this->halfedge());
 
 	return vertices;
+}
 
+vector<VertexIter> Face::SortVertices(set<VertexIter> unorderedVs) {
+	// Sort unordered vertices of this face
+
+	vector<VertexIter> vertices = this->Vertices();
+
+	vector<VertexIter> orderedVs;
+	for (auto v : vertices) {
+		if (unorderedVs.find(v) != unorderedVs.end())
+			orderedVs.push_back(v);
+	}
+
+	if (orderedVs.size() != unorderedVs.size()) {
+		showError("SortVertices : unorderedVs not all in face");
+		return vector<VertexIter>();
+	}
+
+	return orderedVs;
 }
 
 vector<HalfedgeIter> Face::Halfedges() {
@@ -112,6 +130,24 @@ set<EdgeIter> Face::AdjEdges() {
 		adjEs.erase(e);
 
 	return adjEs;
+}
+
+set<VertexIter> Face::AdjVertices() {
+	// Collect all unordered adjacent vertices of f
+
+	set<VertexIter> adjVs;
+
+	vector<VertexIter> vertices = this->Vertices();
+	for (auto v : vertices) {
+		vector<VertexIter> adjVsOfV = v->AdjVertices();
+		for (auto adjV : adjVsOfV)
+			adjVs.insert(adjV);
+	}
+
+	for (auto v : vertices)
+		adjVs.erase(v);
+
+	return adjVs;
 }
 
 void HalfedgeMesh::build(const vector<vector<Index> >& polygons,

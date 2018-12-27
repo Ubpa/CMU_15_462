@@ -525,6 +525,10 @@ namespace CMU462 {
 		 */
 		vector<VertexIter> Vertices();
 
+		/*
+		 * Sort unordered vertices of this face
+		 */
+		vector<VertexIter> SortVertices(set<VertexIter> unorderedVs);
 
 		/**
 		 * Collect all ordered halfedges
@@ -540,6 +544,11 @@ namespace CMU462 {
 		 * Collect all unordered adjacent edges of f
 		 */
 		set<EdgeIter> AdjEdges();
+
+		/**
+		 * Collect all unordered adjacent vertices of f
+		 */
+		set<VertexIter> AdjVertices();
 
 
 	protected:
@@ -1108,6 +1117,12 @@ namespace CMU462 {
 		list<Face> boundaries;
 
 	private:
+		/*
+		 * Check iterator, if it is not valid, show fatal error
+		 */
+		bool IsValid(VertexIter v, const string & info);
+		bool IsValid(EdgeIter e, const string & info);
+		bool IsValid(FaceIter f, const string & info);
 
 		/**
 		 * if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
@@ -1126,11 +1141,17 @@ namespace CMU462 {
 		VertexIter InsertVertex(EdgeIter e);
 
 		/**
-		 * Insert a vertex on the center position of ordered vertices in same face
+		 * Insert a vertex on the center position of [ordered] vertices in same face
 		 * the face is not a boundary
 		 * this method won't check the validity of input
 		 */
 		VertexIter InsertVertex(vector<VertexIter> Vs, FaceIter f);
+
+		/**
+		 * Insert a vertex on the center position of [unordered] vertices in same face
+		 * the face is not a boundary
+		 */
+		VertexIter InsertVertex(set<VertexIter> Vs, FaceIter f);
 
 		/**
 		 * Insert a vertex on the center of face.
