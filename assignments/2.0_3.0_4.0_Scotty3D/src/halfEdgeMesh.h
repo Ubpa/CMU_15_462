@@ -1121,6 +1121,7 @@ namespace CMU462 {
 		 * Check iterator, if it is not valid, show fatal error
 		 */
 		bool IsValid(VertexIter v, const string & info);
+		bool IsValid(HalfedgeIter he, const string & info);
 		bool IsValid(EdgeIter e, const string & info);
 		bool IsValid(FaceIter f, const string & info);
 
@@ -1161,8 +1162,10 @@ namespace CMU462 {
 
 		/**
 		 * Connect two verties in a face.
+		 * original face is on the [left side] of v0v1
+		 * new face is on the [right side] of v0v1
 		 */
-		EdgeIter ConnectVertex(VertexIter v0, VertexIter v1);
+		EdgeIter ConnectVertex(VertexIter v0, VertexIter v1, FaceIter f);
 
 	};  // class HalfedgeMesh
 

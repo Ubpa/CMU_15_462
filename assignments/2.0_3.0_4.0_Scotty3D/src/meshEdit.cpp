@@ -20,6 +20,17 @@ bool HalfedgeMesh::IsValid(VertexIter v, const string & info) {
 	return true;
 }
 
+bool HalfedgeMesh::IsValid(HalfedgeIter he, const string & info) {
+	// Check iterator, if it is not valid, show fatal error
+
+	if (he == halfedges.end()) {
+		showError(info, true);
+		return false;
+	}
+
+	return true;
+}
+
 bool HalfedgeMesh::IsValid(EdgeIter e, const string & info) {
 	// Check iterator, if it is not valid, show fatal error
 
@@ -145,9 +156,9 @@ VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 	he4->face() = f1;
 
 	he0->twin() = he4;
+	he4->twin() = he0;
 	he1->twin() = he3;
 	he3->twin() = he1;
-	he4->twin() = he0;
 	
 	he0->next() = he1;
 	he1->next() = he2;
@@ -179,30 +190,15 @@ VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
 
 	centerPos *= 1.0 / Vs.size();
 
-	EdgeIter e1 = GetSameEdge(Vs[0], Vs[1]);
-	EdgeIter e2 = ConnectVertex(Vs[0], Vs[1]);
-	
-	// let e2's to be f
-	if (e1 != edges.end()) {
-		if (e2->halfedge()->face()->isBoundary()
-			|| e2->halfedge()->twin()->face()->isBoundary()
-			|| (!(e2->halfedge()->face() == f) && !(e2->halfedge()->twin()->face() == f))) 
-		{
-			e2->halfedge()->edge() = e1;
-			e2->halfedge()->twin()->edge() = e1;
-			e1->halfedge()->edge() = e2;
-			e1->halfedge()->twin()->edge() = e2;
-			
-			HalfedgeIter tmpHe = e1->halfedge();
-			e1->halfedge() = e2->halfedge();
-			e2->halfedge() = tmpHe;
-		}
-	}
+	// connect form v0 to v1
+	// the f will be on the [left side] of v0v1
+	// so f can be use later
+	EdgeIter e = ConnectVertex(Vs[0], Vs[1], f);
 
-	VertexIter v = InsertVertex(e2);
+	VertexIter v = InsertVertex(e);
 
 	for (size_t i = 2; i < Vs.size(); i++)
-		ConnectVertex(v, Vs[i]);
+		ConnectVertex(v, Vs[i], f);
 
 	v->position = centerPos;
 
@@ -221,7 +217,7 @@ VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 	// f should not be a boundary
 
 	if (f->isBoundary()) {
-		showError("Can't insert vertex for a boundary face");
+		showError("InsertVertex : f is boundary", true);
 		return vertices.end();
 	}
 	
@@ -230,8 +226,15 @@ VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 	return InsertVertex(verticesOfFace, f);
 }
 
-EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
-	// Connect two verties in a face.
+EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1, FaceIter f) {
+	// Connect two verties in a face
+	// original face is on the [left side] of v0v1
+	// new face is on the [right side] of v0v1
+
+	if (f->isBoundary()) {
+		showError("ERROR::ConnectVertex : f is boundary");
+		return edges.end();
+	}
 
 	if (!IsValid(v0, "ConnectVertex : v0 is null")
 		|| !IsValid(v1, "ConnectVertex : v1 is null"))
@@ -245,16 +248,23 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	// he1(¡ý)                                 (¡ü)he2
 	//  |                                        |
 
-	FaceIter f = GetSameFace(v0, v1);
-	if (f == faces.end()) {
-		showError("v0 and v1 are not in same face, connect fail");
-		return edges.end();
-	}
-
 	vector<HalfedgeIter> halfedgesV0 = v0->AdjHalfedges();
 	vector<HalfedgeIter> halfedgesV1 = v1->AdjHalfedges();
 
-	HalfedgeIter he1, he3;
+	HalfedgeIter he1 = halfedges.end();
+	HalfedgeIter he3 = halfedges.end();
+
+	// find a halfedge of v in f
+	// !!! in special case, maybe more halfedges of v in f
+	// example :
+	// 
+	//   ------------------------
+	//   |                      |
+	//   |                      |
+	//   |      |        |      |
+	//   |      |        |      |
+	//   ------[v]------[v]------
+	// 
 	for (auto he : halfedgesV0) {
 		if (!he->face()->isBoundary() && he->face() == f) {
 			he1 = he;
@@ -262,12 +272,21 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 		}
 	}
 
-	for (auto he : halfedgesV1) {
-		if (!he->face()->isBoundary() && he->face() == f) {
-			he3 = he;
+	if (!IsValid(he1, "ConnectVertex : v0 is not in face f"))
+		return edges.end();
+
+	// go form he1, update he1 and find he3
+	for (auto curHe = he1->next(), endHe = he1; curHe != endHe; curHe = curHe->next()) {
+		if (curHe->vertex() == v0)
+			he1 = curHe;
+		else if (curHe->vertex() == v1) {
+			he3 = curHe;
 			break;
 		}
 	}
+
+	if (!IsValid(he3, "ConnectVertex : v1 is not in face f"))
+		return edges.end();
 
 	HalfedgeIter he0 = he1->pre();
 	HalfedgeIter he2 = he3->pre();
@@ -290,9 +309,8 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	newHe0->twin() = newHe1;
 	newHe1->twin() = newHe0;
 
-
 	FaceIter newF = newFace();
-	he0->face()->halfedge() = newHe0;
+	f->halfedge() = newHe0;
 	newF->halfedge() = newHe1;
 	{
 		HalfedgeIter he = he1;
@@ -303,8 +321,8 @@ EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 			he = he->next();
 		}
 	}
-	newHe0->face() = he0->face();
-	newHe1->face() = he1->face();
+	newHe0->face() = f;
+	newHe1->face() = newF;
 
 
 	he0->next() = newHe0;
@@ -327,6 +345,9 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	if (e->halfedge()->face()->degree() != 3
 		|| e->halfedge()->twin()->face()->degree() != 3) {
 		showError("splitEdge is for triangle meshes only!");
+		printf("ERROR::splitEdge : splitEdge is for triangle meshes only!\n(%d,%d)\n",
+			e->halfedge()->face()->degree(),
+			e->halfedge()->twin()->face()->degree());
 		return vertices.end();
 	}
 
@@ -353,7 +374,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 
 		VertexIter v1 = InsertVertex(e);
 
-		ConnectVertex(v0, v1);
+		ConnectVertex(v0, v1, he->face());
 
 		return v1;
 	}
@@ -366,7 +387,7 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	//   --      |  |      --                    --      |e1|      --
 	// --        |ee|        --                --        |  |        --
 	//[v0]     he|  |twin   [v1]     ===>     [v0]-------[v2]-------[v1]
-	// --        |  |        --                --        |  |        --
+	// -- {f0}   |  |   {f1} --                --        |  |        --
 	//   --      |  |      --                    --      |e0|      --
 	//     --    |  |    --                        --    |  |    --
 	//       --  |  |  --                            --  |  |  --
@@ -375,12 +396,14 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 
 	HalfedgeIter he = e->halfedge();
 	HalfedgeIter twin = he->twin();
+	FaceIter f0 = he->face();
+	FaceIter f1 = twin->face();
 	VertexIter v0 = he->next()->next()->vertex();
 	VertexIter v1 = twin->next()->next()->vertex();
 
 	VertexIter v2 = InsertVertex(e);
-	ConnectVertex(v0, v2);
-	ConnectVertex(v2, v1);
+	ConnectVertex(v0, v2, f0);
+	ConnectVertex(v2, v1, f1);
 
 	return v2;
 }
@@ -412,7 +435,6 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	}
 
 	set<EdgeIter> adjEs = e->AdjEdges();
-	set<VertexIter> adjVs = e->AdjVertices();
 
 	for (auto adjE : adjEs) {
 		if (adjE->isBoundary()) {
@@ -425,6 +447,8 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 			return vertices.end();
 		}
 	}
+
+	set<VertexIter> adjVs = e->AdjVertices();
 
 	if (!IsValid(eraseEdge(e), "collapseEdge : erase edge fail"))
 		return vertices.end();
@@ -706,7 +730,7 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e) {
 	if(!IsValid(f, "flipEdge : erase a edge fail"))
 		return edges.end();
 
-	return ConnectVertex(v0, v1);
+	return ConnectVertex(v0, v1, f);
 }
 
 void HalfedgeMesh::subdivideQuad(bool useCatmullClark) {
@@ -988,7 +1012,7 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 	for (size_t i = 0; i < newV.size(); i++) {
 		VertexIter v0 = newV[i];
 		VertexIter v1 = newV[(i + 1) % newV.size()];
-		ConnectVertex(v0, v1);
+		ConnectVertex(v0, v1, GetSameFace(v0, v1));
 	}
 	
 	return eraseVertex(v);
@@ -1015,7 +1039,7 @@ FaceIter HalfedgeMesh::bevelEdge(EdgeIter e) {
 	for (size_t i = 0; i < newV.size(); i++) {
 		VertexIter v0 = newV[i];
 		VertexIter v1 = newV[(i + 1) % newV.size()];
-		ConnectVertex(v0, v1);
+		ConnectVertex(v0, v1, GetSameFace(v0,v1));
 	}
 	
 	VertexIter v0 = e->halfedge()->vertex();
@@ -1054,7 +1078,6 @@ FaceIter HalfedgeMesh::bevelFace(FaceIter f) {
 
 	return rstF;
 }
-
 
 void HalfedgeMesh::bevelFaceComputeNewPositions(
 	vector<Vector3D>& originalVertexPositions,
@@ -1201,8 +1224,14 @@ void HalfedgeMesh::splitPolygon(FaceIter f) {
 	vector<VertexIter> verticesOfFace = f->Vertices();
 
 	bool side = true;
-	for (size_t left = 1, right = verticesOfFace.size() - 1; right - left > 1; left += side, right -= !side, side = !side)
-		ConnectVertex(verticesOfFace[left], verticesOfFace[right]);
+	for (size_t left = 1, right = verticesOfFace.size() - 1; right - left > 1; left += side, right -= !side) {
+		// connect form right to left
+		// and original face will be [left side] of v0v1
+		// so the face can be use later
+		ConnectVertex(verticesOfFace[right], verticesOfFace[left], f);
+
+		side = !side;
+	}
 }
 
 EdgeRecord::EdgeRecord(EdgeIter& _edge) : edge(_edge) {
@@ -1415,15 +1444,78 @@ void MeshResampler::downsample(HalfedgeMesh& mesh) {
 }
 
 void MeshResampler::resample(HalfedgeMesh& mesh) {
-  // TODO: (meshEdit)
-  // Compute the mean edge length.
-  // Repeat the four main steps for 5 or 6 iterations
-  // -> Split edges much longer than the target length (being careful about
-  //    how the loop is written!)
-  // -> Collapse edges much shorter than the target length.  Here we need to
-  //    be EXTRA careful about advancing the loop, because many edges may have
-  //    been destroyed by a collapse (which ones?)
-  // -> Now flip each edge if it improves vertex degree
-  // -> Finally, apply some tangential smoothing to the vertex positions
-  showError("resample() not implemented.");
+	// Compute the mean edge length.
+	double meanLen = 0.0;
+	for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++)
+		meanLen += e->length();
+
+	meanLen /= mesh.nEdges();
+
+	// Repeat the four main steps for 5 or 6 iterations
+	for (size_t i = 0; i < 10; i++) {
+		printf("INFO::resample : loop %d\n", i);
+		// -> Split edges much longer than the target length (being careful about
+		//    how the loop is written!)
+		size_t n = mesh.nEdges();
+		EdgeIter e = mesh.edgesBegin();
+		while (n-- > 0) {
+			EdgeIter nextE = e;
+			nextE++;
+
+			if (e->length() > 4.0 / 3.0*meanLen)
+				mesh.splitEdge(e);
+
+			e = nextE;
+		}
+
+		for (auto f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
+			if (f->degree() != 3) {
+				showError("face degree is not 3");
+				printf("ERROR::resample : face degree is not 3, it is %d\n", f->degree());
+			}
+		}
+
+		// -> Collapse edges much shorter than the target length.  Here we need to
+		//    be EXTRA careful about advancing the loop, because many edges may have
+		//    been destroyed by a collapse (which ones?)
+		set<EdgeIter> edges;
+		for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++)
+			edges.insert(e);
+
+		while (edges.size() > 0) {
+			EdgeIter e = *edges.begin();
+			edges.erase(e);
+			if (e->length() < 0.8*meanLen) {
+				auto adjEs = e->AdjEdges();
+				for (auto adjE : adjEs)
+					edges.erase(adjE);
+
+				mesh.collapseEdge(e);
+			}
+		}
+
+		// -> Now flip each edge if it improves vertex degree
+		for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
+			int v0d = e->halfedge()->vertex()->degree();
+			int v1d = e->halfedge()->twin()->vertex()->degree();
+			int v2d = e->halfedge()->next()->next()->vertex()->degree();
+			int v3d = e->halfedge()->twin()->next()->next()->vertex()->degree();
+
+			int cost = abs(v0d - 6) + abs(v1d - 6) + abs(v2d - 6) + abs(v3d - 6);
+			int flipCost = abs(v0d - 1 - 6) + abs(v1d - 1 - 6) + abs(v2d + 1 - 6) + abs(v3d + 1 - 6);
+			if (flipCost < cost)
+				mesh.flipEdge(e);
+		}
+
+		// -> Finally, apply some tangential smoothing to the vertex 
+		for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+			Vector3D offset = v->neighborhoodCentroid() - v->position;
+			Vector3D norm = v->normal();
+			Vector3D tangentOffset = offset - dot(offset, norm)*norm;
+			v->newPosition = v->position + 0.1 * tangentOffset;
+		}
+
+		for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++)
+			v->position = v->newPosition;
+	}
 }

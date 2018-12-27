@@ -73,12 +73,14 @@ vector<VertexIter> Face::SortVertices(set<VertexIter> unorderedVs) {
 
 	vector<VertexIter> orderedVs;
 	for (auto v : vertices) {
-		if (unorderedVs.find(v) != unorderedVs.end())
+		if (unorderedVs.find(v) != unorderedVs.end()) {
 			orderedVs.push_back(v);
+			unorderedVs.erase(v);
+		}
 	}
 
-	if (orderedVs.size() != unorderedVs.size()) {
-		showError("SortVertices : unorderedVs not all in face");
+	if (unorderedVs.size() != 0) {
+		showError("SortVertices : unorderedVs not all in face", true);
 		return vector<VertexIter>();
 	}
 

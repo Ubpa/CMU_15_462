@@ -219,8 +219,12 @@ Try to make triangles uniform shape & size
 
 Repeat four steps: 
 
-- Split any edge over 4/3rds mean edge legth
+- Split any edge over 4/3rds mean edge length
 
 - Collapse any edge less than 4/5ths mean edge length
+
 - Flip edges to improve vertex degree
+
 - Center vertices tangentially 
+
+  > We can make the algorithm slightly more stable by moving *gently* toward the centroid, rather than immediately snapping the vertex to the center.
