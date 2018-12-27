@@ -85,11 +85,11 @@ Distance is sum of point-to-plane distances
 
 Suppose in coordinates we have 
 
-- a query point (x,y,z) 
+- a query point $(x,y,z)$ 
 
-- a normal (a,b,c) 
+- a normal $(a,b,c)$ 
 
-- an offset d := -(p,q,r) • (a,b,c) , point (p, q, r) is on the plane
+- an offset $d := -(p,q,r) \cdot(a,b,c)$ , point (p, q, r) is on the plane
 
 then in homogeneous coordinates let $\mathbf{u}=(x,y,z,1),\ \mathbf{v} =(a,b,c,d)$
 
@@ -152,18 +152,21 @@ So, break up our quadratic function into two pieces:
 
 Can minimize as before: 
 $$
-2B\mathbf{x}+2\mathbf{w}=0\\
-\mathbf{x}=-B^{-1}\mathbf{w}
+\begin{aligned}
+2B\mathbf{x}+2\mathbf{w}&=0\\
+B\mathbf{x}&=-\mathbf{w}\\
+\mathbf{x}&=-B^{-1}\mathbf{w}
+\end{aligned}
 $$
 **Quadric Error Simplifcation: Final Algorithm**
 
 - Compute K for each triangle (distance to plane) 
-- Set K at each vertex to sum of Ks from incident triangles 
-- Set K at each edge to sum of Ks at endpoints 
+- Set K at each vertex to sum of $K_s$ from incident triangles 
+- Set K at each edge to sum of $K_s$ at endpoints 
 - Find point at each edge minimizing quadric error 
 - Until we reach target # of triangles: 
   - collapse edge (i,j) with smallest cost to get new vertex m 
-  - add Ki and Kj to get quadric Km at m 
+  - add $K_i$ and $K_j$ to get quadric $K_m$ at m 
   - update cost of edges touching m 
 
 ## 11.3 Resample

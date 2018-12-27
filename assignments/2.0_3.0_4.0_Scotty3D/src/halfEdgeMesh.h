@@ -1014,7 +1014,7 @@ namespace CMU462 {
 		 * Merge the two faces on either side of an edge, returning a
 		 * pointer to the merged face.
 		 */
-		FaceIter eraseEdge(EdgeIter e, bool delSingleLine = true);
+		FaceIter eraseEdge(EdgeIter e);
 
 		/**
 		 * Splits all non-triangular faces into triangles.
@@ -1124,6 +1124,13 @@ namespace CMU462 {
 		 * Insert a vertex on the middle position of edge.
 		 */
 		VertexIter InsertVertex(EdgeIter e);
+
+		/**
+		 * Insert a vertex on the center position of ordered vertices in same face
+		 * the face is not a boundary
+		 * this method won't check the validity of input
+		 */
+		VertexIter InsertVertex(vector<VertexIter> Vs, FaceIter f);
 
 		/**
 		 * Insert a vertex on the center of face.

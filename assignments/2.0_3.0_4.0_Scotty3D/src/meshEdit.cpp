@@ -12,6 +12,11 @@ using namespace CMU462;
 EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
 
+	if (v0 == vertices.end() || v1 == vertices.end()) {
+		showError("GetSameEdge: v0 or v1 is null");
+		return edges.end();
+	}
+
 	vector<EdgeIter> adjEdgesOfV0 = v0->AdjEdges();
 	vector<EdgeIter> adjEdgesOfV1 = v1->AdjEdges();
 
@@ -27,6 +32,11 @@ EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
 FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
 	// the inner face is not a boundary
+
+	if (v0 == vertices.end() || v1 == vertices.end()) {
+		showError("GetSameFace: v0 or v1 is null");
+		return faces.end();
+	}
 
 	vector<FaceIter> facesOfv0 = v0->AdjFaces();
 	vector<FaceIter> facesOfv1 = v1->AdjFaces();
@@ -49,6 +59,11 @@ FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 
 VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 	// Insert a vertex on the middle position of edge.
+
+	if (e0 == edges.end()) {
+		showError("InsertVertex: e0 is null");
+		return vertices.end();
+	}
 	
 	//         |  |                           |  |
 	//   (¡ü)he2|  |                     (¡ü)he2|  |
@@ -113,6 +128,53 @@ VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 	return v0;
 }
 
+VertexIter HalfedgeMesh::InsertVertex(vector<VertexIter> Vs, FaceIter f) {
+	// Insert a vertex on the center position of ordered vertices in same face;
+	// the face is not a boundary
+	// this method won't check the validity of input
+	
+	if (f->isBoundary()) {
+		showError("InsertVertex : f is boudary");
+		return vertices.end();
+	}
+
+	if (Vs.size() < 2) {
+		showError("InsertVertex : Vs' size is smaller than 2");
+		return vertices.end();
+	}
+	
+	// get center position
+	Vector3D centerPos(0, 0, 0);
+	for (auto v : Vs)
+		centerPos += v->position;
+
+	centerPos *= 1.0 / Vs.size();
+
+	EdgeIter e1 = GetSameEdge(Vs[0], Vs[1]);
+	EdgeIter e2 = ConnectVertex(Vs[0], Vs[1]);
+	
+	// let e2's to be f
+	if (e1 != edges.end()) {
+		if ((!e2->halfedge()->face()->isBoundary() && !(e2->halfedge()->face() == f))
+			&& (!e2->halfedge()->twin()->face()->isBoundary() && !(e2->halfedge()->twin()->face() == f))) {
+			e2->halfedge()->edge() = e1;
+			e2->halfedge()->twin()->edge() = e1;
+			e1->halfedge()->edge() = e2;
+			e2->halfedge()->twin()->edge() = e2;
+			swap(e1->halfedge(), e2->halfedge());
+		}
+	}
+
+	VertexIter v = InsertVertex(e2);
+
+	for (size_t i = 2; i < Vs.size(); i++)
+		ConnectVertex(v, Vs[i]);
+
+	v->position = centerPos;
+
+	return v;
+}
+
 VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 	// Insert a vertex on the center of f
 	// f should not be a boundary
@@ -124,30 +186,16 @@ VertexIter HalfedgeMesh::InsertVertex(FaceIter f) {
 	
 	vector<VertexIter> verticesOfFace = f->Vertices();
 
-	Vector3D centerPos = f->centroid();
-
-	EdgeIter e1 = GetSameEdge(verticesOfFace[0], verticesOfFace[1]);
-	EdgeIter e2 = ConnectVertex(verticesOfFace[0], verticesOfFace[1]);
-	// e's face is f
-	EdgeIter e;
-	if ((!e1->halfedge()->face()->isBoundary() && e1->halfedge()->face() == f)
-		|| (!e1->halfedge()->twin()->face()->isBoundary() && e1->halfedge()->twin()->face() == f))
-		e = e1;
-	else
-		e = e2;
-
-	VertexIter v = InsertVertex(e);
-
-	for (size_t i = 2; i < verticesOfFace.size(); i++)
-		ConnectVertex(v, verticesOfFace[i]);
-
-	v->position = centerPos;
-
-	return v;
+	return InsertVertex(verticesOfFace, f);
 }
 
 EdgeIter HalfedgeMesh::ConnectVertex(VertexIter v0, VertexIter v1) {
 	// Connect two verties in a face.
+
+	if (v0 == vertices.end() || v1 == vertices.end()) {
+		showError("ConnectVertex: v0 or v1 is null");
+		return edges.end();
+	}
 
 	//  |                                        |
 	// he0(¡ý)                                 (¡ü)he3
@@ -232,6 +280,11 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	// newly inserted vertex. The halfedge of this vertex should point along
 	// the edge that was split, rather than the new edges.
 
+	if (e == edges.end()) {
+		showError("splitEdge: e is null");
+		return vertices.end();
+	}
+
 	// [Note:this method is for triangle meshes only!]
 	if (e->halfedge()->face()->degree() != 3
 		|| e->halfedge()->twin()->face()->degree() != 3) {
@@ -298,6 +351,11 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	// This method should collapse the given edge and return an iterator to
 	// the new vertex created by the collapse.
 
+	if (e == edges.end()) {
+		showError("splitEdge: e is null");
+		return vertices.end();
+	}
+
 	// The selected edge e is replaced by a single vertex v.
 	// This vertex is connected by edges to all vertices previously connected to either endpoint of e. 
 	// Moreover, if either of the polygons containing e was a triangle, it will be replaced by an edge
@@ -315,9 +373,10 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 		return vertices.end();
 	}
 
-	set<EdgeIter> adjEsOfFace = e->AdjEdges();
+	set<EdgeIter> adjEs = e->AdjEdges();
+	set<VertexIter> adjVs = e->AdjVertices();
 
-	for (auto adjE : adjEsOfFace) {
+	for (auto adjE : adjEs) {
 		if (adjE->isBoundary()) {
 			showError("Can't collapse face with boundary vertex");
 			return vertices.end();
@@ -333,16 +392,16 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 
 	FaceIter f = faces.end();
 
-	while (adjEsOfFace.size() > 0) {
-		size_t origSize = adjEsOfFace.size();
-		for (auto adjE : adjEsOfFace) {
+	while (adjEs.size() > 0) {
+		size_t origSize = adjEs.size();
+		for (auto adjE : adjEs) {
 			if (!adjE->IsBridge()) {
-				adjEsOfFace.erase(adjE);
+				adjEs.erase(adjE);
 				f = eraseEdge(adjE);
 				break;// must break here because iterator has been destroy
 			}
 		}
-		if (origSize == adjEsOfFace.size()) {
+		if (origSize == adjEs.size()) {
 			showError("Can't delete more adjacent edges when collapsing face");
 			return vertices.end();
 		}
@@ -351,7 +410,15 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	if (f == faces.end())
 		return vertices.end();
 
-	return InsertVertex(f);
+	// sort adjacent vertices
+	vector<VertexIter> verticesOfFace = f->Vertices();
+	vector<VertexIter> orderedAdjVs;
+	for (auto vOfFace : verticesOfFace) {
+		if (adjVs.find(vOfFace) != adjVs.end())
+			orderedAdjVs.push_back(vOfFace);
+	}
+
+	return InsertVertex(orderedAdjVs, f);
 }
 
 VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
@@ -360,6 +427,12 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	
 	// The selected face f is replaced by a single vertex v.
 	// All edges previously connected to vertices of f are now connected directly to v.
+
+	if (f->isBoundary()) {
+		showError("collapseFace: f is boundary");
+		return vertices.end();
+	}
+
 
 	vector<EdgeIter> edgesOfFace = f->Edges();
 
@@ -387,6 +460,8 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 			return vertices.end();
 		}
 	}
+
+	set<VertexIter> adjVs;
 
 	while (edgesOfFace.size() > 0) {
 		size_t origSize = edgesOfFace.size();
@@ -418,12 +493,25 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 		}
 	}
 
-	return InsertVertex(f);
+	// sort adjacent vertices
+	vector<VertexIter> verticesOfFace = f->Vertices();
+	vector<VertexIter> orderedAdjVs;
+	for (auto vOfFace : verticesOfFace) {
+		if (adjVs.find(vOfFace) != adjVs.end())
+			orderedAdjVs.push_back(vOfFace);
+	}
+
+	return InsertVertex(orderedAdjVs, f);
 }
 
 FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 	// This method should replace the given vertex and all its neighboring
 	// edges and faces with a single face, returning the new face.
+
+	if (v == vertices.end()) {
+		showError("eraseVertex : v is null");
+		return faces.end();
+	}
 
 	if (v->isBoundary()) {
 		showError("Can't erase a boundary vertex");
@@ -448,12 +536,17 @@ FaceIter HalfedgeMesh::eraseVertex(VertexIter v) {
 	return f;
 }
 
-FaceIter HalfedgeMesh::eraseEdge(EdgeIter e, bool delSingleLine) {
+FaceIter HalfedgeMesh::eraseEdge(EdgeIter e) {
 	// This method should erase the given edge and return an iterator to the
 	// merged face.
 
 	// The selected edge e will be replaced with the union of the faces containing it
 	// producing a new face e.(if e is a boundary edge, nothing happens).
+
+	if (e == edges.end()) {
+		showError("eraseEdge: e is null");
+		return faces.end();
+	}
 
 	if (e->isBoundary()) {
 		showError("Can't erase a boundary edge");
@@ -566,6 +659,11 @@ EdgeIter HalfedgeMesh::flipEdge(EdgeIter e) {
 	// The selected edge e is "rotated" around the face, 
 	// in the sense that each endpoint moves to the next vertex (in counter-clockwise order)
 	// along the boundary of the two polygons containing e.
+	if (e == edges.end()) {
+		showError("flipEdge: e is null");
+		return edges.end();
+	}
+
 	if (e->isBoundary()) {
 		showError("Can't flip boundary edge");
 		return e;
@@ -840,6 +938,10 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 	// HalfedgeMesh::bevelVertexComputeNewPositions (which you also have to
 	// implement!)
 
+	if (v == vertices.end()) {
+		showError("bevelVertex : v is null");
+		return faces.end();
+	}
 
 	// 1. collect edge
 	vector<EdgeIter> edges = v->AdjEdges();
@@ -1066,19 +1168,37 @@ void HalfedgeMesh::splitPolygon(FaceIter f) {
 	vector<VertexIter> verticesOfFace = f->Vertices();
 
 	bool side = true;
-	for (size_t left = 1, right = verticesOfFace.size() - 1; right - left > 1; left += side, right -= !side, side != side)
+	for (size_t left = 1, right = verticesOfFace.size() - 1; right - left > 1; left += side, right -= !side, side = !side)
 		ConnectVertex(verticesOfFace[left], verticesOfFace[right]);
 }
 
 EdgeRecord::EdgeRecord(EdgeIter& _edge) : edge(_edge) {
-  // TODO: (meshEdit)
-  // Compute the combined quadric from the edge endpoints.
-  // -> Build the 3x3 linear system whose solution minimizes the quadric error
-  //    associated with these two endpoints.
-  // -> Use this system to solve for the optimal position, and store it in
-  //    EdgeRecord::optimalPoint.
-  // -> Also store the cost associated with collapsing this edg in
-  //    EdgeRecord::Cost.
+	// Compute the combined quadric from the edge endpoints.
+
+	// -> Build the 3x3 linear system whose solution minimizes the quadric error
+	//    associated with these two endpoints.
+	Matrix4x4 quadricE = edge->halfedge()->vertex()->quadric + edge->halfedge()->twin()->vertex()->quadric;
+	Matrix3x3 A;
+	for (size_t x = 0; x <= 2; x++) {
+		for (size_t y = 0; y <= 2; y++)
+			A(x, y) = quadricE(x, y);
+	}
+	Vector3D w(quadricE(0,3), quadricE(1,3), quadricE(2,3));
+	Vector3D b = -w;
+
+	// -> Use this system to solve for the optimal position, and store it in
+	//    EdgeRecord::optimalPoint.
+	if (abs(A.det()) < 0.000001) {
+		optimalPoint = edge->centroid();
+	}
+	else {
+		optimalPoint = A.inv() * b;
+	}
+
+	// -> Also store the cost associated with collapsing this edge in
+	//    EdgeRecord::score.
+	Vector4D u = Vector4D(optimalPoint, 1);
+	score = dot((quadricE * u), u);
 }
 
 void MeshResampler::upsample(HalfedgeMesh& mesh) {
@@ -1179,22 +1299,86 @@ void MeshResampler::upsample(HalfedgeMesh& mesh) {
 }
 
 void MeshResampler::downsample(HalfedgeMesh& mesh) {
-  // TODO: (meshEdit)
-  // Compute initial quadrics for each face by simply writing the plane equation
-  // for the face in homogeneous coordinates. These quadrics should be stored
-  // in Face::quadric
-  // -> Compute an initial quadric for each vertex as the sum of the quadrics
-  //    associated with the incident faces, storing it in Vertex::quadric
-  // -> Build a priority queue of edges according to their quadric error cost,
-  //    i.e., by building an EdgeRecord for each edge and sticking it in the
-  //    queue.
-  // -> Until we reach the target edge budget, collapse the best edge. Remember
-  //    to remove from the queue any edge that touches the collapsing edge
-  //    BEFORE it gets collapsed, and add back into the queue any edge touching
-  //    the collapsed vertex AFTER it's been collapsed. Also remember to assign
-  //    a quadric to the collapsed vertex, and to pop the collapsed edge off the
-  //    top of the queue.
-  showError("downsample() not implemented.");
+	// Compute initial quadrics for each face by simply writing the plane equation
+	// for the face in homogeneous coordinates. These quadrics should be stored
+	// in Face::quadric
+	for (auto f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
+		double d = -dot(f->normal(), f->halfedge()->vertex()->position);
+		Vector4D v = Vector4D(f->normal(), d);
+		f->quadric = outer(v, v);
+	}
+
+	// -> Compute an initial quadric for each vertex as the sum of the quadrics
+	//    associated with the incident faces, storing it in Vertex::quadric
+	for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+		auto adjFs = v->AdjFaces();
+		v->quadric.zero();
+		for (auto f : adjFs)
+			v->quadric += f->quadric;
+	}
+
+	// -> Build a priority queue of edges according to their quadric error cost,
+	//    i.e., by building an EdgeRecord for each edge and sticking it in the
+	//    queue.
+	MutablePriorityQueue<EdgeRecord> queue;
+	for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++) {
+		e->record = EdgeRecord(e);
+		queue.insert(e->record);
+	}
+
+	// -> Until we reach the target edge budget, collapse the best edge. Remember
+	//    to remove from the queue any edge that touches the collapsing edge
+	//    BEFORE it gets collapsed, and add back into the queue any edge touching
+	//    the collapsed vertex AFTER it's been collapsed. Also remember to assign
+	//    a quadric to the collapsed vertex, and to pop the collapsed edge off the
+	//    top of the queue.
+	size_t targetNum = mesh.nFaces() / 4;
+	while (mesh.nFaces() > targetNum) {
+		EdgeRecord eR = queue.top();
+		queue.pop();
+		
+		{//remove adjEs' record in queue
+			auto adjEs = eR.edge->AdjEdges();
+			for (auto adjE : adjEs)
+				queue.remove(adjE->record);
+		}
+
+		VertexIter newV = mesh.collapseEdge(eR.edge);
+		if (newV == mesh.verticesEnd()) {
+			showError("downsample : collapse an edge failed");
+			return;
+		}
+		newV->position = eR.optimalPoint;
+
+		{// set adjFs' and newV's quadric
+			newV->quadric.zero();
+			auto adjFs = newV->AdjFaces();
+			for (auto adjF : adjFs) {
+				double d = -dot(adjF->normal(), adjF->halfedge()->vertex()->position);
+				Vector4D v = Vector4D(adjF->normal(), d);
+				adjF->quadric = outer(v, v);
+				newV->quadric += adjF->quadric;
+			}
+		}
+
+		{// set adjVs' quadric
+			auto adjVs = newV->AdjVertices();
+			for (auto adjV : adjVs) {
+				adjV->quadric.zero();
+				auto adjFs = adjV->AdjFaces();
+				for (auto adjF : adjFs)
+					adjV->quadric += adjF->quadric;
+			}
+		}
+		
+		{// set adjEs' record
+			auto adjEs = newV->AdjEdges();
+			for (auto adjE : adjEs) {
+				adjE->record = EdgeRecord(adjE);
+				queue.insert(adjE->record);
+			}
+		}
+	}
 }
 
 void MeshResampler::resample(HalfedgeMesh& mesh) {

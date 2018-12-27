@@ -404,7 +404,7 @@ BBox Mesh::get_bbox() {
 Info Mesh::getInfo() {
 	Info info;
 
-	if (!scene || !scene->selected.element) {
+	if (!scene || !scene->selected.element || !Selection::draw) {
 		info.push_back("MESH");
 	}
 	else {
