@@ -550,6 +550,16 @@ namespace CMU462 {
 		 */
 		set<VertexIter> AdjVertices();
 
+		/**
+		 * Collect all unordered adjacent faces of f
+		 */
+		set<FaceIter> AdjFaces();
+		
+		/*
+		 * if this face is a bridge, return true, otherwise return false
+		 */
+		bool IsBridge();
+
 
 	protected:
 		HalfedgeIter _halfedge;  ///< one of the halfedges of this face
@@ -812,9 +822,9 @@ namespace CMU462 {
 		bool IsBridge();
 		
 		/*
-		 * Collect all unordered adjacent vertices
+		 * Collect all [order] adjacent vertices
 		 */
-		set<VertexIter> AdjVertices();
+		vector<VertexIter> AdjVertices();
 
 		/*
 		 * Collect all unordered adjacent edges
@@ -1105,6 +1115,14 @@ namespace CMU462 {
 		void splitPolygon(FaceIter f);
 		void splitPolygons(vector<FaceIter>& fcs);
 
+		/*
+		 * Check iterator, if it is not valid, show fatal error
+		 */
+		bool IsValid(VertexIter v, const string & info);
+		bool IsValid(HalfedgeIter he, const string & info);
+		bool IsValid(EdgeIter e, const string & info);
+		bool IsValid(FaceIter f, const string & info);
+
 	protected:
 		/*
 		 * Here's where the mesh elements are actually stored---this is the one
@@ -1117,13 +1135,6 @@ namespace CMU462 {
 		list<Face> boundaries;
 
 	private:
-		/*
-		 * Check iterator, if it is not valid, show fatal error
-		 */
-		bool IsValid(VertexIter v, const string & info);
-		bool IsValid(HalfedgeIter he, const string & info);
-		bool IsValid(EdgeIter e, const string & info);
-		bool IsValid(FaceIter f, const string & info);
 
 		/**
 		 * if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()

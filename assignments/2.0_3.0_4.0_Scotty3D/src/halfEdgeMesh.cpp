@@ -80,7 +80,7 @@ vector<VertexIter> Face::SortVertices(set<VertexIter> unorderedVs) {
 	}
 
 	if (unorderedVs.size() != 0) {
-		showError("SortVertices : unorderedVs not all in face", true);
+		showError("SortVertices : unorderedVs not all in face");
 		return vector<VertexIter>();
 	}
 
@@ -150,6 +150,54 @@ set<VertexIter> Face::AdjVertices() {
 		adjVs.erase(v);
 
 	return adjVs;
+}
+
+set<FaceIter> Face::AdjFaces() {
+	// Collect all unordered adjacent faces of f
+	set<FaceIter> adjFsOfFace;
+	
+	auto adjVs = this->AdjVertices();
+	for (auto adjV : adjVs) {
+		auto adjFsOfV = adjV->AdjFaces();
+		for (auto adjF : adjFsOfV)
+			adjFsOfFace.insert(adjF);
+	}
+
+	adjFsOfFace.erase(this->halfedge()->face());
+
+	return adjFsOfFace;
+}
+
+bool Face::IsBridge() {
+	// if this face is a bridge, return true, otherwise return false
+
+	FaceIter f = this->halfedge()->face();
+
+	auto halfedges = f->Halfedges();
+	for (auto he : halfedges) {
+		int state = 0;
+		for (HalfedgeIter curHe = he->twin()->next(); curHe != he->twin(); curHe = curHe->next()) {
+			switch (state)
+			{
+			case 0:
+				if (curHe->twin()->face() != f)
+					state = 1;
+				break;
+			case 1:
+				if (curHe->twin()->face() == f)
+					state = 2;
+				break;
+			case 2:
+				if (curHe->twin()->face() != f)
+					return true;
+			default:
+				showError("IsBridge : logic error", true);
+				break;
+			}
+		}
+	}
+
+	return false;
 }
 
 void HalfedgeMesh::build(const vector<vector<Index> >& polygons,
@@ -893,22 +941,28 @@ set<EdgeIter> Edge::AdjEdges() {
 	return adjEs;
 }
 
-set<VertexIter> Edge::AdjVertices() {
-	// Collect all unordered adjacent vertices
+vector<VertexIter> Edge::AdjVertices() {
+	// Collect all order adjacent vertices
+	
+	EdgeIter e = this->halfedge()->edge();
 
-	set<VertexIter> adjVs;
+	vector<VertexIter> adjVs;
+	HalfedgeIter heArr[2] = { e->halfedge() , e->halfedge()->twin() };
+	for (int i = 0; i < 2; i++) {
+		HalfedgeIter he = heArr[i]->twin()->next();
+		do {
+			// just not add continuous vertex
+			// but add same uncontinuous vertex 
+			if(adjVs.size() == 0 || adjVs.back() != he->twin()->vertex())
+				adjVs.push_back(he->twin()->vertex());
 
-	auto adjVs1 = this->halfedge()->vertex()->AdjVertices();
-	auto adjVs2 = this->halfedge()->twin()->vertex()->AdjVertices();
+			he = he->twin()->next();
+		} while (he != heArr[i]);
+	}
 
-	for (auto adjV : adjVs1)
-		adjVs.insert(adjV);
-
-	for (auto adjV : adjVs2)
-		adjVs.insert(adjV);
-
-	adjVs.erase(this->halfedge()->vertex());
-	adjVs.erase(this->halfedge()->twin()->vertex());
+	// not add continuous vertex
+	if (adjVs.back() == adjVs[0])
+		adjVs.pop_back();
 
 	return adjVs;
 }
