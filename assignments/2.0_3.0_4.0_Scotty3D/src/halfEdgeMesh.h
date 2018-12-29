@@ -525,6 +525,22 @@ namespace CMU462 {
 		 */
 		vector<VertexIter> Vertices();
 
+		/**
+		 * if v is a vertex of f, return true, otherwise return false
+		 */
+		bool Contains(VertexIter v);
+
+		/**
+		 * if he is a halfedge of f, return true, otherwise return false
+		 */
+		bool Contains(HalfedgeIter he);
+
+		/**
+		 * if e is an edge of f, return true, otherwise return false
+		 */
+		bool Contains(EdgeIter e);
+
+
 		/*
 		 * Sort unordered vertices of this face
 		 */
@@ -541,14 +557,19 @@ namespace CMU462 {
 		vector<EdgeIter> Edges();
 
 		/**
-		 * Collect all unordered adjacent edges of f
-		 */
-		set<EdgeIter> AdjEdges();
-
-		/**
 		 * Collect all unordered adjacent vertices of f
 		 */
 		set<VertexIter> AdjVertices();
+
+		/**
+		 * Collect all [ordered] adjacent halfedges of f
+		 */
+		vector<HalfedgeIter> AdjHalfedges();
+
+		/**
+		 * Collect all unordered adjacent edges of f
+		 */
+		set<EdgeIter> AdjEdges();
 
 		/**
 		 * Collect all unordered adjacent faces of f
@@ -759,6 +780,11 @@ namespace CMU462 {
 		 */
 		vector<FaceIter> AdjFaces();
 
+		/**
+		 * Get a halfedge in face
+		 */
+		HalfedgeIter GetHalfedgeInFace(FaceIter f);
+
 	protected:
 		/**
 		 * one of the halfedges "rooted" or "based" at this vertex
@@ -822,9 +848,14 @@ namespace CMU462 {
 		bool IsBridge();
 		
 		/*
-		 * Collect all [order] adjacent vertices
+		 * Collect all [ordered] adjacent vertices
 		 */
 		vector<VertexIter> AdjVertices();
+
+		/*
+		 * Collect all [ordered] adjacent halfedges
+		 */
+		vector<HalfedgeIter> AdjHalfedges();
 
 		/*
 		 * Collect all unordered adjacent edges
@@ -1143,6 +1174,12 @@ namespace CMU462 {
 		FaceIter GetSameFace(VertexIter v0, VertexIter v1);
 
 		/**
+		 * if e and v are on a same inner face, return the face, otherwise return faces.end()
+		 * the inner face is not a boundary
+		 */
+		FaceIter GetSameFace(EdgeIter e, VertexIter v);
+
+		/**
 		 * if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
 		 */
 		EdgeIter GetSameEdge(VertexIter v0, VertexIter v1);
@@ -1153,17 +1190,11 @@ namespace CMU462 {
 		VertexIter InsertVertex(EdgeIter e);
 
 		/**
-		 * Insert a vertex on the center position of [ordered] vertices in same face
+		 * Insert a vertex on the center position of vertices of [ordered] halfedges in same face
 		 * the face is not a boundary
 		 * this method won't check the validity of input
 		 */
-		VertexIter InsertVertex(vector<VertexIter> Vs, FaceIter f);
-
-		/**
-		 * Insert a vertex on the center position of [unordered] vertices in same face
-		 * the face is not a boundary
-		 */
-		VertexIter InsertVertex(set<VertexIter> Vs, FaceIter f);
+		VertexIter InsertVertex(vector<HalfedgeIter> hes);
 
 		/**
 		 * Insert a vertex on the center of face.
@@ -1173,10 +1204,10 @@ namespace CMU462 {
 
 		/**
 		 * Connect two verties in a face.
-		 * original face is on the [left side] of v0v1
-		 * new face is on the [right side] of v0v1
+		 * v0 is heV0->vertex()
+		 * v1 is heV1->vertex()
 		 */
-		EdgeIter ConnectVertex(VertexIter v0, VertexIter v1, FaceIter f);
+		EdgeIter ConnectVertex(HalfedgeIter heV0, HalfedgeIter heV1);
 
 	};  // class HalfedgeMesh
 

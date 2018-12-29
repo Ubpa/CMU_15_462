@@ -66,6 +66,39 @@ vector<VertexIter> Face::Vertices() {
 	return vertices;
 }
 
+bool Face::Contains(VertexIter v) {
+	// if v is a vertex of f, return true, otherwise return false
+
+	auto vertices = this->Vertices();
+
+	if (find(vertices.begin(), vertices.end(), v) != vertices.end())
+		return true;
+	else
+		return false;
+}
+
+bool Face::Contains(HalfedgeIter he) {
+	// if he is a halfedge of f, return true, otherwise return false
+
+	auto halfedges = this->Halfedges();
+
+	if (find(halfedges.begin(), halfedges.end(), he) != halfedges.end())
+		return true;
+	else
+		return false;
+}
+
+bool Face::Contains(EdgeIter e) {
+	// if e is an edge of f, return true, otherwise return false
+
+	auto edges = this->Edges();
+
+	if (find(edges.begin(), edges.end(), e) != edges.end())
+		return true;
+	else
+		return false;
+}
+
 vector<VertexIter> Face::SortVertices(set<VertexIter> unorderedVs) {
 	// Sort unordered vertices of this face
 
@@ -152,6 +185,22 @@ set<VertexIter> Face::AdjVertices() {
 	return adjVs;
 }
 
+vector<HalfedgeIter> Face::AdjHalfedges() {
+	// Collect all[ordered] adjacent halfedges of f
+
+	vector<HalfedgeIter> adjHes;
+
+	auto hes = this->Halfedges();
+
+	for (int i = hes.size() - 1; i >= 0; i--) {
+		HalfedgeIter firstHe = hes[i]->twin()->next();
+		for (auto he = firstHe; !this->Contains(he->edge()); he=he->twin()->next())
+			adjHes.push_back(he);
+	}
+
+	return adjHes;
+}
+
 set<FaceIter> Face::AdjFaces() {
 	// Collect all unordered adjacent faces of f
 	set<FaceIter> adjFsOfFace;
@@ -172,6 +221,8 @@ bool Face::IsBridge() {
 	// if this face is a bridge, return true, otherwise return false
 
 	FaceIter f = this->halfedge()->face();
+	if (f->isBoundary())
+		return true;
 
 	auto halfedges = f->Halfedges();
 	for (auto he : halfedges) {
@@ -180,15 +231,15 @@ bool Face::IsBridge() {
 			switch (state)
 			{
 			case 0:
-				if (curHe->twin()->face() != f)
+				if (curHe->twin()->face()->isBoundary() || curHe->twin()->face() != f)
 					state = 1;
 				break;
 			case 1:
-				if (curHe->twin()->face() == f)
+				if (!curHe->twin()->face()->isBoundary() && curHe->twin()->face() == f)
 					state = 2;
 				break;
 			case 2:
-				if (curHe->twin()->face() != f)
+				if (curHe->twin()->face()->isBoundary() || curHe->twin()->face() != f)
 					return true;
 			default:
 				showError("IsBridge : logic error", true);
@@ -826,6 +877,8 @@ vector<HalfedgeIter> Vertex::AdjHalfedges() {
 		he = he->twin()->next();
 	} while (he != this->halfedge());
 
+	reverse(halfedges.begin(), halfedges.end());
+
 	return halfedges;
 }
 
@@ -855,6 +908,18 @@ vector<FaceIter> Vertex::AdjFaces() {
 	} while (he != this->halfedge());
 
 	return faces;
+}
+
+HalfedgeIter Vertex::GetHalfedgeInFace(FaceIter f) {
+	// Get a halfedge in face
+
+	auto halfedges = this->AdjHalfedges();
+	for (auto he : halfedges) {
+		if (f->Contains(he))
+			return he;
+	}
+
+	return HalfedgeIter();
 }
 
 void Vertex::getAxes(vector<Vector3D>& axes) const {
@@ -943,28 +1008,44 @@ set<EdgeIter> Edge::AdjEdges() {
 
 vector<VertexIter> Edge::AdjVertices() {
 	// Collect all order adjacent vertices
-	
-	EdgeIter e = this->halfedge()->edge();
 
 	vector<VertexIter> adjVs;
-	HalfedgeIter heArr[2] = { e->halfedge() , e->halfedge()->twin() };
-	for (int i = 0; i < 2; i++) {
-		HalfedgeIter he = heArr[i]->twin()->next();
-		do {
-			// just not add continuous vertex
-			// but add same uncontinuous vertex 
-			if(adjVs.size() == 0 || adjVs.back() != he->twin()->vertex())
-				adjVs.push_back(he->twin()->vertex());
+	HalfedgeIter heArr[2] = { this->halfedge() , this->halfedge()->twin() };
 
-			he = he->twin()->next();
-		} while (he != heArr[i]);
-	}
+	for (HalfedgeIter he = heArr[0]->twin()->next(); he != heArr[0]; he = he->twin()->next())
+		adjVs.push_back(he->twin()->vertex());
+
+	HalfedgeIter he = heArr[1]->twin()->next();
+	if (he->twin()->vertex() != adjVs.back())
+		adjVs.push_back(he->twin()->vertex());
+	while (he = he->twin()->next(), he != heArr[1])
+		adjVs.push_back(he->twin()->vertex());
 
 	// not add continuous vertex
 	if (adjVs.back() == adjVs[0])
 		adjVs.pop_back();
 
+	std::reverse(adjVs.begin(), adjVs.end());
+
 	return adjVs;
+}
+
+vector<HalfedgeIter> Edge::AdjHalfedges() {
+	// Collect all [ordered] adjacent halfedges
+
+	vector<HalfedgeIter> adjHes;
+	HalfedgeIter heArr[2] = { this->halfedge() , this->halfedge()->twin() };
+
+	for (HalfedgeIter he = heArr[0]->twin()->next(); he != heArr[0]; he = he->twin()->next())
+		adjHes.push_back(he);
+
+	HalfedgeIter he = heArr[1];
+	while (he = he->twin()->next(), he != heArr[1])
+		adjHes.push_back(he);
+
+	std::reverse(adjHes.begin(), adjHes.end());
+
+	return adjHes;
 }
 
 void Face::getAxes(vector<Vector3D>& axes) const {
