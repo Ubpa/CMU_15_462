@@ -56,10 +56,6 @@ bool HalfedgeMesh::IsValid(FaceIter f, const string & info) {
 EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same edge, return the edge, otherwise return edges.end()
 
-	if (!IsValid(v0, "GetSameEdge : v0 is null") 
-		|| !IsValid(v1, "GetSameEdge : v1 is null"))
-		return edges.end();
-
 	vector<EdgeIter> adjEdgesOfV0 = v0->AdjEdges();
 	vector<EdgeIter> adjEdgesOfV1 = v1->AdjEdges();
 
@@ -75,10 +71,6 @@ EdgeIter HalfedgeMesh::GetSameEdge(VertexIter v0, VertexIter v1) {
 FaceIter HalfedgeMesh::GetSameFace(VertexIter v0, VertexIter v1) {
 	// if v0 and v1 are on a same inner face, return the face, otherwise return faces.end()
 	// the inner face is not a boundary
-
-	if (!IsValid(v0, "GetSameFace : v0 is null")
-		|| !IsValid(v1, "GetSameFace : v1 is null"))
-		return faces.end();
 
 	vector<FaceIter> facesOfv0 = v0->AdjFaces();
 	vector<FaceIter> facesOfv1 = v1->AdjFaces();
@@ -186,9 +178,6 @@ EdgeIter HalfedgeMesh::ConnectVertex(HalfedgeIter heV0, HalfedgeIter heV1) {
 
 VertexIter HalfedgeMesh::InsertVertex(EdgeIter e0) {
 	// Insert a vertex on the middle position of edge.
-
-	if (!IsValid(e0, "InsertVertex : e0 is null"))
-		return vertices.end();
 	
 	//         |  |                           |  |
 	//   (¡ü)he2|  |                     (¡ü)he2|  |
@@ -315,16 +304,10 @@ VertexIter HalfedgeMesh::splitEdge(EdgeIter e) {
 	// newly inserted vertex. The halfedge of this vertex should point along
 	// the edge that was split, rather than the new edges.
 
-	if (!IsValid(e, "splitEdge: e is null"))
-		return vertices.end();
-
 	// [Note:this method is for triangle meshes only!]
 	if (e->halfedge()->face()->degree() != 3
 		|| e->halfedge()->twin()->face()->degree() != 3) {
-		showError("splitEdge is for triangle meshes only!");
-		printf("ERROR::splitEdge : splitEdge is for triangle meshes only!\n(%d,%d)\n",
-			e->halfedge()->face()->degree(),
-			e->halfedge()->twin()->face()->degree());
+		showError("splitEdge : a face of e is not triangle");
 		return vertices.end();
 	}
 
@@ -393,11 +376,6 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	// This method should collapse the given edge and return an iterator to
 	// the new vertex created by the collapse.
 
-	if (e == edges.end()) {
-		showError("splitEdge: e is null");
-		return vertices.end();
-	}
-
 	// The selected edge e is replaced by a single vertex v.
 	// This vertex is connected by edges to all vertices previously connected to either endpoint of e. 
 	// Moreover, if either of the polygons containing e was a triangle, it will be replaced by an edge
@@ -406,12 +384,12 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 	// the new vertex is the centroid of the edge
 
 	if (e->isBoundary()) {
-		showError("Can't collapse a boundary edge");
+		showError("collapseEdge : e is boundary");
 		return vertices.end();
 	}
 
 	if (e->IsBridge()) {
-		showError("Can't collapse a bridge edge");
+		showError("collapseEdge : e is bridge");
 		return vertices.end();
 	}
 
@@ -419,12 +397,12 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 
 	for (auto adjE : adjEs) {
 		if (adjE->isBoundary()) {
-			showError("Can't collapse face with boundary vertex");
+			showError("collapseEdge : an adjacent edge is boudnary");
 			return vertices.end();
 		}
 
 		if (adjE->IsBridge()) {
-			showError("Can't collapse face with adjacent bridge edge");
+			showError("collapseEdge : an adjacent edge is bridge");
 			return vertices.end();
 		}
 	}
@@ -437,7 +415,7 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 			hesOfAdjVs.push_back(adjHe->next());
 	}
 
-	if (!IsValid(eraseEdge(e), "collapseEdge : erase edge fail"))
+	if (!IsValid(eraseEdge(e), "collapseEdge : erase e fail"))
 		return vertices.end();
 
 	FaceIter f;
@@ -448,14 +426,15 @@ VertexIter HalfedgeMesh::collapseEdge(EdgeIter e) {
 			if (!adjE->IsBridge()) {
 				adjEs.erase(adjE);
 				f = eraseEdge(adjE);
-				if (!IsValid(f, "collapseEdge : erase a adjacent edge fail"))
+				if (!IsValid(f, "collapseEdge : erase an adjacent edge fail"))
 					return vertices.end();
 				break;// must break here because iterator has been destroy
 			}
 		}
 
 		if (origSize == adjEs.size()) {
-			showError("collapseFace : Can't delete more adjacent edges", true);
+			//showError("collapseEdge : Can't delete more adjacent edges");
+			printf("collapseEdge : Can't delete more adjacent edges\n");
 			return vertices.end();
 		}
 	}
@@ -489,8 +468,11 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	}
 
 	vector<EdgeIter> edgesOfFace = f->Edges();
+	set<EdgeIter> edgesSet;
+	for (auto e : edgesOfFace)
+		edgesSet.insert(e);
 
-	for (auto e : edgesOfFace) {
+	for (auto e : edgesSet) {
 		if (e->isBoundary()) {
 			showError("Can't collapse face with boundary vertex");
 			return vertices.end();
@@ -520,25 +502,26 @@ VertexIter HalfedgeMesh::collapseFace(FaceIter f) {
 	vector<HalfedgeIter> hesOfAdjVs;
 	for (auto he : adjHes) {
 		if (find(adjEs.begin(), adjEs.end(), he->next()->edge()) == adjEs.end()
-			&& find(edgesOfFace.begin(), edgesOfFace.end(), he->next()->edge()) == edgesOfFace.end())
+			&& find(edgesSet.begin(), edgesSet.end(), he->next()->edge()) == edgesSet.end())
 			hesOfAdjVs.push_back(he->next());
 	}
 
-	while (edgesOfFace.size() > 0) {
-		size_t origSize = edgesOfFace.size();
-		for (int i = edgesOfFace.size() - 1; i >= 0; i--) {
-			EdgeIter e = edgesOfFace[i];
+	while (edgesSet.size() > 0) {
+		size_t origSize = edgesSet.size();
+		for (auto eIter = edgesSet.begin(); eIter != edgesSet.end();eIter++) {
+			EdgeIter e = *eIter;
 			if (!e->isBoundary() && !e->IsBridge()) {
-				edgesOfFace.erase(edgesOfFace.begin() + i);
+				edgesSet.erase(eIter);
 				if (!IsValid(eraseEdge(e), "collapseFace : erase edge fail"))
 					return vertices.end();
+				break;
 			}
 		}
-		if (origSize == edgesOfFace.size())
+		if (origSize == edgesSet.size())
 			break;
 	}
 
-	for (auto e : edgesOfFace)
+	for (auto e : edgesSet)
 		adjEsOfFace.insert(e);
 
 	while (adjEsOfFace.size() > 0) {
@@ -1003,9 +986,6 @@ FaceIter HalfedgeMesh::bevelVertex(VertexIter v) {
 	// HalfedgeMesh::bevelVertexComputeNewPositions (which you also have to
 	// implement!)
 
-	if (!IsValid(v, "bevelVertex : v is null"))
-		return faces.end();
-
 	if (v->isBoundary()) {
 		showError("bevelVertex : v is boundary");
 		return faces.end();
@@ -1457,34 +1437,25 @@ void MeshResampler::downsample(HalfedgeMesh& mesh) {
 }
 
 void MeshResampler::resample(HalfedgeMesh& mesh) {
-	// Compute the mean edge length.
-	double meanLen = 0.0;
-	for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++)
-		meanLen += e->length();
-
-	meanLen /= mesh.nEdges();
-
 	// Repeat the four main steps for 5 or 6 iterations
 	for (size_t i = 0; i < 5; i++) {
-		printf("INFO::resample : loop %d\n", i);
+		// Compute the mean edge length.
+		double meanLen = 0.0;
+		for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++)
+			meanLen += e->length();
+
+		meanLen /= mesh.nEdges();
+
 		// -> Split edges much longer than the target length (being careful about
 		//    how the loop is written!)
-		size_t n = mesh.nEdges();
-		EdgeIter e = mesh.edgesBegin();
-		while (n-- > 0) {
-			EdgeIter nextE = e;
-			nextE++;
+		{
+			set<EdgeIter> edges;
+			for (auto e = mesh.edgesBegin(); e != mesh.edgesEnd(); e++)
+				edges.insert(e);
 
-			if (e->length() > 4.0 / 3.0*meanLen)
-				mesh.splitEdge(e);
-
-			e = nextE;
-		}
-
-		for (auto f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
-			if (f->degree() != 3) {
-				printf("ERROR::resample : face degree is not 3 after split edge, it is %d\n", f->degree());
-				showError("face degree is not 3", true);
+			for (auto e : edges) {
+				if (e->length() > 4.0 / 3.0*meanLen)
+					mesh.splitEdge(e);
 			}
 		}
 
@@ -1504,17 +1475,8 @@ void MeshResampler::resample(HalfedgeMesh& mesh) {
 					for (auto adjE : adjEs)
 						edges.erase(adjE);
 
-					VertexIter v = mesh.collapseEdge(e);
-					if (!mesh.IsValid(v, "resample : collapse edge fail"))
-						return;
+					mesh.collapseEdge(e);
 				}
-			}
-		}
-
-		for (auto f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
-			if (f->degree() != 3) {
-				printf("ERROR::resample : face degree is not 3 after collapse edge, it is %d\n", f->degree());
-				showError("face degree is not 3", true);
 			}
 		}
 
@@ -1525,7 +1487,7 @@ void MeshResampler::resample(HalfedgeMesh& mesh) {
 				edges.insert(e);
 
 			while (edges.size() > 0) {
-				e = *edges.begin();
+				EdgeIter e = *edges.begin();
 				edges.erase(e);
 
 				int v0d = e->halfedge()->vertex()->degree();
@@ -1537,13 +1499,6 @@ void MeshResampler::resample(HalfedgeMesh& mesh) {
 				int flipCost = abs(v0d - 1 - 6) + abs(v1d - 1 - 6) + abs(v2d + 1 - 6) + abs(v3d + 1 - 6);
 				if (flipCost < cost)
 					mesh.flipEdge(e);
-			}
-		}
-
-		for (auto f = mesh.facesBegin(); f != mesh.facesEnd(); f++) {
-			if (f->degree() != 3) {
-				printf("ERROR::resample : face degree is not 3 after flip edge, it is %d\n", f->degree());
-				showError("face degree is not 3", true);
 			}
 		}
 

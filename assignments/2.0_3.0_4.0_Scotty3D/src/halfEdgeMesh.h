@@ -702,7 +702,8 @@ namespace CMU462 {
 				} while (h != halfedge());
 			}
 
-			N.normalize();
+			if(N.norm() > 0.000001)
+				N.normalize();
 
 			return N;
 		}

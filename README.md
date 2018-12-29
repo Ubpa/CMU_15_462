@@ -79,7 +79,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 7 Anti-Aliasing Image Elements Using Trilinear Filtering
   - [x] 8 Alpha Compositing
   - [x] 9 Draw Something!!!
-- [ ] 2.0 MeshEdit
+- [x] 2.0 MeshEdit
   - [x] Local
     - [x] flipEdge
     - [x] splitEdge
@@ -90,14 +90,14 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] bevelVertex
     - [x] bevelEdge
     - [x] bevelFace
-  - [ ] Global
+  - [x] Global
     - [x] Triangulation
     - [x] Subdivision
       - [x] Linear Subdivision
       - [x] Catmull-Clark Subdivision
       - [x] Loop Subdivision
-    - [ ] Simplification
-    - [ ] Isotropic Remeshing
+    - [x] Simplification
+    - [x] Isotropic Remeshing
 - [ ] 3.0 PathTracer
 - [ ] 4.0 Animation
 

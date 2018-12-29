@@ -49,7 +49,10 @@ Vector3D Face::normal() const {
     h = h->next();
   } while (h != halfedge());
 
-  return N.unit();
+  if (N.norm() > 0.000001)
+	  return N.unit();
+  else
+	  return Vector3D(0, 0, 0);
 }
 
 vector<VertexIter> Face::Vertices() {
@@ -241,6 +244,7 @@ bool Face::IsBridge() {
 			case 2:
 				if (curHe->twin()->face()->isBoundary() || curHe->twin()->face() != f)
 					return true;
+				break;
 			default:
 				showError("IsBridge : logic error", true);
 				break;
