@@ -79,7 +79,7 @@ If careful, sample distribution will be proportional to integrand
 
 ![1544941682680](assets/1544941682680.jpg)
 
-**Multiple Importance Sampling (MIS)**
+**Multiple Importance Sampling (MIS)** 
 
 Many possible importance sampling strategies 
 
@@ -91,7 +91,17 @@ Balance heuristic is (provably!) about as good as anything
 
 ![1544941726743](assets/1544941726743.jpg)
 
+> $Nc_k$ 即为 策略k 的样本数
+
 ![1544941743354](assets/1544941743354.jpg)
+
+> 左图是依据BSDF来采样
+>
+> 右图是依据直接光来采样
+>
+> 中间的图是两者的结合
+>
+> 特别要注意分母的计算，**每个样本都需要计算一次分母** 
 
 ## 19.2 Sampling Patterns
 

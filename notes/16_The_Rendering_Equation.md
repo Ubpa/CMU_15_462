@@ -188,19 +188,19 @@ $$
 > $$
 >
 
-**Example: perfect specular reflection**
+**Example: perfect specular reflection** 
 
 - Geometry of specular refection
 
-  - $\theta=\theta_o=\theta_i$
+  - $\theta=\theta_o=\theta_i$ 
 
     ![1544879598756](assets/1544879598756.jpg)
 
-  - $\phi_o=\phi_i$
+  - $\phi_o=\phi_i$ 
 
     ![1544879624611](assets/1544879624611.jpg)
 
-  - $\omega_i=-\omega_i+2(\omega_i\cdot\mathbf{n})\mathbf{n}$
+  - $\omega_i=-\omega_i+2(\omega_i\cdot\mathbf{n})\mathbf{n}$ 
 
 - Specular refection BRDF 
   $$

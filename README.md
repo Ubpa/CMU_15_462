@@ -105,7 +105,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] Sphere
   - [x] 3 BVH
   - [x] 4 ShadowRays
-  - [ ] 5 Path Tracing
+  - [x] 5 Path Tracing
   - [ ] 6 Materials
   - [ ] 7 Environment Light
 - [ ] 4.0 Animation

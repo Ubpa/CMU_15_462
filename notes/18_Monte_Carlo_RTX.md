@@ -91,7 +91,7 @@ Change of variables to integrate over area of light
 
 ![1544899869932](assets/1544899869932.jpg)
 $$
-d\omega=\frac{\text{d}A}{|\mathbf{p}'-\mathbf{p}|^2}=\frac{\cos\theta\ \text{d}A'}{|\mathbf{p}'-\mathbf{p}|^2}\\
+d\omega=\frac{\text{d}A}{|\mathbf{p}'-\mathbf{p}|^2}=\frac{\cos\theta'\ \text{d}A'}{|\mathbf{p}'-\mathbf{p}|^2}\\
 E(\mathbf{p})=\int_{A'}L_o(\mathbf{p}',\omega')V(\mathbf{p},\mathbf{p}')\frac{\cos\theta\cos\theta'}{|\mathbf{p}-\mathbf{p}'|^2}\ \text{d} A'
 $$
 $V(\mathbf{p},\mathbf{p}')$ is Binary visibility function: 1 if p’ is visible from p, 0 otherwise (accounts for light occlusion) 
@@ -125,11 +125,11 @@ Recursively call path tracing function to compute incident indirect radiance
 
 **Stop--Russian roulette(轮盘)** 
 
-Idea: want to avoid spending time evaluating function for samples that make a ==small contribution== to the fnal result 
+Idea: want to avoid spending time evaluating function for samples that make a ==small contribution== to the final result 
 $$
 L=[\frac{f_r(\omega_i\to\omega_o)L_i(\omega_i)\cos\theta_i}{p(\omega_i)}]V(\mathbf{p},\mathbf{p}')
 $$
-If tentative contribution (in brackets) is small, total contribution to the image will be small regardless of $V(\mathbf{p},\mathbf{p}’)$
+If tentative contribution (in brackets) is small, total contribution to the image will be small regardless of $V(\mathbf{p},\mathbf{p}’)$ 
 
 Ignoring low-contribution samples introduces systematic error 
 

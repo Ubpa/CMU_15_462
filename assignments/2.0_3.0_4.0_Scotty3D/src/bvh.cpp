@@ -169,9 +169,7 @@ bool BVHNode::intersect(const vector<Primitive*>& primitives, const Ray& ray, In
 				hit += first->intersect(primitives, ray, isect);
 				if (t3 < isect->t)
 					hit += second->intersect(primitives, ray, isect);
-				
-				if (hit == 2)
-					printf("double hit\n");
+
 				return hit;
 			}
 			else

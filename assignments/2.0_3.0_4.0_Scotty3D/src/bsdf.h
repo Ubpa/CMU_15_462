@@ -59,6 +59,11 @@ class BSDF {
   virtual Spectrum f(const Vector3D& wo, const Vector3D& wi) = 0;
 
   /**
+   * return pdf
+   */
+  virtual float pdf(const Vector3D& wo, const Vector3D& wi) { return 0; };
+
+  /**
    * Evaluate BSDF.
    * Given the outgoing light direction wo, compute the incident light
    * direction and store it in wi. Store the pdf of the outgoing light in pdf.
@@ -110,6 +115,7 @@ class DiffuseBSDF : public BSDF {
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
   Spectrum sample_f(const Vector3D& wo, Vector3D* wi, float* pdf);
   Spectrum get_emission() const { return Spectrum(); }
+  float pdf(const Vector3D& wo, const Vector3D& wi);
   bool is_delta() const { return false; }
 
  private:

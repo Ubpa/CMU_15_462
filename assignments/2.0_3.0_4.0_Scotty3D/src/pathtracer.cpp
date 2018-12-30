@@ -24,7 +24,7 @@ using std::max;
 
 using namespace CMU462;
 
-#define ENABLE_RAY_LOGGING 1
+//#define ENABLE_RAY_LOGGING 1
 
 PathTracer::PathTracer(size_t ns_aa, size_t max_ray_depth, size_t ns_area_light,
 	size_t ns_diff, size_t ns_glsy, size_t ns_refr,
@@ -417,12 +417,11 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
 	Spectrum L_out = isect.bsdf->get_emission();  // Le
 
-	// TODO (PathTracer):
 	// Instead of initializing this value to a constant color, use the direct,
 	// indirect lighting components calculated in the code below. The starter
 	// code overwrites L_out by (.5,.5,.5) so that you can test your geometry
 	// queries before you implement path tracing.
-	//L_out = Spectrum(0.5f, 0.5f, 0.5f);
+	// L_out = Spectrum(0.5f, 0.5f, 0.5f);
 
 	Vector3D hit_p = r.o + r.d * isect.t;
 	Vector3D hit_n = isect.n;
@@ -438,14 +437,12 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	Vector3D w_out = w2o * (r.o - hit_p);
 	w_out.normalize();
 
-
 	if (!isect.bsdf->is_delta()) {
-		Vector3D dir_to_light;
-		float dist_to_light;
-		float pr;
-
 		// ### Estimate direct lighting integral
 		for (SceneLight* light : scene->lights) {
+			Vector3D dir_to_light;
+			float dist_to_light;
+			float pr;
 
 			// no need to take multiple samples from a point/directional source
 			int num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
@@ -458,30 +455,38 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 				// the distance from point x to this point on the light source.
 				// (pr is the probability of randomly selecting the random
 				// sample point on the light source -- more on this in part 2)
-				const Spectrum& light_L = light->sample_L(hit_p, &dir_to_light, &dist_to_light, &pr);
+				const Spectrum light_L = light->sample_L(hit_p, &dir_to_light, &dist_to_light, &pr);
 
 				// convert direction into coordinate space of the surface, where
 				// the surface normal is [0 0 1]
-				const Vector3D& w_in = w2o * dir_to_light;
+				const Vector3D w_in = w2o * dir_to_light;
 				if (w_in.z < 0) continue;
 
+				// !!! Multiple Importance Sampling (MIS)
+				float sumPr = isect.bsdf->pdf(w_out, w_in) + num_light_samples * pr;
+				for (SceneLight* _light : scene->lights) {
+					if (light != _light) {
+						size_t num_light_samples = _light->is_delta_light() ? 1 : ns_area_light;
+						sumPr += num_light_samples * light->pdf(hit_p, dir_to_light);
+					}
+				}
+
 				// note that computing dot(n,w_in) is simple
-			  // in surface coordinates since the normal is (0,0,1)
+				// in surface coordinates since the normal is (0,0,1)
 				double cos_theta = w_in.z;
 
 				// evaluate surface bsdf
-				const Spectrum& f = isect.bsdf->f(w_out, w_in);
+				const Spectrum f = isect.bsdf->f(w_out, w_in);
 
 				// (Task 4) Construct a shadow ray and compute whether the intersected surface is
 				// in shadow. Only accumulate light if not in shadow.
 				Ray shadowRay(hit_p + EPS_D * dir_to_light, dir_to_light);
 				if (!bvh->intersect(shadowRay) || shadowRay.max_t > dist_to_light / dir_to_light.norm())
-					L_out += (cos_theta / (num_light_samples * pr)) * f * light_L;
+					L_out += (cos_theta / sumPr) * f * light_L;
 			}
 		}
 	}
 
-	// TODO (PathTracer):
 	// ### (Task 5) Compute an indirect lighting estimate using pathtracing with Monte Carlo.
 
 
@@ -491,13 +496,30 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	// (1) randomly select a new ray direction (it may be
 	// reflection or transmittence ray depending on
 	// surface type -- see BSDF::sample_f()
+	float matPDF;
+	Vector3D mat_w_in;
+	const Spectrum matF = isect.bsdf->sample_f(w_out, &mat_w_in, &matPDF);
+	Vector3D matRayDir = o2w * mat_w_in;
 
 	// (2) potentially terminate path (using Russian roulette)
-
+	float terminateProbability = 0.0f;
+	//float terminateProbability = 1.0f - matF.illum();
+	if (r.depth > max_ray_depth || rand() / float(RAND_MAX) < terminateProbability)
+		return L_out;
+	
 	// (3) evaluate weighted reflectance contribution due 
 	// to light from this direction
+	// !!! Multiple Importance Sampling (MIS)
+	float sumPr = matPDF;
+	for (SceneLight* light : scene->lights) {
+		size_t num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
+		sumPr += num_light_samples * light->pdf(hit_p, matRayDir);
+	}
 
-	return L_out;
+	Ray matRay(hit_p + EPS_D * matRayDir, matRayDir, int(r.depth + 1));
+	double cosTheta = mat_w_in.z;
+	Spectrum mat_L_out = matF * trace_ray(matRay) * (cosTheta / (sumPr * (1 - terminateProbability)));
+	return L_out + mat_L_out;
 }
 
 Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
@@ -512,7 +534,7 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 		double texcY = (y + rdOffset.y) / frameBuffer.h;
 		rst += trace_ray(camera->generate_ray(texcX, texcY));
 	}
-
+	rst *= 1.0 / ns_aa;
 	return rst;
 }
 

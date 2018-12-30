@@ -21,6 +21,7 @@ class DirectionalLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return true; }
+  float pdf(const Vector3D& p, const Vector3D& wi);
 
  private:
   Spectrum radiance;
@@ -36,6 +37,7 @@ class InfiniteHemisphereLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  float pdf(const Vector3D& p, const Vector3D& wi);
 
  private:
   Spectrum radiance;
@@ -52,6 +54,7 @@ class PointLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return true; }
+  float pdf(const Vector3D& p, const Vector3D& wi);
 
  private:
   Spectrum radiance;
@@ -86,6 +89,8 @@ class AreaLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  float pdf(const Vector3D& p, const Vector3D& wi);
+
 
  private:
   Spectrum radiance;
