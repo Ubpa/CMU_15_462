@@ -14,12 +14,12 @@ bool BBox::intersect(const Ray &r, double &t0, double &t1) const {
 
 	const Vector3D origin = r.o;
 	const Vector3D dir = r.d;
-	float tMin = r.min_t;
-	float tMax = r.max_t;
+	double tMin = r.min_t;
+	double tMax = r.max_t;
 	for (size_t i = 0; i < 3; i++) {
-		float invD = r.inv_d[i];
-		float t0 = (min[i] - origin[i]) * invD;
-		float t1 = (max[i] - origin[i]) * invD;
+		double invD = r.inv_d[i];
+		double t0 = (min[i] - origin[i]) * invD;
+		double t1 = (max[i] - origin[i]) * invD;
 		if (invD < 0.0f)
 			std::swap(t0, t1);
 

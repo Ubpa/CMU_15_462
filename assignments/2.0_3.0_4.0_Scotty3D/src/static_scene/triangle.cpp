@@ -73,8 +73,8 @@ bool Triangle::intersect(const Ray& r) const {
 		return false;
 
 	double r3 = dot(e2_x_s, e1);
-	double t = 1 * inv_denominator;
-	if (t < r.min_t + 0.001 || t > r.max_t)
+	double t = r3 * inv_denominator;
+	if (t < r.min_t || t > r.max_t)
 		return false;
 
 	r.max_t = t;
@@ -117,8 +117,8 @@ bool Triangle::intersect(const Ray& r, Intersection* isect) const {
 		return false;
 
 	double r3 = dot(e2_x_s, e1);
-	double t = 1 * inv_denominator;
-	if (t < r.min_t + 0.001 || t > r.max_t)
+	double t = r3 * inv_denominator;
+	if (t < r.min_t || t > r.max_t)
 		return false;
 
 	r.max_t = t;
@@ -129,6 +129,8 @@ bool Triangle::intersect(const Ray& r, Intersection* isect) const {
 	Vector3D n2 = mesh->normals[v2];
 	Vector3D n3 = mesh->normals[v3];
 	Vector3D outwardN = u * n1 + v * n2 + w * n3;
+
+	isect->t = t;
 
 	isect->n = dot(outwardN, r.d) < 0 ? outwardN : -outwardN;
 

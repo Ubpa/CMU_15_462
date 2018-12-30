@@ -115,8 +115,8 @@ void BVHNode::Build(vector<Primitive *> & primitives, size_t maxLeafSize) {
 bool BVHNode::intersect(const vector<Primitive*>& primitives, const Ray &ray) const {
 	// Ray - BVHNode intersection
 
+	int hit = 0;
 	if (isLeaf()) {
-		bool hit = false;
 		for (size_t i = 0; i < range; i++)
 			if (primitives[i + start]->intersect(ray))
 				hit = true;
@@ -124,9 +124,26 @@ bool BVHNode::intersect(const vector<Primitive*>& primitives, const Ray &ray) co
 		return hit;
 	}
 	else {
-		bool leftHit = l->intersect(primitives, ray);
-		bool rightHit = r->intersect(primitives, ray);
-		return leftHit || rightHit;
+		double t1, t2, t3, t4;
+		bool leftBoxHit = l->bb.intersect(ray, t1, t2);
+		bool rightBoxHit = r->bb.intersect(ray, t3, t4);
+		if (leftBoxHit) {
+			if (rightBoxHit) {
+				BVHNode* first = (t1 <= t3) ? l : r;
+				BVHNode* second = (t1 <= t3) ? r : l;
+				hit += first->intersect(primitives, ray);
+				if (t3 < ray.max_t)
+					hit += second->intersect(primitives, ray);
+
+				return hit;
+			}
+			else
+				return l->intersect(primitives, ray);
+		}
+		else if (rightBoxHit)
+			return r->intersect(primitives, ray);
+		else
+			return false;
 	}
 }
 
@@ -152,19 +169,18 @@ bool BVHNode::intersect(const vector<Primitive*>& primitives, const Ray& ray, In
 				hit += first->intersect(primitives, ray, isect);
 				if (t3 < isect->t)
 					hit += second->intersect(primitives, ray, isect);
-
+				
+				if (hit == 2)
+					printf("double hit\n");
 				return hit;
 			}
-			else {
+			else
 				return l->intersect(primitives, ray, isect);
-			}
 		}
-		else if (rightBoxHit) {
+		else if (rightBoxHit)
 			return r->intersect(primitives, ray, isect);
-		}
-		else {
+		else
 			return false;
-		}
 	}
 }
 
