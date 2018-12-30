@@ -84,7 +84,7 @@ class Camera {
   // Computes pos, screenXDir, screenYDir from target, r, phi, theta.
   void compute_position();
 
-  // Field of view aspect ratio, clipping planes.
+  // Field of view, aspect ratio, clipping planes.
   double hFov, vFov, ar, nClip, fClip;
 
   // Current position and target point (the point the camera is looking at).
