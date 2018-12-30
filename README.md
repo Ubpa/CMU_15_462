@@ -103,7 +103,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 2 Intersecting Primitives
     - [x] Triangle
     - [x] Sphere
-  - [ ] 3 BVH
+  - [x] 3 BVH
   - [ ] 4 ShadowRays
   - [ ] 5 Path Tracing
   - [ ] 6 Materials

@@ -18,6 +18,11 @@ namespace StaticScene {
 class Aggregate : public Primitive {
  public:
   // Implements Primitive //
+  
+  Aggregate() { };
+
+  Aggregate(const std::vector<Primitive*> & primitives)
+    : primitives(primitives) { };
 
   // NOTE:
   // There is no restriction on how an Aggregate should be implemented but

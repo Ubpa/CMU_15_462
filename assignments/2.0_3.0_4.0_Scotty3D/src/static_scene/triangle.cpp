@@ -11,10 +11,34 @@ Triangle::Triangle(const Mesh* mesh, size_t v1, size_t v2, size_t v3)
 	: mesh(mesh), v1(v1), v2(v2), v3(v3) {}
 
 BBox Triangle::get_bbox() const {
-	// TODO (PathTracer):
 	// compute the bounding box of the triangle
 
-	return BBox();
+	Vector3D ps[3] = {
+		mesh->positions[v1],
+		mesh->positions[v2],
+		mesh->positions[v3]
+	};
+
+	BBox box;
+	for (size_t i = 0; i < 3; i++) {
+		Vector3D p = ps[i];
+		for (size_t j = 0; j < 3; j++) {
+			if (box.min[j] > p[j])
+				box.min[j] = p[j];
+			
+			if (box.max[j] < p[j])
+				box.max[j] = p[j];
+		}
+	}
+
+	for (size_t dim = 0; dim < 3; dim++) {
+		if (box.min[dim] == box.max[dim]) {
+			box.min[dim] -= 0.000001;
+			box.max[dim] += 0.000001;
+		}
+	}
+	
+	return box;
 }
 
 bool Triangle::intersect(const Ray& r) const {

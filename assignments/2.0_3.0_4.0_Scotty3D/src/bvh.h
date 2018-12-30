@@ -20,10 +20,27 @@ namespace StaticScene {
  * constructing the BVH.
  */
 struct BVHNode {
-  BVHNode(BBox bb, size_t start, size_t range)
-      : bb(bb), start(start), range(range), l(NULL), r(NULL) {}
+  BVHNode(std::vector<Primitive*> & primitives, size_t maxLeafSize, size_t start, size_t range)
+	  : start(start), range(range) { Build(primitives, maxLeafSize); }
+
+  ~BVHNode();
 
   inline bool isLeaf() const { return l == NULL && r == NULL; }
+
+  /*
+   * Build bvh form start to start + range
+   */
+  void Build(std::vector<Primitive*> & primitives, size_t maxLeafSize);
+
+  /*
+   * Ray - BVHNode intersection
+   */
+  bool intersect(const std::vector<Primitive*>& primitives, const Ray &ray) const;
+
+  /*
+   * Ray - BVHNode intersection
+   */
+  bool intersect(const std::vector<Primitive*>& primitives, const Ray& ray, Intersection* isect) const;
 
   BBox bb;       ///< bounding box of the node
   size_t start;  ///< start index into the primitive list
@@ -89,7 +106,7 @@ class BVHAccel : public Aggregate {
    * \return true if the given ray intersects with the aggregate,
              false otherwise
    */
-  bool intersect(const Ray& r, Intersection* i) const;
+  bool intersect(const Ray& r, Intersection* isect) const;
 
   /**
    * Get BSDF of the surface material

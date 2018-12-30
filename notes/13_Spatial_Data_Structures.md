@@ -2,7 +2,7 @@
 
 ## 13.1 Bounding volume hierarchy (BVH)
 
-**structure**
+**structure** 
 
 - Leaf nodes: Contain small list of primitives 
 
@@ -17,7 +17,7 @@
   >
   > ![1544847800996](assets/1544847800996.jpg)
 
-**simple code**
+**simple code** 
 
 ```c++
 struct BVHNode {
@@ -69,8 +69,8 @@ if (node->leaf) {
 } else {
     HitInfo hit1 = intersect(ray, node->child1->bbox);
     HitInfo hit2 = intersect(ray, node->child2->bbox);
-    NVHNode* first = (hit1.t <= hit2.t) ? child1 : child2;
-    NVHNode* second = (hit2.t <= hit1.t) ? child2 : child1;
+    BVHNode* first = (hit1.t <= hit2.t) ? child1 : child2;
+    BVHNode* second = (hit1.t <= hit2.t) ? child2 : child1;
     find_closest_hit(ray, first, closest);
     if (second child’s t is closer than closest.t)
     	find_closest_hit(ray, second, closest);
@@ -79,7 +79,7 @@ if (node->leaf) {
 
 ## 13.2 build a high-quality BVH
 
-**Intuition**
+**Intuition** 
 
 want small bounding boxes (minimize overlap between children, avoid empty space) 
 
@@ -87,7 +87,7 @@ not just partition into child nodes with equal numbers of primitives
 
 ![1544848375699](assets/1544848375699.jpg)
 
-**Cost of making a partition**
+**Cost of making a partition** 
 
 A good partitioning minimizes the cost of finding the closest intersection of a ray with primitives in the node. 
 
@@ -137,7 +137,7 @@ A good partitioning minimizes the cost of finding the closest intersection of a 
 
   so we need to find a partition to minimize $S_AN_A+S_BN_B$
 
-**Implementing partitions**
+**Implementing partitions** 
 
 - axis-aligned spatial partitions
 
@@ -185,7 +185,7 @@ A good partitioning minimizes the cost of finding the closest intersection of a 
 
 ### 13.3 Space-Partitioning Structures 
 
-**Primitive-partitioning acceleration structures vs. space-partitioning structures**
+**Primitive-partitioning acceleration structures vs. space-partitioning structures** 
 
 Primitive partitioning (bounding volume hierarchy): partitions node’s primitives into disjoint sets (but sets may overlap in space) 
 
@@ -210,7 +210,7 @@ Space-partitioning (grid, K-D tree) partitions space into disjoint regions (prim
   
   ![1544851228007](assets/1544851228007.jpg)
 
-**Uniform Grid**
+**Uniform Grid** 
 
 - Partition space into equal sized volumes 
 
@@ -233,7 +233,7 @@ Space-partitioning (grid, K-D tree) partitions space into disjoint regions (prim
 
 - Uniform grid cannot adapt to non-uniform distribution of geometry in scene 
 
-**Quad-tree/octree**
+**Quad-tree/octree** 
 
 Like uniform grid: easy to build (don’t have to choose partition planes) 
 
@@ -243,7 +243,7 @@ But lower intersection performance than K-D tree (only limited ability to adapt)
 
 ![1544851834556](assets/1544851834556.jpg)
 
-**Summary of spatial acceleration structures**
+**Summary of spatial acceleration structures** 
 
 Choose the right structure for the job! 
 
