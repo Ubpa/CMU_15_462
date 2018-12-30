@@ -502,10 +502,10 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 	// Sample the pixel with coordinate (x,y) and return the result spectrum.
 	// The sample rate is given by the number of camera rays per pixel.
-
-	int num_samples = ns_aa;
+	
 	Spectrum rst(0, 0, 0);
-	for (int i = 0; i < num_samples; i++) {
+
+	for (int i = 0; i < ns_aa; i++) {
 		Vector2D rdOffset = gridSampler->get_sample();
 		double texcX = (x + rdOffset.x) / frameBuffer.w;
 		double texcY = (y + rdOffset.y) / frameBuffer.h;

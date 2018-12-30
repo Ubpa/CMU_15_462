@@ -122,7 +122,7 @@ Ray Camera::generate_ray(double x, double y) const {
 	Vector3D camDir = lbCorner + offset - camOrigin;
 
 	Vector3D worldDir = c2w * camDir;
-	Vector3D worldOrigin = c2w * camOrigin;
+	Vector3D worldOrigin = pos + camOrigin + c2w * camOrigin;
 
 	return Ray(worldOrigin, worldDir.unit());
 }

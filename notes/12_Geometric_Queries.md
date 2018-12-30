@@ -123,7 +123,7 @@ Plug parametric ray equation directly into equation for points on triangle:
 $$
 \mathbf{p}_0 + u(\mathbf{p}_1 - \mathbf{p}_0) + v(\mathbf{p}_2 - \mathbf{p}_0) = \mathbf{o} + t\mathbf{d}
 $$
-solve for $\mathbf{u,v,t}$
+solve for $\mathbf{u,v,t}$ 
 $$
 \begin{bmatrix}
 \mathbf{p}_1-\mathbf{p}_0
@@ -135,7 +135,34 @@ u\\v\\t
 \end{bmatrix}
 =\mathbf{o}-\mathbf{p}_0
 $$
-**Ray AABB Intersection**
+> fast
+> $$
+> \mathbf{e_1}=\mathbf{p_1}-\mathbf{p_0}\\
+> \mathbf{e_2}=\mathbf{p_2}-\mathbf{p_0}\\
+> \mathbf{s}=\mathbf{o}-\mathbf{p_0}\\
+> \begin{aligned}
+> \begin{bmatrix}
+> u\\v\\t
+> \end{bmatrix}
+> &=
+> \frac{1}{|\mathbf{e_1}\ \mathbf{e_2}\ \mathbf{-d}|}
+> \begin{bmatrix}
+> |\mathbf{s}&\mathbf{e_2}&\mathbf{-d}|\\
+> |\mathbf{e_1}&\mathbf{s}&\mathbf{-d}|\\
+> |\mathbf{e_1}&\mathbf{e_2}&\mathbf{s}|\\
+> \end{bmatrix}\\
+> &=
+> \frac{1}{(\mathbf{e_1}\times\mathbf{d})\cdot\mathbf{e_2}}
+> \begin{bmatrix}
+> (\mathbf{e_2}\times\mathbf{s})\cdot\mathbf{d}\\
+> (\mathbf{e_1}\times\mathbf{d})\cdot\mathbf{s}\\
+> (\mathbf{e_2}\times\mathbf{s})\cdot\mathbf{e_1}\\
+> \end{bmatrix}\\
+> \end{aligned}
+> $$
+> 注意利用公共子表达式 $\mathbf{e_1}\times\mathbf{d}$ 和 $\mathbf{e_2}\times\mathbf{s}$ 
+
+**Ray AABB Intersection** 
 
 每一个维度都求出一个 $t_{min}$ 和 $t_{max}$
 

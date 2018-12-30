@@ -100,7 +100,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] Isotropic Remeshing
 - [ ] 3.0 PathTracer
   - [x] 1 Camera Rays
-  - [ ] 2 Intersecting Primitives
+  - [x] 2 Intersecting Primitives
+    - [x] Triangle
+    - [x] Sphere
   - [ ] 3 BVH
   - [ ] 4 ShadowRays
   - [ ] 5 Path Tracing

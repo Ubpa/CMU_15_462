@@ -3,57 +3,138 @@
 #include "CMU462/CMU462.h"
 #include "GL/glew.h"
 
-namespace CMU462 {
-namespace StaticScene {
+using namespace CMU462;
+using namespace StaticScene;
 
 Triangle::Triangle(const Mesh* mesh, vector<size_t>& v) : mesh(mesh), v(v) {}
 Triangle::Triangle(const Mesh* mesh, size_t v1, size_t v2, size_t v3)
-    : mesh(mesh), v1(v1), v2(v2), v3(v3) {}
+	: mesh(mesh), v1(v1), v2(v2), v3(v3) {}
 
 BBox Triangle::get_bbox() const {
-  // TODO (PathTracer):
-  // compute the bounding box of the triangle
+	// TODO (PathTracer):
+	// compute the bounding box of the triangle
 
-  return BBox();
+	return BBox();
 }
 
 bool Triangle::intersect(const Ray& r) const {
-  // TODO (PathTracer): implement ray-triangle intersection
+	// implement ray-triangle intersection. 
 
-  return false;
+	Vector3D p1 = mesh->positions[v1];
+	Vector3D p2 = mesh->positions[v2];
+	Vector3D p3 = mesh->positions[v3];
+
+	Vector3D e1 = p2 - p1;
+	Vector3D e2 = p3 - p1;
+	
+	Vector3D e1_x_d = cross(e1, r.d);
+	double denominator = dot(e1_x_d, e2);
+
+	if (denominator == 0)
+		return false;
+
+	double inv_denominator = 1.0 / denominator;
+
+	Vector3D s = r.o - p1;
+
+	Vector3D e2_x_s = cross(e2, s);
+	double r1 = dot(e2_x_s, r.d);
+	double u = r1 * inv_denominator;
+	if (u < 0 || u > 1)
+		return false;
+
+	double r2 = dot(e1_x_d, s);
+	double v = r2 * inv_denominator;
+	if (v < 0 || v > 1 || u + v > 1)
+		return false;
+
+	double r3 = dot(e2_x_s, e1);
+	double t = 1 * inv_denominator;
+	if (t < r.min_t + 0.001 || t > r.max_t)
+		return false;
+
+	r.max_t = t;
+
+	return true;
 }
 
 bool Triangle::intersect(const Ray& r, Intersection* isect) const {
-  // TODO (PathTracer):
-  // implement ray-triangle intersection. When an intersection takes
-  // place, the Intersection data should be updated accordingly
+	// implement ray-triangle intersection. 
+	// When an intersection takes place, 
+	// the Intersection data should be updated accordingly
 
-  return false;
+	Vector3D p1 = mesh->positions[v1];
+	Vector3D p2 = mesh->positions[v2];
+	Vector3D p3 = mesh->positions[v3];
+
+	Vector3D e1 = p2 - p1;
+	Vector3D e2 = p3 - p1;
+
+	Vector3D e1_x_d = cross(e1, r.d);
+	double denominator = dot(e1_x_d, e2);
+
+	if (denominator == 0)
+		return false;
+
+	double inv_denominator = 1.0 / denominator;
+
+	Vector3D s = r.o - p1;
+
+	Vector3D e2_x_s = cross(e2, s);
+	double r1 = dot(e2_x_s, r.d);
+	double u = r1 * inv_denominator;
+	if (u < 0 || u > 1)
+		return false;
+
+	double r2 = dot(e1_x_d, s);
+	double v = r2 * inv_denominator;
+	double u_plus_v = u + v;
+	if (v < 0 || v > 1 || u_plus_v > 1)
+		return false;
+
+	double r3 = dot(e2_x_s, e1);
+	double t = 1 * inv_denominator;
+	if (t < r.min_t + 0.001 || t > r.max_t)
+		return false;
+
+	r.max_t = t;
+
+	double w = 1 - u_plus_v;
+
+	Vector3D n1 = mesh->normals[v1];
+	Vector3D n2 = mesh->normals[v2];
+	Vector3D n3 = mesh->normals[v3];
+	Vector3D outwardN = u * n1 + v * n2 + w * n3;
+
+	isect->n = dot(outwardN, r.d) < 0 ? outwardN : -outwardN;
+
+	isect->primitive = this;
+	
+	isect->bsdf = mesh->get_bsdf();
+
+	return true;
 }
 
 void Triangle::draw(const Color& c) const {
-  glColor4f(c.r, c.g, c.b, c.a);
-  glBegin(GL_TRIANGLES);
-  glVertex3d(mesh->positions[v1].x, mesh->positions[v1].y,
-             mesh->positions[v1].z);
-  glVertex3d(mesh->positions[v2].x, mesh->positions[v2].y,
-             mesh->positions[v2].z);
-  glVertex3d(mesh->positions[v3].x, mesh->positions[v3].y,
-             mesh->positions[v3].z);
-  glEnd();
+	glColor4f(c.r, c.g, c.b, c.a);
+	glBegin(GL_TRIANGLES);
+	glVertex3d(mesh->positions[v1].x, mesh->positions[v1].y,
+		mesh->positions[v1].z);
+	glVertex3d(mesh->positions[v2].x, mesh->positions[v2].y,
+		mesh->positions[v2].z);
+	glVertex3d(mesh->positions[v3].x, mesh->positions[v3].y,
+		mesh->positions[v3].z);
+	glEnd();
 }
 
 void Triangle::drawOutline(const Color& c) const {
-  glColor4f(c.r, c.g, c.b, c.a);
-  glBegin(GL_LINE_LOOP);
-  glVertex3d(mesh->positions[v1].x, mesh->positions[v1].y,
-             mesh->positions[v1].z);
-  glVertex3d(mesh->positions[v2].x, mesh->positions[v2].y,
-             mesh->positions[v2].z);
-  glVertex3d(mesh->positions[v3].x, mesh->positions[v3].y,
-             mesh->positions[v3].z);
-  glEnd();
+	glColor4f(c.r, c.g, c.b, c.a);
+	glBegin(GL_LINE_LOOP);
+	glVertex3d(mesh->positions[v1].x, mesh->positions[v1].y,
+		mesh->positions[v1].z);
+	glVertex3d(mesh->positions[v2].x, mesh->positions[v2].y,
+		mesh->positions[v2].z);
+	glVertex3d(mesh->positions[v3].x, mesh->positions[v3].y,
+		mesh->positions[v3].z);
+	glEnd();
 }
-
-}  // namespace StaticScene
-}  // namespace CMU462
