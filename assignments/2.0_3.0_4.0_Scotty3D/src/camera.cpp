@@ -113,9 +113,6 @@ Ray Camera::generate_ray(double x, double y) const {
 	// compute position of the input sensor sample coordinate on the
 	// canonical sensor plane one unit away from the pinhole.
 
-	// debug
-	// x = 0.5, y = 0.5;
-
 	double width = 2 * tan(radians(hFov/2));
 	double height = 2 * tan(radians(vFov / 2));
 	Vector3D lbCorner(-width / 2, -height / 2, -1);

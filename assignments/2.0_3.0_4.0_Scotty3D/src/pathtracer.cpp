@@ -397,17 +397,18 @@ void PathTracer::key_press(int key) {
 
 Spectrum PathTracer::trace_ray(const Ray &r) {
 	Intersection isect;
-
 	if (!bvh->intersect(r, &isect)) {
 		// log ray miss
 #ifdef ENABLE_RAY_LOGGING
 		log_ray_miss(r);
 #endif
 
-		// TODO (PathTracer):
 		// (Task 7) If you have an environment map, return the Spectrum this ray
 		// samples from the environment map. If you don't return black.
-		return Spectrum(0, 0, 0);
+		if (envLight != nullptr)
+			return envLight->sample_dir(r.d);
+		else
+			return Spectrum(0, 0, 0);
 	}
 
 	// log ray hit
@@ -528,7 +529,6 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 	// The sample rate is given by the number of camera rays per pixel.
 	
 	Spectrum rst(0, 0, 0);
-
 	for (int i = 0; i < ns_aa; i++) {
 		Vector2D rdOffset = gridSampler->get_sample();
 		double texcX = (x + rdOffset.x) / frameBuffer.w;

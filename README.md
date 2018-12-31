@@ -98,7 +98,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
       - [x] Loop Subdivision
     - [x] Simplification
     - [x] Isotropic Remeshing
-- [ ] 3.0 PathTracer
+- [x] 3.0 PathTracer
   - [x] 1 Camera Rays
   - [x] 2 Intersecting Primitives
     - [x] Triangle
@@ -107,6 +107,6 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 4 ShadowRays
   - [x] 5 Path Tracing
   - [x] 6 Materials
-  - [ ] 7 Environment Light
+  - [x] 7 Environment Light
 - [ ] 4.0 Animation
 

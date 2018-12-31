@@ -32,6 +32,7 @@ class EnvironmentLight : public SceneLight {
   Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
                     float* pdf) const;
   bool is_delta_light() const { return false; }
+  virtual float pdf(const Vector3D& p, const Vector3D& wi);
   /**
    * Returns the color found on the environment map by travelling in a specific
    * direction. This entails:
@@ -41,9 +42,26 @@ class EnvironmentLight : public SceneLight {
    * - Handling the edge cases correctly (what happens if you wrap around the
    *   environment map horizontally? What about vertically?).
    */
-  Spectrum sample_dir(const Ray& r) const;
+  Spectrum sample_dir(const Vector3D& dir) const;
 
  private:
+
+	 class AliasTable {
+	 public:
+		 void Init(const std::vector<double> & pTable);
+
+		 // p : [0, 1)
+		 size_t Sample(double p) const;
+	 private:
+		 struct Item {
+			 int idx[2];
+			 double spiltP;
+		 };
+		 std::vector<Item> items;
+	 };
+
+	 AliasTable table;
+	 std::vector<double> p;
   const HDRImageBuffer* envMap;
 };  // class EnvironmentLight
 
