@@ -63,9 +63,13 @@ Spectrum MirrorBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 }
 
 Spectrum MirrorBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-	// TODO (PathTracer):
 	// Implement MirrorBSDF
-	return Spectrum();
+
+	reflect(wo, wi);
+
+	*pdf = 1.0;
+
+	return 1.0 / abs(wi->z) * reflectance;
 }
 
 // Glossy BSDF //
@@ -89,9 +93,14 @@ Spectrum RefractionBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 
 Spectrum RefractionBSDF::sample_f(const Vector3D& wo, Vector3D* wi,
 	float* pdf) {
-	// TODO (PathTracer):
 	// Implement RefractionBSDF
-	return Spectrum();
+	// *pdf = FLT_MAX;
+	*pdf = 1.0f;
+
+	if (!refract(wo, wi, ior))
+		reflect(wo, wi);
+
+	return 1.0 / abs(wi->z) * transmittance;
 }
 
 // Glass BSDF //
@@ -101,24 +110,56 @@ Spectrum GlassBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 }
 
 Spectrum GlassBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
-	// TODO (PathTracer):
 	// Compute Fresnel coefficient and either reflect or refract based on it.
 
-	return Spectrum();
+	if (!refract(wo, wi, ior)) {
+		*pdf = 1.0f;
+		reflect(wo, wi);
+		return 1.0 / abs(wi->z) * reflectance;
+	}
+
+	float cosTheta = wo.z >= 0 ? wo.z : wi->z;
+
+	float R0 = pow((ior - 1) / (ior + 1), 2);
+
+	float Fr = R0 + (1 - R0) * pow((1 - cosTheta), 5);
+
+	if (rand() / float(RAND_MAX) < Fr) {
+		*pdf = Fr;
+		reflect(wo, wi);
+		return Fr / abs(wi->z) * reflectance;
+	}
+
+	*pdf = 1 - Fr;
+	float iorRatio = wo.z > 0 ? 1.0f / ior : ior;
+	float attenuation = iorRatio * iorRatio * (1 - Fr) / abs(wi->z);
+	return attenuation * transmittance;
 }
 
 void BSDF::reflect(const Vector3D& wo, Vector3D* wi) {
-	// TODO (PathTracer):
 	// Implement reflection of wo about normal (0,0,1) and store result in wi.
+
+	wi->x = - wo.x;
+	wi->y = - wo.y;
+	wi->z = wo.z;
 }
 
 bool BSDF::refract(const Vector3D& wo, Vector3D* wi, float ior) {
-	// TODO (PathTracer):
 	// Use Snell's Law to refract wo surface and store result ray in wi.
 	// Return false if refraction does not occur due to total internal reflection
 	// and true otherwise. When dot(wo,n) is positive, then wo corresponds to a
 	// ray entering the surface through vacuum.
 
+	float inv = wo.z >= 0 ? 1.0 / ior : ior;
+
+	double discriminant = 1 - (1 - wo.z * wo.z) * inv * inv;
+	if (discriminant <= 0)
+		return false;
+
+	wi->x = - wo.x * inv;
+	wi->y = - wo.y * inv;
+	wi->z = (wo.z >= 0 ? -1 : 1) * sqrt(discriminant);
+	wi->normalize();
 
 	return true;
 }

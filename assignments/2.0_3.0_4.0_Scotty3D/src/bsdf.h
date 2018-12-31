@@ -99,6 +99,7 @@ class BSDF {
 
   /**
    * Refraction helper
+   * ior : index of refraction
    */
   virtual bool refract(const Vector3D& wo, Vector3D* wi, float ior);
 
@@ -131,6 +132,9 @@ class MirrorBSDF : public BSDF {
  public:
   MirrorBSDF(const Spectrum& reflectance) : reflectance(reflectance) {
     rasterize_color = reflectance;
+	printf("[ Mirror ]\n"
+		"reflectance:(%.2f,%.2f,%.2f)\n",
+		reflectance.r, reflectance.g, reflectance.b);
   }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
@@ -174,6 +178,12 @@ class RefractionBSDF : public BSDF {
   RefractionBSDF(const Spectrum& transmittance, float roughness, float ior)
       : transmittance(transmittance), roughness(roughness), ior(ior) {
     rasterize_color = transmittance;
+	printf("[ Refraction ]\n"
+		"transmittance:(%.2f,%.2f,%.2f)\n"
+		"roughness:%.2f\n"
+		"ior:%.2f\n",
+		transmittance.r, transmittance.g, transmittance.b,
+		roughness, ior);
   }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);
@@ -200,6 +210,15 @@ class GlassBSDF : public BSDF {
         roughness(roughness),
         ior(ior) {
     rasterize_color = transmittance;
+
+	printf("[ Glass ]\n"
+		"transmittance:(%.2f,%.2f,%.2f)\n"
+		"reflectance:(%.2f,%.2f,%.2f)\n"
+		"roughness:%.2f\n"
+		"ior:%.2f\n",
+		transmittance.r, transmittance.g, transmittance.b,
+		reflectance.r, reflectance.g, reflectance.b,
+		roughness, ior);
   }
 
   Spectrum f(const Vector3D& wo, const Vector3D& wi);

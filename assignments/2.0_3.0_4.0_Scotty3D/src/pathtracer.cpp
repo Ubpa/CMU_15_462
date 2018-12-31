@@ -511,14 +511,15 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	// to light from this direction
 	// !!! Multiple Importance Sampling (MIS)
 	float sumPr = matPDF;
-	for (SceneLight* light : scene->lights) {
-		size_t num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
-		sumPr += num_light_samples * light->pdf(hit_p, matRayDir);
+	if (!isect.bsdf->is_delta()) {
+		for (SceneLight* light : scene->lights) {
+			size_t num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
+			sumPr += num_light_samples * light->pdf(hit_p, matRayDir);
+		}
 	}
-
 	Ray matRay(hit_p + EPS_D * matRayDir, matRayDir, int(r.depth + 1));
 	double cosTheta = mat_w_in.z;
-	Spectrum mat_L_out = matF * trace_ray(matRay) * (cosTheta / (sumPr * (1 - terminateProbability)));
+	Spectrum mat_L_out = matF * trace_ray(matRay) * (abs(cosTheta) / (sumPr * (1 - terminateProbability)));
 	return L_out + mat_L_out;
 }
 
@@ -535,6 +536,7 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 		rst += trace_ray(camera->generate_ray(texcX, texcY));
 	}
 	rst *= 1.0 / ns_aa;
+
 	return rst;
 }
 

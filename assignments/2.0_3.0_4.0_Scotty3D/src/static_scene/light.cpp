@@ -89,7 +89,10 @@ AreaLight::AreaLight(const Spectrum& rad, const Vector3D& pos,
 	direction(dir),
 	dim_x(dim_x),
 	dim_y(dim_y),
-	area(dim_x.norm() * dim_y.norm()) {}
+	area(dim_x.norm() * dim_y.norm()) {
+	printf("[AreaLight]\n"
+		"radiance:(%.3f,%.3f,%.3f)\n", rad.r, rad.g, rad.b);
+}
 
 Spectrum AreaLight::sample_L(const Vector3D& p, Vector3D* wi,
 	float* distToLight, float* pdf) const {

@@ -208,12 +208,14 @@ $$
   f_r(\theta_i,\phi_i;\theta_o,\phi_o)=\left\{
   \begin{array}{ccl}
   \frac{1}{\cos\theta_i}       &      & {\theta_o=\theta_i \text{ and }\phi_i=\phi_o\pm\pi}\\
-  1     &      & \text{otherwise}\\
+  0     &      & \text{otherwise}\\
   \end{array} \right.
   $$
   Strictly speaking, $f_r$ is a distribution, not a function
 
   In practice, no hope of finding refected direction via random sampling; simply pick the refected direction! 
+
+  > 注意分母
 
 **Transmission**
 
@@ -258,6 +260,35 @@ Light refracts when it enters a new medium.
   Many real materials: refectance increases with viewing angle 
 
   ![1544881171677](assets/1544881171677.jpg)
+
+  一个好的近似是 Schlick approximation，公式为
+  $$
+  R(\theta)=R_0+(1-R_0)(1-\cos\theta)^5\\
+  R_0=(\frac{n_t-1}{n_t+1})^2
+  $$
+  上边的 $\cos \theta$ 永远是空气中的角
+
+  折射的BSDF
+  $$
+  f(\mathbf{p},\omega_t,\omega_i)=\frac{\eta_t^2}{\eta_i^2}(1-F_r)\frac{\delta(\omega_i-\text{refract}(\omega_t,\mathbf{n},\eta_i,\eta_t))}{|\cos\theta_i|}
+  $$
+
+  > ```c++
+  > bool refract(const Vector3D& wo, Vector3D* wi, float ior) {
+  >     float inv = wo.z >= 0 ? 1.0 / ior : ior;
+  > 
+  > 	double discriminant = 1 - (1 - wo.z * wo.z) * inv * inv;
+  > 	if (discriminant <= 0)
+  > 		return false;
+  > 
+  > 	wi->x = - wo.x * inv;
+  > 	wi->y = - wo.y * inv;
+  > 	wi->z = (wo.z >= 0 ? -1 : 1) * sqrt(discriminant);
+  > 	wi->normalize();
+  > 
+  > 	return true;
+  > }
+  > ```
 
   ![1544881203514](assets/1544881203514.jpg)
 
