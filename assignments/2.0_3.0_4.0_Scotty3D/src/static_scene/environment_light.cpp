@@ -1,7 +1,5 @@
 #include "environment_light.h"
 
-#include <unordered_set>
-
 #include <random>
 
 using namespace CMU462;
@@ -11,42 +9,72 @@ using namespace std;
 static uniform_real_distribution<double> dMap(0.0, 1.0);
 static default_random_engine engine;
 
-void EnvironmentLight::AliasTable::Init(const vector<double> & pTable) {
-	const double partP = 1.0 / pTable.size();
-	items.resize(pTable.size());
+void EnvironmentLight::AliasTable::Init(const vector<double> & pMap) {
+	const double partP = 1.0 / pMap.size();
+	items.resize(pMap.size());
 
-	unordered_set<size_t> spares;
-	unordered_set<size_t> overflows;
-
-	for (size_t i = 0; i < pTable.size(); i++) {
+	for (size_t i = 0; i < pMap.size(); i++) {
 		items[i].idx[0] = i;
-		items[i].spiltP = pTable[i];
-		if (pTable[i] < partP)
-			spares.insert(i);
-		else if (pTable[i] > partP)
-			overflows.insert(i);
-		else
-			items[i].idx[1] = -1;
+		items[i].idx[1] = -1;
+		items[i].spiltP = pMap[i];
 	}
 
-	for (auto i : overflows) {
-		while (1) {
-			// final one will overflow a little because of precision
-			// so it is correct when next condition happen
-			if (spares.empty())
-				break;
-			size_t j = *spares.begin();
-			spares.erase(j);
-			items[j].idx[1] = i;
-			items[i].spiltP -= partP - items[j].spiltP;
-			if (items[i].spiltP < partP) {
-				spares.insert(i);
-				break;
+	// init spareIdx, overflowIdx
+	size_t spareIdx, overflowIdx;
+	for (size_t i = 0; i < pMap.size(); i++) {
+		if (items[i].spiltP < partP) {
+			spareIdx = i;
+			break;
+		}
+	}
+	for (size_t i = 0; i < pMap.size(); i++) {
+		if (items[i].spiltP > partP) {
+			overflowIdx = i;
+			break;
+		}
+	}
+
+	size_t spareIdx_bk;
+	bool needUpdateSpareIdx = true;
+	while (overflowIdx < pMap.size()) {
+		items[spareIdx].idx[1] = overflowIdx;
+		items[overflowIdx].spiltP -= partP - items[spareIdx].spiltP;
+
+		// update overflowIdx
+		if (needUpdateSpareIdx) {
+			if (items[overflowIdx].spiltP < partP && overflowIdx < spareIdx) {
+				spareIdx_bk = spareIdx;
+				needUpdateSpareIdx = false;
+				spareIdx = overflowIdx;
 			}
-			else if (items[i].spiltP == partP) {
-				items[i].idx[1] = -1;
-				break;
+		}
+		else {
+			if (items[overflowIdx].spiltP >= partP || overflowIdx >= spareIdx_bk) {
+				spareIdx = spareIdx_bk;
+				needUpdateSpareIdx = true;
 			}
+			else
+				spareIdx = overflowIdx;
+		}
+
+		if (items[overflowIdx].spiltP <= partP) {
+			while (++overflowIdx < pMap.size()) {
+				if (items[overflowIdx].spiltP > partP)
+					break;
+			}
+			if (overflowIdx == pMap.size())
+				break;
+		}
+
+		// update spareIdx
+		if (needUpdateSpareIdx) {
+			while (++spareIdx < pMap.size()) {
+				if (items[spareIdx].spiltP < partP)
+					break;
+			}
+
+			if (spareIdx == pMap.size())
+				break;
 		}
 	}
 }
@@ -54,9 +82,10 @@ void EnvironmentLight::AliasTable::Init(const vector<double> & pTable) {
 // p : [0, 1)
 size_t EnvironmentLight::AliasTable::Sample(double p) const {
 	// O(1)
-	size_t ID = p * items.size();
-	double leftP = p * items.size() - ID;
-	if (leftP < items[ID].spiltP)
+	double dID = p * items.size();
+	size_t ID = size_t(dID);
+	double leftP = dID - ID;
+	if (leftP <= items[ID].spiltP)
 		return items[ID].idx[0];
 	else
 		return items[ID].idx[1];
@@ -70,21 +99,21 @@ EnvironmentLight::EnvironmentLight(const HDRImageBuffer* envMap)
 	double thetaStep = PI / h;
 
 	double sum = 0;
-	p = vector<double>(w*h);
+	pMap = vector<double>(w*h);
 	double theta = 0.5 * thetaStep;
 	for (size_t y = 0; y < h; y++, theta += thetaStep) {
 		for (size_t x = 0; x < w; x++) {
 			size_t idx = x + y * w;
 			Spectrum color = envMap->data[idx];
-			p[idx] = color.illum() * sin(theta);
-			sum += p[idx];
+			pMap[idx] = color.illum() * sin(theta);
+			sum += pMap[idx];
 		}
 	}
 
 	for (size_t i = 0; i < w*h; i++)
-		p[i] /= sum;
+		pMap[i] /= sum;
 
-	table.Init(p);
+	table.Init(pMap);
 
 	printf("[EnvironmentLight]\n"
 		"width: %d\n"
@@ -93,39 +122,47 @@ EnvironmentLight::EnvironmentLight(const HDRImageBuffer* envMap)
 
 Spectrum EnvironmentLight::sample_L(const Vector3D& p, Vector3D* wi,
 	float* distToLight, float* pdf) const {
-	double rd = dMap(engine);
-	size_t idx = table.Sample(rd);
+	size_t idx = table.Sample(dMap(engine));
+
 	double texcX = ((idx % envMap->w) + dMap(engine)) / envMap->w;
 	double texcY = (idx + dMap(engine)) / envMap->w;
+
 	double theta = PI * texcY;
 	double phi = 2 * PI * texcX;
-	*pdf = this->p[idx] / envMap->w / envMap->h;
+
 	wi->x = sin(theta) * sin(phi);
 	wi->z = sin(theta) * cos(phi);
 	wi->y = cos(theta);
+
 	*distToLight = FLT_MAX;
+	*pdf = pMap[idx] / envMap->w / envMap->h;
 	return sample_dir(*wi);
 }
 
 float EnvironmentLight::pdf(const Vector3D& p, const Vector3D& wi) {
 	size_t w = envMap->w;
 	size_t h = envMap->h;
+
 	double theta = acos(wi.y);
-	double phi = atan2(wi.x, wi.z) + PI;
+	double phi = atan2(wi.x, -wi.z) + PI;
+
 	double texcX = phi / (2.0 * PI);
 	double texcY = theta / PI;
 
 	int x = texcX * w;
 	int y = texcY * h;
 	int idx = x + y * w;
-	return this->p[idx];
+
+	return pMap[idx];
 }
 
 Spectrum EnvironmentLight::sample_dir(const Vector3D& dir) const {
 	size_t w = envMap->w;
 	size_t h = envMap->h;
+
 	double theta = acos(dir.y);
-	double phi = atan2(dir.x, dir.z) + PI;
+	double phi = atan2(dir.x, -dir.z) + PI;
+
 	double texcX = phi / (2.0 * PI);
 	double texcY = theta / PI;
 
@@ -136,6 +173,7 @@ Spectrum EnvironmentLight::sample_dir(const Vector3D& dir) const {
 	int x1 = clamp<int>(x0 + ((xd - x0) < 0.5 ? -1 : 1), 0, w - 1);
 	int y0 = clamp<int>(yd, 0, h - 1);
 	int y1 = clamp<int>(y0 + ((yd - y0) < 0.5 ? -1 : 1), 0, h - 1);
+
 	int idx[4] = {
 		y0 * w + x0,
 		y0 * w + x1,

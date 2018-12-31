@@ -416,7 +416,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	log_ray_hit(r, isect.t);
 #endif
 
-	Spectrum L_out = isect.bsdf->get_emission();  // Le
+	Spectrum emit_L_out = isect.bsdf->get_emission();  // Le
 
 	// Instead of initializing this value to a constant color, use the direct,
 	// indirect lighting components calculated in the code below. The starter
@@ -438,6 +438,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	Vector3D w_out = w2o * (r.o - hit_p);
 	w_out.normalize();
 
+	Spectrum light_L_out(0, 0, 0);
 	if (!isect.bsdf->is_delta()) {
 		// ### Estimate direct lighting integral
 		for (SceneLight* light : scene->lights) {
@@ -465,9 +466,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
 				// !!! Multiple Importance Sampling (MIS)
 				float sumPr = isect.bsdf->pdf(w_out, w_in) + num_light_samples * pr;
-				for (SceneLight* _light : scene->lights) {
-					if (light != _light) {
-						size_t num_light_samples = _light->is_delta_light() ? 1 : ns_area_light;
+				for (SceneLight* otherL : scene->lights) {
+					if (light != otherL) {
+						size_t num_light_samples = otherL->is_delta_light() ? 1 : ns_area_light;
 						sumPr += num_light_samples * light->pdf(hit_p, dir_to_light);
 					}
 				}
@@ -483,14 +484,15 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 				// in shadow. Only accumulate light if not in shadow.
 				Ray shadowRay(hit_p + EPS_D * dir_to_light, dir_to_light);
 				if (!bvh->intersect(shadowRay) || shadowRay.max_t > dist_to_light / dir_to_light.norm())
-					L_out += (cos_theta / sumPr) * f * light_L;
+					light_L_out += (cos_theta / sumPr) * f * light_L;
 			}
 		}
 	}
 
+	if (r.depth > max_ray_depth)
+		return emit_L_out + light_L_out;
+
 	// ### (Task 5) Compute an indirect lighting estimate using pathtracing with Monte Carlo.
-
-
 	// Note that Ray objects have a depth field now; you should use this to avoid
 	// traveling down one path forever.
 
@@ -501,13 +503,17 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	Vector3D mat_w_in;
 	const Spectrum matF = isect.bsdf->sample_f(w_out, &mat_w_in, &matPDF);
 	Vector3D matRayDir = o2w * mat_w_in;
-
-	// (2) potentially terminate path (using Russian roulette)
-	float terminateProbability = 0.0f;
-	//float terminateProbability = 1.0f - matF.illum();
-	if (r.depth > max_ray_depth || rand() / float(RAND_MAX) < terminateProbability)
-		return L_out;
 	
+	// (2) potentially terminate path (using Russian roulette)
+	float terminateProbability = 0;
+	// Pareto principle : 2-8 principle
+	// 0.2 * cos(PI / 2 * 0.8) == 0.0618
+	if (!isect.bsdf->is_delta() && matF.illum() * abs(mat_w_in.z) < 0.0618)
+		terminateProbability = 0.8;
+
+	if (rand() / float(RAND_MAX) < terminateProbability)
+		return emit_L_out + light_L_out;
+
 	// (3) evaluate weighted reflectance contribution due 
 	// to light from this direction
 	// !!! Multiple Importance Sampling (MIS)
@@ -518,10 +524,14 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 			sumPr += num_light_samples * light->pdf(hit_p, matRayDir);
 		}
 	}
-	Ray matRay(hit_p + EPS_D * matRayDir, matRayDir, int(r.depth + 1));
+
 	double cosTheta = mat_w_in.z;
-	Spectrum mat_L_out = matF * trace_ray(matRay) * (abs(cosTheta) / (sumPr * (1 - terminateProbability)));
-	return L_out + mat_L_out;
+
+	Ray matRay(hit_p + EPS_D * matRayDir, matRayDir, int(r.depth + 1));
+
+	Spectrum mat_L_out = abs(cosTheta) / (sumPr*(1.f - terminateProbability)) * matF * trace_ray(matRay);
+
+	return emit_L_out + light_L_out + mat_L_out;
 }
 
 Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {

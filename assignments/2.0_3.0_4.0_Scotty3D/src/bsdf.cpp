@@ -3,13 +3,14 @@
 #include <algorithm>
 #include <iostream>
 #include <utility>
+#include <random>
 
-
-using std::min;
-using std::max;
-using std::swap;
+using namespace std;
 
 using namespace CMU462;
+
+static uniform_real_distribution<double> dMap(0.0, 1.0);
+static default_random_engine engine;
 
 void CMU462::make_coord_space(Matrix3x3& o2w, const Vector3D& n) {
 	Vector3D z = Vector3D(n.x, n.y, n.z);
@@ -40,8 +41,8 @@ Spectrum DiffuseBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 
 Spectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
 	// Implement DiffuseBSDF
-	double Xi1 = rand() / (double)RAND_MAX;
-	double Xi2 = rand() / (double)RAND_MAX;
+	double Xi1 = dMap(engine);
+	double Xi2 = dMap(engine);
 	
 	double a = sqrt(1 - Xi1 * Xi1);
 	wi->x = a * cos(2 * PI * Xi2);
@@ -124,7 +125,7 @@ Spectrum GlassBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
 
 	float Fr = R0 + (1 - R0) * pow((1 - cosTheta), 5);
 
-	if (rand() / float(RAND_MAX) < Fr) {
+	if (dMap(engine) < Fr) {
 		*pdf = Fr;
 		reflect(wo, wi);
 		return Fr / abs(wi->z) * reflectance;

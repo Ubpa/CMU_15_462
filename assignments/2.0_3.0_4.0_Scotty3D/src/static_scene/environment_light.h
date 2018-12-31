@@ -61,7 +61,7 @@ class EnvironmentLight : public SceneLight {
 	 };
 
 	 AliasTable table;
-	 std::vector<double> p;
+	 std::vector<double> pMap;
   const HDRImageBuffer* envMap;
 };  // class EnvironmentLight
 
