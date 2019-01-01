@@ -132,6 +132,7 @@ Spectrum GlassBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
 	}
 
 	*pdf = 1 - Fr;
+
 	float iorRatio = wo.z > 0 ? 1.0f / ior : ior;
 	float attenuation = iorRatio * iorRatio * (1 - Fr) / abs(wi->z);
 	return attenuation * transmittance;

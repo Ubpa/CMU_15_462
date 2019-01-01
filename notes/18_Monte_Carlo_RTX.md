@@ -56,9 +56,26 @@ $$
 > $$
 >
 
+**Cosine-Weighted Hemisphere Sampling** 
+$$
+\begin{aligned}
+\int_{\mathcal{H}^2}\cos\theta\sin\theta\ \text{d}\omega &=\pi\\
+p(\theta,\phi)\ \text{d}\theta\text{d}\phi&=\frac{\cos\theta\sin\theta\ \text{d}\theta\text{d}\phi}{\pi}\\
+p(\theta)p(\phi)&=\frac{\sin2\theta}{2\pi}\\
+\end{aligned}\\
+\begin{aligned}
+&p(\phi)=\frac{1}{2\pi},&&P(\phi)=\frac{\phi}{2\pi},&&\phi=2\pi\xi_2\\
+&p(\theta)=\sin2\theta,&&P(\theta)=\frac{1}{2}-\frac{1}{2}\cos2\theta,&&\cos\theta=\sqrt{\xi_1}
+\end{aligned}\\
+\begin{aligned}
+(x,y,z)
+&=(\sin\theta\cos\phi,\sin\theta\sin\phi,\cos\theta)\\
+&=(\sqrt{1-\xi_1^4}\cos(2\pi\xi_2), \sqrt{1-\xi_1^4}\sin(2\pi\xi_2), \sqrt{\xi_1})
+\end{aligned}\\
+$$
 **Direct lighting—uniform sampling (algorithm)** 
 
-- Given surface point $\mathbf{p}$ 
+- Given surface point $\mathbf{p}​$ 
 
 - For each of N samples:
 

@@ -182,20 +182,26 @@ cost is $O(n\log n)$
 >
 > 建表只需$O(n)$
 
-**Alias Table**
+**Alias Table** 
 
-Get amortized O(1) sampling by building “alias table” 
+Get amortized **O(1)** sampling by building “alias table” 
 
-Basic idea: rob from the rich, give to the poor (O(n)): 
+Basic idea: rob from the rich, give to the poor (**O(n)**): 
 
 ![1544943037070](assets/1544943037070.jpg)
 
-Table just stores two identities & ratio of heights per column 
+Table just stores **two identities** & **ratio of heights** per column 
+
+> 构建方法
+>
+> 1. n个事件则有n个column，分成有空的和溢出的两类
+> 2. 对于每个溢出的，找一个有空的，**空多少就从溢出处搬多少过去**，之后溢出处可能溢出，有空或刚满
+> 3. 重复步骤2即可
 
 To sample: 
 
 - pick uniform # between 1 and n
-- biased coin fip to pick one of the two identities in nth column 
+- biased coin flip to pick one of the two identities in nth column 
 
 ## 19.4 Other techniques
 

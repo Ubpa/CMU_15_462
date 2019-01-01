@@ -134,9 +134,10 @@ float AreaLight::pdf(const Vector3D& p, const Vector3D& wi) {
 		return 0;
 
 	Vector3D d = position + u * dim_x + v * dim_y - p;
-	float cosTheta = dot(d, direction);
-	float sqDist = d.norm2();
-	return sqDist / (area * fabs(cosTheta));
+	double cosTheta = dot(d, direction);
+	double sqDist = d.norm2();
+
+	return sqDist / (area * abs(cosTheta));
 }
 
 // Sphere Light //

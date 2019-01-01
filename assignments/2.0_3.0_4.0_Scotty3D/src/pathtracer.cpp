@@ -489,6 +489,11 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 		}
 	}
 
+	if (emit_L_out.isnan())
+		printf("trace_ray : emit_L_out is nan\n");
+	if (light_L_out.isnan())
+		printf("trace_ray : light_L_out is nan\n");
+
 	if (r.depth > max_ray_depth)
 		return emit_L_out + light_L_out;
 
@@ -505,11 +510,11 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	Vector3D matRayDir = o2w * mat_w_in;
 	
 	// (2) potentially terminate path (using Russian roulette)
-	float terminateProbability = 0;
+	float terminateProbability = 0.f;
 	// Pareto principle : 2-8 principle
 	// 0.2 * cos(PI / 2 * 0.8) == 0.0618
-	if (!isect.bsdf->is_delta() && matF.illum() * abs(mat_w_in.z) < 0.0618)
-		terminateProbability = 0.8;
+	if (!isect.bsdf->is_delta() && matF.illum() * abs(mat_w_in.z) < 0.0618f)
+		terminateProbability = 0.8f;
 
 	if (rand() / float(RAND_MAX) < terminateProbability)
 		return emit_L_out + light_L_out;
@@ -531,6 +536,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
 	Spectrum mat_L_out = abs(cosTheta) / (sumPr*(1.f - terminateProbability)) * matF * trace_ray(matRay);
 
+	if (mat_L_out.isnan())
+		printf("trace_ray : mat_L_out is nan\n");
+
 	return emit_L_out + light_L_out + mat_L_out;
 }
 
@@ -543,7 +551,13 @@ Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 		Vector2D rdOffset = gridSampler->get_sample();
 		double texcX = (x + rdOffset.x) / frameBuffer.w;
 		double texcY = (y + rdOffset.y) / frameBuffer.h;
-		rst += trace_ray(camera->generate_ray(texcX, texcY));
+		Spectrum sampleColor = trace_ray(camera->generate_ray(texcX, texcY));
+		if (sampleColor.isnan()) {
+			printf("raytrace_pixel : sampleColor is nan\n");
+			rst += (1.0 / i) * rst;
+		}
+		else
+			rst += sampleColor;
 	}
 	rst *= 1.0 / ns_aa;
 

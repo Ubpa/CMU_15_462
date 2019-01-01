@@ -73,5 +73,5 @@ Notes:
 
 Notes:
 
-- [Generating videos](https://github.com/cmu462/Scotty3D/wiki/Generating-Videos)
-- [Evaluating cotan](https://github.com/cmu462/Scotty3D/wiki/Evaluating-cotan)
+- [Generating videos](https://github.com/cmu462/Scotty3D/wiki/Generating-Videos) 
+- [Evaluating cotan](https://github.com/cmu462/Scotty3D/wiki/Evaluating-cotan) 
