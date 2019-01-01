@@ -26,6 +26,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 > ~~之后再考虑 PBR~~
 >
 > 其实还是有很多东西未涉及到的，如 BRDF，MCRTX，Impotance Sampling，而且 assignment 2,3,4 都是在一个项目 Scotty3D 里边的，所以写写也无妨
+>
+> 写完了，确实有新收获
 
 ## 资源文件
 
@@ -81,23 +83,20 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 9 Draw Something!!!
 - [x] 2.0 MeshEdit
   - [x] Local
-    - [x] flipEdge
-    - [x] splitEdge
-    - [x] collapseEdge
-    - [x] collapseFace
-    - [x] eraseVertex
-    - [x] eraseEdge
-    - [x] bevelVertex
-    - [x] bevelEdge
-    - [x] bevelFace
+    - [x] 1 flipEdge
+    - [x] 2 splitEdge
+    - [x] 3 collapseEdge
+    - [x] 4 collapseFace
+    - [x] 5 eraseVertex
+    - [x] 6 eraseEdge
+    - [x] 7 bevelVertex
+    - [x] 8 bevelEdge
+    - [x] 9 bevelFace
   - [x] Global
-    - [x] Triangulation
-    - [x] Subdivision
-      - [x] Linear Subdivision
-      - [x] Catmull-Clark Subdivision
-      - [x] Loop Subdivision
-    - [x] Simplification
-    - [x] Isotropic Remeshing
+    - [x] 1 Triangulation
+    - [x] 2 Subdivision
+    - [x] 3 Simplification
+    - [x] 4 Isotropic Remeshing
 - [x] 3.0 PathTracer
   - [x] 1 Camera Rays
   - [x] 2 Intersecting Primitives
@@ -109,4 +108,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 6 Materials
   - [x] 7 Environment Light
 - [ ] 4.0 Animation
+  - [x] 1 Spline Interpolation
+  - [ ] 2 Skeleton Kinematics
+  - [ ] 3 Linear Blend Skinning
+  - [ ] 4 Physical Simulation
 

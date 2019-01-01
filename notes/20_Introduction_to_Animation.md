@@ -91,6 +91,21 @@ Fitting Cubic to Endpoints and Derivatives
 
 This time, we have four equations in four unknowns 
 
+> $p(t)=at^3+bt^2+ct+d$ 
+>
+> $p(t)=h_{00}(t)p_0+h_{10}(t)m_0+h_{01}(t)p_1+h_{11}(t)m_1$ 
+>
+> where $p_0$, $p_1$ are the endpoint positions,  $m_0$, $m_1$ are the endpoint tangents, and $h_{i,j}$ are the Hermite bases
+> $$
+> \begin{aligned}
+> h_{00}(t)&=2t^3-3t^2+1\\
+> h_{10}(t)&=t^3-2t^2+t\\
+> h_{01}(t)&=-2t^3+3t^2\\
+> h_{11}(t)&=t^3-t^2\\
+> \end{aligned}
+> $$
+>
+
 Often, this is the game we will play:
 - each condition on spline leads to a linear equality
 - hence, if we have m degrees of freedom, we need m (linearly independent!) conditions to determine spline 
@@ -99,7 +114,7 @@ Often, this is the game we will play:
 
 Now consider piecewise spline made of cubic polynomials $p_i$ 
 
-![1544945123191](assets/1544945123191.jpg))
+![1544945123191](assets/1544945123191.jpg)
 
 For each interval, want polynomial “piece” $p_i$ to interpolate data (e.g., keyframes) at both endpoints: 
 $$
@@ -154,7 +169,7 @@ $$
 
 Properties : INTERPOLATION and LOCALITY, but not C2 CONTINUITY 
 
-**Catmull-Rom Splines**
+**Catmull-Rom Splines** 
 
 Sometimes makes sense to specify tangents (e.g., illustration)
 
@@ -172,9 +187,9 @@ All the same properties as any other Hermite spline (locality, etc.)
 
 Commonly used to interpolate motion in computer animation. 
 
-Many, many variants, but CatmullRom is usuallygood starting point 
+Many, many variants, but Catmull-Rom is usually good starting point 
 
-**B-Splines**
+**B-Splines** 
 
 Get better continuity and local control by sacrificing interpolation 
 

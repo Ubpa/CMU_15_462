@@ -49,6 +49,9 @@ set(APPLICATION_SOURCE
     # Application
     application.cpp
     main.cpp
+	
+	# other
+	spline.inl
 )
 
 #-------------------------------------------------------------------------------
