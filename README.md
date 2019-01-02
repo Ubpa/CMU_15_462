@@ -109,7 +109,11 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 7 Environment Light
 - [ ] 4.0 Animation
   - [x] 1 Spline Interpolation
-  - [ ] 2 Skeleton Kinematics
+    - [x] Hermite Curve over the Unit Interval
+    - [x] Catmull-Romm spline
+  - [x] 2 Skeleton Kinematics
+    - [x] Forward Kinematics
+    - [x] Inverse Kinematics
   - [ ] 3 Linear Blend Skinning
   - [ ] 4 Physical Simulation
 

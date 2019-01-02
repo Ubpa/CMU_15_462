@@ -217,13 +217,55 @@ Important technique in animation & robotics
 
 Rather than adjust individual transformations, set “goal” and use algorithm to come up with plausible motion
 
+**Jacobian Transpose** 
+
+![1546417583310](assets/1546417583310.jpg)
+
+Minimize cost function
+$$
+\begin{align}
+F&=\frac{1}{2}(\mathbf{x}_\text{target}-\mathbf{x})^T(\mathbf{x}_\text{target}-\mathbf{x})\\
+&=\frac{1}{2}(\mathbf{x}_\text{target}-f(\theta))^T(\mathbf{x}_\text{target}-f(\theta))\\
+&=\frac{1}{2}(\mathbf{x}_\text{target}-\mathbf{x_0}+\mathbf{x_0}-f(\theta))^T(\mathbf{x}_\text{target}-\mathbf{x_0}+\mathbf{x_0}-f(\theta))\\
+&=\frac{1}{2}(\Delta\mathbf{x}-(f(\theta)-\mathbf{x}_0))^T(\Delta\mathbf{x}-(f(\theta)-\mathbf{x}_0))\\
+&\approx\frac{1}{2}(\Delta\mathbf{x}-J(\theta)\Delta\theta)^T(\Delta\mathbf{x}-J(\theta)\Delta\theta)\\
+\end{align}
+$$
+so we minimize cost function
+$$
+\arg\min_\limits{\Delta \theta}C(\Delta\theta)\\
+\begin{align}
+C(\Delta\theta)&=||J(\theta)\Delta\theta-\Delta\mathbf{x}||^2\\
+\frac{\text{d}C}{\text{d}\Delta\theta}&=2J(\theta)^TJ(\theta)\Delta\theta-2J(\theta)^T\Delta\mathbf{x}\\
+\frac{\text{d}C}{\text{d}\Delta\theta}\Big|_{\Delta\theta=0}&=-2J(\theta)^T\Delta\mathbf{x}
+\end{align}
+$$
+
+> ~~因为这里的 cost function 只是近似~~
+>
+> ~~所以我们在最小化时，只能在 $\Delta\theta$  较小时有良好的效果~~
+>
+> ~~所以我们不会去直接求解~~ $\Delta\theta=J(\theta)^{-1}\Delta\mathbf{x}$
+>
+> 主要的原因还是其不可逆
+>
+> 由于是圆周运动，所以 $J(\theta_i)=\omega\times\mathbf{r}$ 
+>
+> $\omega$ 是旋转轴，$\mathbf{r}$ 是关节点到末端点的向量
+>
+> 特别要注意坐标系的转换，坐标系是基于节点的，在更换节点时要进行坐标系的变换
+
+with respect to $\theta​$ by gradient descent
+$$
+\Delta\theta=\alpha J(\theta)^T\Delta\mathbf{x}
+$$
 **Skeletal Animation** 
 
 Often use “skeleton” to drive deformation(变形) of continuous surface 
 
 Infuence of each bone determined by, e.g., weighting function 
 
-![1544950074655](assets/1544950074655.jpg))
+![1544950074655](assets/1544950074655.jpg)
 
 **Blend Shapes**
 
