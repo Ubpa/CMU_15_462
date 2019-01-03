@@ -850,8 +850,33 @@ BBox Face::bounds() const {
 BBox Halfedge::bounds() const { return edge()->bounds(); }
 
 float Vertex::laplacian() const {
-  // TODO (Animation) Task 4
-  return 0.0;
+	// (Animation) Task 4
+
+	float rst = 0.f;
+
+	Vector3D vi = position;
+	float ui = offset;
+
+	auto adjHes = AdjHalfedges();
+	for (auto adjHe : adjHes) {
+		Vector3D vj = adjHe->twin()->vertex()->position;
+		float uj = adjHe->twin()->vertex()->offset;
+		Vector3D left = adjHe->next()->next()->vertex()->position;
+		Vector3D right = adjHe->twin()->next()->next()->vertex()->position;
+
+		Vector3D left2vi = vi - left;
+		Vector3D right2vi = vi - right;
+		Vector3D left2vj = vj - left;
+		Vector3D right2vj = vj - right;
+
+		double cotAlpha = dot(left2vi, left2vj) / cross(left2vi, left2vj).norm();
+		double cotBeta = dot(right2vi, right2vj) / cross(right2vi, right2vj).norm();
+
+		rst += (cotAlpha + cotBeta) * (uj - ui);
+	}
+	rst *= 0.5;
+
+	return rst;
 }
 
 vector<VertexIter> Vertex::AdjVertices() {
@@ -876,6 +901,23 @@ vector<HalfedgeIter> Vertex::AdjHalfedges() {
 	vector<HalfedgeIter> halfedges;
 	
 	HalfedgeIter he = this->halfedge();
+	do {
+		halfedges.push_back(he);
+		he = he->twin()->next();
+	} while (he != this->halfedge());
+
+	reverse(halfedges.begin(), halfedges.end());
+
+	return halfedges;
+}
+
+vector<HalfedgeCIter> Vertex::AdjHalfedges() const {
+	// Collect all ordered adjacent halfedges
+	// the halfedges' vertex is this
+
+	vector<HalfedgeCIter> halfedges;
+
+	HalfedgeCIter he = this->halfedge();
 	do {
 		halfedges.push_back(he);
 		he = he->twin()->next();

@@ -181,6 +181,7 @@ namespace CMU462 {
 	typedef list<Edge>::iterator EdgeIter;
 	typedef list<Face>::iterator FaceIter;
 	typedef list<Halfedge>::iterator HalfedgeIter;
+	typedef list<Halfedge>::const_iterator HalfedgeCIter;
 
 	/*
 	 * We also need "const" iterator types, for situations where a method takes
@@ -592,6 +593,8 @@ namespace CMU462 {
 	 */
 	class Vertex : public HalfedgeElement {
 	public:
+		Vertex() : setLastOffset(false) { }
+
 		/**
 		 * returns some halfedge rooted at this vertex (reference)
 		 */
@@ -712,6 +715,8 @@ namespace CMU462 {
 		// Complex texcoord;  ///< vertex texture coordinate
 
 		float offset;
+		float lastOffset;
+		bool setLastOffset;
 		float velocity;
 		float laplacian() const;
 
@@ -770,6 +775,7 @@ namespace CMU462 {
 		 * the halfedges' vertex is v
 		 */
 		vector<HalfedgeIter> AdjHalfedges();
+		vector<HalfedgeCIter> AdjHalfedges() const;
 
 		/**
 		 * Collect all ordered adjacent edges

@@ -93,17 +93,57 @@ void Mesh::linearBlendSkinning(bool useCapsuleRadius) {
 }
 
 void Mesh::forward_euler(float timestep, float damping_factor) {
-	// TODO (Animation) Task 4
+	// (Animation) Task 4
+
+	int n = 10;
+	const float t = timestep / n;
+
+	while (n-- > 0) {
+		vector<float> laplacians;
+		for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+			float laplacian = v->laplacian();
+			laplacians.push_back(laplacian);
+		}
+
+		size_t i = 0;
+		for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+			float laplacian = laplacians[i++];
+			v->offset += t * v->velocity;
+			v->velocity += t / (1 + damping_factor * t / 2) * laplacian;
+		}
+	}
 }
 
-void Mesh::symplectic_euler(float timestep, float damping_factor) {
-	// TODO (Animation) Task 4
+void Mesh::symplectic_euler(float t, float lambda) {
+	// (Animation) Task 4
+
+	vector<float> laplacians;
+	for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+		float laplacian = v->laplacian();
+		laplacians.push_back(laplacian);
+	}
+
+	size_t i = 0;
+	for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+		float laplacian = laplacians[i++];
+
+		if (!v->setLastOffset) {
+			v->lastOffset = v->offset;
+			v->setLastOffset = true;
+		}
+
+		float newOffset = (t*t * laplacian + (lambda*t/2 - 1) * v->lastOffset + 2 * v->offset) / (1 + lambda*t/2);
+		v->lastOffset = v->offset;
+		v->offset = newOffset;
+	}
 }
 
 void Mesh::resetWave() {
 	for (VertexIter v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
 		v->velocity = 0.0;
 		v->offset = 0.0;
+		v->lastOffset = 0.0;
+		v->setLastOffset = false;
 	}
 }
 

@@ -1,6 +1,6 @@
 # 23 Physically-Based Animation and PDEs 
 
-### 23.1 Intro
+## 23.1 Intro
 
 **Partial Diferential Equations (PDEs)** 
 
@@ -36,7 +36,7 @@ Function given implicitly in terms of derivatives:
 
 - Nonlinear / higher order⇒HARDER TO SOLVE! 
 
-**Model Equations**
+**Model Equations** 
 
 Fundamental behavior of many important PDEs is wellcaptured by three model linear equations: 
 
@@ -65,9 +65,7 @@ Fundamental behavior of many important PDEs is wellcaptured by three model line
   $$
 
 
-
-
-**Elliptic PDEs / Laplace Equation**
+**Elliptic PDEs / Laplace Equation** 
 
 > What’s the smoothest function interpolating the given boundary data ?
 
@@ -79,7 +77,7 @@ Roughly speaking, why is it easier to solve?
 
 Very robust to errors: just keep averaging with neighbors! 
 
-**Parabolic PDEs / Heat Equation**
+**Parabolic PDEs / Heat Equation** 
 
 > How does an initial distribution of heat spread out over 
 
@@ -87,7 +85,7 @@ Very robust to errors: just keep averaging with neighbors!
 
 After a long time, solution is same as Laplace equation! 
 
-**Hyperbolic PDEs / Wave Equation**
+**Hyperbolic PDEs / Wave Equation** 
 
 > If you throw a rock into a pond, how does the wavefront evolve over time? 
 
@@ -97,7 +95,7 @@ Errors made at the beginning will persist for a long time! (hard)
 
 ## 23.2 Compute
 
-**Numerical Solution of PDEs**
+**Numerical Solution of PDEs** 
 
 Like ODEs, many interesting PDEs are difcult/impossible to solve analytically—especially if we want to incorporate(混合) data (e.g., user interaction) 
 
@@ -109,7 +107,7 @@ Basic strategy
 - pick a spatial discretization (TODAY) 
 - as with ODEs, run a time-stepping algorithm 
 
-**Lagrangian vs. Eulerian**
+**Lagrangian vs. Eulerian** 
 
 Two basic ways to discretize space: Lagrangian & Eulerian 
 
@@ -136,7 +134,7 @@ E.g., suppose we want to encode the motion of a fluid
 
   Many modern methods mix Lagrangian & Eulerian
 
-**Numerical PDEs—Basic Strategy**
+**Numerical PDEs—Basic Strategy** 
 
 - Pick PDE formulation 
 - Pick spatial discretization 
@@ -156,7 +154,7 @@ Diferential operator: eats a function, spits out its “2nd derivative”
 
 ![1545456866924](assets/1545456866924.jpg)
 
-**Boundary Conditions for Discrete Laplace**
+**Boundary Conditions for Discrete Laplace** 
 
 Two basic boundary conditions 
 
@@ -182,7 +180,9 @@ $$
 two different techniques 
 
 -  Convert to two 1st order (in time) equations: 
-- use centered diference (like Laplace) in time 
+   - $\overset{\mathbf{.}}{u}=v$ 
+   - $\overset{\mathbf{.}}{v}=\Delta u$ 
+-  use centered diference (like Laplace) in time 
 
 $$
 \frac{u^{k+1}-2u^k+u^{k-1}}{\tau^2}=\Delta u^k

@@ -5,9 +5,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 ## 简介
 
-我正在跟这个课
+~~我正在跟这个课~~ 现已完成
 
-主要是看 slides 做笔记 notes
+主要是看 slides 做笔记
 
 > 用 [typora](https://www.typora.io/) 写的（支持高亮，latex等功能），且图片放在了网盘内，直接在 github 上不大行
 >
@@ -107,7 +107,7 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 5 Path Tracing
   - [x] 6 Materials
   - [x] 7 Environment Light
-- [ ] 4.0 Animation
+- [x] 4.0 Animation
   - [x] 1 Spline Interpolation
     - [x] Hermite Curve over the Unit Interval
     - [x] Catmull-Romm spline
@@ -115,5 +115,5 @@ COMPUTER GRAPHICS (CMU 15-462/662)
     - [x] Forward Kinematics
     - [x] Inverse Kinematics
   - [x] 3 Linear Blend Skinning
-  - [ ] 4 Physical Simulation
+  - [x] 4 Physical Simulation
 
