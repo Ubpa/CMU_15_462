@@ -114,6 +114,6 @@ COMPUTER GRAPHICS (CMU 15-462/662)
   - [x] 2 Skeleton Kinematics
     - [x] Forward Kinematics
     - [x] Inverse Kinematics
-  - [ ] 3 Linear Blend Skinning
+  - [x] 3 Linear Blend Skinning
   - [ ] 4 Physical Simulation
 

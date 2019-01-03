@@ -8,7 +8,7 @@ Assistant draws inbetweens
 
 Tedious(乏味的) / labor intensive(集中的) (opportunity for technology!) 
 
-![1544944037612](assets/1544944037612.jpg))
+![1544944037612](assets/1544944037612.jpg)
 
 **Keyframing**
 
@@ -21,7 +21,7 @@ Basic idea:
 
 - computer flls in the rest via interpolation/approximation 
 
-![1544944132622](assets/1544944132622.jpg))
+![1544944132622](assets/1544944132622.jpg)
 
 # 19.1 Interpolation 
 
@@ -31,13 +31,13 @@ Basic idea: “connect the dots”
 
 Simple, but yields rather rough motion (infnite acceleration) 
 
-![1544944268759](assets/1544944268759.jpg))
+![1544944268759](assets/1544944268759.jpg)
 
 **Piecewise Polynomial Interpolation**
 
 Common interpolant: piecewise polynomial “spline” 
 
-![1544944310736](assets/1544944310736.jpg))
+![1544944310736](assets/1544944310736.jpg)
 
 Basic motivation: get better continuity than piecewise linear! 
 
@@ -53,7 +53,7 @@ f(x_i)=y_i,i=0,...,n
 $$
 The only other condition is that the function is a polynomial when restricted to any interval between knots 
 
-![1544944534942](assets/1544944534942.jpg))
+![1544944534942](assets/1544944534942.jpg)
 
 **cubic polynomials**
 
@@ -69,7 +69,7 @@ Tempting to use higher-degree polynomials, in order to get higher-order continui
 
 Can lead to oscillation, ultimately worse approximation: 
 
-![1544944773880](assets/1544944773880.jpg))
+![1544944773880](assets/1544944773880.jpg)
 
 **Cubic Polynomial - Degrees of Freedom** 
 
@@ -77,17 +77,17 @@ Cubic polynomial has four degrees of freedom (DOFs), namely four coefficients (a
 
 Only need two degrees of freedom to specify endpoints: 
 
-![1544944892102](assets/1544944892102.jpg))
+![1544944892102](assets/1544944892102.jpg)
 
 Overall, four unknowns but only two equations
 
 Not enough to uniquely determine the curve! 
 
-![1544944971336](assets/1544944971336.jpg))
+![1544944971336](assets/1544944971336.jpg)
 
 Fitting Cubic to Endpoints and Derivatives 
 
-![1544944986998](assets/1544944986998.jpg))
+![1544944986998](assets/1544944986998.jpg)
 
 This time, we have four equations in four unknowns 
 
@@ -149,7 +149,7 @@ natural spline
 
 Each cubic “piece” specifed by endpoints and tangents
 
-![1544946463128](assets/1544946463128.jpg))
+![1544946463128](assets/1544946463128.jpg)
 
 Equivalently: by four points (Bézier form); just take difference! 
 
@@ -181,7 +181,7 @@ Basic idea: use difference of neighbors to defne tangent
 $$
 u_i=\frac{f_{i+1}-f_{i-1}}{t_{i+1}-t_{i-1}}
 $$
-![1544947113774](assets/1544947113774.jpg))
+![1544947113774](assets/1544947113774.jpg)
 
 All the same properties as any other Hermite spline (locality, etc.) 
 
@@ -195,7 +195,7 @@ Get better continuity and local control by sacrificing interpolation
 
 B-spline basis defned recursively: 
 
-![1544949685367](assets/1544949685367.jpg))
+![1544949685367](assets/1544949685367.jpg)
 
 B-spline itself is then a linear combination of bases: 
 $$
@@ -209,9 +209,9 @@ Animate by interpolating transformations
 
 Often have sophisticated “rig”: 
 
-![1544949891815](assets/1544949891815.jpg))
+![1544949891815](assets/1544949891815.jpg)
 
-**Inverse Kinematics**
+**Inverse Kinematics** 
 
 Important technique in animation & robotics 
 
@@ -267,11 +267,18 @@ Infuence of each bone determined by, e.g., weighting function
 
 ![1544950074655](assets/1544950074655.jpg)
 
-**Blend Shapes**
+> weighting function 
+> $$
+> v_i=\sum_j{w_{ij}v_i^j}\\
+> w_{ij}=\frac{\text{dist}_{ij}^{-1}}{\sum_j{\text{dist}_{ij}^{-1}}}
+> $$
+> if $\text{dist}_{ij} > \text{threshold}$ , $\text{joint}_j$ has no influence to $v_j​$  
+
+**Blend Shapes** 
 
 Instead of skeleton, interpolate directly between surfaces 
 
 E.g., model a collection of facial expressions 
 
-![1544950123669](assets/1544950123669.jpg))
+![1544950123669](assets/1544950123669.jpg)
 

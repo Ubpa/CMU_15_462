@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <sstream>
+#include <stack>
 
 #include "../static_scene/object.h"
 #include "../error_dialog.h"
@@ -47,7 +48,48 @@ Mesh::Mesh(Collada::PolymeshInfo &polyMesh, const Matrix4x4 &transform) {
 }
 
 void Mesh::linearBlendSkinning(bool useCapsuleRadius) {
-	// TODO (Animation) Task 3a, Task 3b
+	// (Animation) Task 3a, Task 3b
+
+	for (auto v = mesh.verticesBegin(); v != mesh.verticesEnd(); v++) {
+		vector<LBSInfo> lbsInfos;
+
+		double sumInvDist = 0;
+		for (auto joint : skeleton->joints) {
+			Matrix4x4 origT = joint->getBindTransformation();
+			Vector3D origPosInJ = origT.inv() * v->bindPosition;
+			Vector3D posProj = dot(origPosInJ, joint->axis) * joint->axis;
+
+			Vector3D closestPos;
+			if (dot(posProj, joint->axis) < 0)
+				closestPos = Vector3D(0, 0, 0);
+			else if (posProj.norm2() > joint->axis.norm2())
+				closestPos = joint->axis;
+			else
+				closestPos = posProj;
+
+			double dist = (origPosInJ - closestPos).norm();
+			if (useCapsuleRadius && dist > joint->capsuleRadius)
+				continue;
+
+			Matrix4x4 T = joint->getTransformation() * joint->getRotation();
+
+			LBSInfo lbsInfo;
+
+			lbsInfo.blendPos = T * origPosInJ;
+			lbsInfo.distance = dist;
+			sumInvDist += 1.0 / dist;
+
+			lbsInfos.push_back(lbsInfo);
+		}
+
+		if (lbsInfos.size() > 0) {
+			v->position = Vector3D(0, 0, 0);
+			for (auto lbsInfo : lbsInfos) {
+				double weight = 1.0 / lbsInfo.distance / sumInvDist;
+				v->position += weight * lbsInfo.blendPos;
+			}
+		}
+	}
 }
 
 void Mesh::forward_euler(float timestep, float damping_factor) {
