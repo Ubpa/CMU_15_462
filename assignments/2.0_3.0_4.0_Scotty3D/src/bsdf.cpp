@@ -41,20 +41,15 @@ Spectrum DiffuseBSDF::f(const Vector3D& wo, const Vector3D& wi) {
 
 Spectrum DiffuseBSDF::sample_f(const Vector3D& wo, Vector3D* wi, float* pdf) {
 	// Implement DiffuseBSDF
-	double Xi1 = dMap(engine);
-	double Xi2 = dMap(engine);
-	
-	double a = sqrt(1 - Xi1 * Xi1);
-	wi->x = a * cos(2 * PI * Xi2);
-	wi->y = a * sin(2 * PI * Xi2);
-	wi->z = Xi1;
-	*pdf = this->pdf(wo, *wi);
+	*wi = sampler.get_sample(pdf);
+	if (wo.z < 0)
+		wi->z *= -1;
 
-	return albedo * (1.0 / PI);
+	return albedo * (1.0f / PI);
 }
 
 float DiffuseBSDF::pdf(const Vector3D& wo, const Vector3D& wi) {
-	return 1.0f / (2 * PI);
+	return wi.z / PI;
 }
 
 // Mirror BSDF //

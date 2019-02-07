@@ -90,6 +90,7 @@ AreaLight::AreaLight(const Spectrum& rad, const Vector3D& pos,
 	dim_x(dim_x),
 	dim_y(dim_y),
 	area(dim_x.norm() * dim_y.norm()) {
+	direction.normalize();
 	printf("[AreaLight]\n"
 		"radiance:(%.3f,%.3f,%.3f)\n", rad.r, rad.g, rad.b);
 }
@@ -98,10 +99,10 @@ Spectrum AreaLight::sample_L(const Vector3D& p, Vector3D* wi,
 	float* distToLight, float* pdf) const {
 	Vector2D sample = sampler.get_sample() - Vector2D(0.5, 0.5);
 	Vector3D d = position + sample.x * dim_x + sample.y * dim_y - p;
-	double cosTheta = dot(d, direction);
 	double sqDist = d.norm2();
 	double dist = sqrt(sqDist);
 	*wi = d / dist;
+	double cosTheta = dot(*wi, direction);
 	*distToLight = dist;
 	*pdf = sqDist / (area * fabs(cosTheta));
 	return cosTheta < 0 ? radiance : Spectrum();

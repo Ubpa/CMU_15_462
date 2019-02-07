@@ -45,16 +45,17 @@ Vector3D CosineWeightedHemisphereSampler3D::get_sample(float *pdf) const {
 	double Xi1 = dMap(engine);
 	double Xi2 = dMap(engine);
 
-	double cosTheta = Xi1 * Xi1;
+	double sinTheta = sqrt(Xi1);
+	double cosTheta = sqrt(1 - Xi1);
 
-	double sinTheta = sin(acos(cosTheta));
 	double phi = 2.0 * PI * Xi2;
 
 	double xs = sinTheta * cos(phi);
 	double ys = sinTheta * sin(phi);
 	double zs = cosTheta;
 
-	*pdf = sinTheta * cosTheta / PI;
+	// pdf 是 p(w)，而不是 p(theta, phi)
+	*pdf = cosTheta / PI;
 
 	return Vector3D(xs, ys, zs);
 }

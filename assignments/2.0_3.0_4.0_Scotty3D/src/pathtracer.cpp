@@ -511,9 +511,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	
 	// (2) potentially terminate path (using Russian roulette)
 	float terminateProbability = 0.f;
-	// Pareto principle : 2-8 principle
-	// 0.2 * cos(PI / 2 * 0.8) == 0.0618
-	if (!isect.bsdf->is_delta() && matF.illum() * abs(mat_w_in.z) < 0.0618f)
+	if (!isect.bsdf->is_delta() && matF.illum() < 0.2f)
 		terminateProbability = 0.8f;
 
 	if (rand() / float(RAND_MAX) < terminateProbability)

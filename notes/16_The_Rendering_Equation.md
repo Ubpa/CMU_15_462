@@ -101,9 +101,9 @@ More blurring, plus coloration (nonuniform absorption across frequencies)
 
 - Encodes behavior of light that “bounces off” surface 
 
-  Given incoming direction $\omega_i$, how much light gets scattered in any given outgoing direction $\omega_0$? 
+  Given incoming direction $\omega_i$, how much light gets scattered in any given outgoing direction $\omega_0​$? 
 
-- Describe as distribution $f_r(\omega_i\to\omega_o)$ 
+- Describe as distribution $f_r(\omega_i\to\omega_o)​$ 
 
   $$
   f_r(\omega_i\to\omega_o)\ge0\\
@@ -180,10 +180,10 @@ L_o(\mathbf{p},\omega_o)
 \end{aligned}
 $$
 
-> $\rho(\mathbf{p})$ is albedo, between 0 and 1, because
+> $\rho(\mathbf{p})​$ is albedo, between 0 and 1, because
 > $$
 > 0\le\int_{\mathcal{H}^2}{f_r(\mathbf{p})\cos\theta}\ \text{d}\omega_i\le 1\\
-> 0\le\frac{\rho(\mathbf{p})}{\pi}\int_0^{2\pi}\int_0^\pi\cos\theta\ \le 1\text{d}\phi\text{d}\theta\\
+> 0\le\frac{\rho(\mathbf{p})}{\pi}\int_0^{2\pi}\int_0^\frac{\pi}{2}\cos\theta\sin\theta\ \text{d}\phi\text{d}\theta\le 1\\
 > 0\le\rho(\mathbf{p})\le 1\\
 > $$
 >
@@ -211,7 +211,7 @@ $$
   0     &      & \text{otherwise}\\
   \end{array} \right.
   $$
-  Strictly speaking, $f_r$ is a distribution, not a function
+  Strictly speaking, $f_r​$ is a distribution, not a function
 
   In practice, no hope of finding refected direction via random sampling; simply pick the refected direction! 
 
@@ -266,7 +266,7 @@ Light refracts when it enters a new medium.
   R(\theta)=R_0+(1-R_0)(1-\cos\theta)^5\\
   R_0=(\frac{n_t-1}{n_t+1})^2
   $$
-  上边的 $\cos \theta$ 永远是空气中的角
+  上边的 $\cos \theta​$ 永远是空气中的角
 
   折射的BSDF
   $$
@@ -283,7 +283,7 @@ Light refracts when it enters a new medium.
   > 
   > 	wi->x = - wo.x * inv;
   > 	wi->y = - wo.y * inv;
-  > 	wi->z = (wo.z >= 0 ? -1 : 1) * sqrt(discriminant);
+  > 	wi->z = - sign(wo.z) * sqrt(discriminant);
   > 	wi->normalize();
   > 
   > 	return true;
