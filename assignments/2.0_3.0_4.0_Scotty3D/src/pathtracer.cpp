@@ -482,8 +482,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
 				// (Task 4) Construct a shadow ray and compute whether the intersected surface is
 				// in shadow. Only accumulate light if not in shadow.
-				Ray shadowRay(hit_p + EPS_D * dir_to_light, dir_to_light);
-				if (!bvh->intersect(shadowRay) || shadowRay.max_t > dist_to_light / dir_to_light.norm())
+				Ray shadowRay(hit_p + EPS_D * isect.n, dir_to_light);
+				shadowRay.max_t = dist_to_light / dir_to_light.norm() - EPS_D;
+				if (!bvh->intersect(shadowRay))
 					light_L_out += (cos_theta / sumPr) * f * light_L;
 			}
 		}
@@ -494,7 +495,9 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	if (light_L_out.isnan())
 		printf("trace_ray : light_L_out is nan\n");
 
-	if (r.depth > max_ray_depth)
+	// Éî¶È£¬¶ªÆú¸ÅÂÊ
+	float depthP = r.depth < max_ray_depth ? 0.f : 0.5f;
+	if (rand() / float(RAND_MAX) < depthP)
 		return emit_L_out + light_L_out;
 
 	// ### (Task 5) Compute an indirect lighting estimate using pathtracing with Monte Carlo.
@@ -523,6 +526,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 	// to light from this direction
 	// !!! Multiple Importance Sampling (MIS)
 	float sumPr = matPDF;
+
 	if (!isect.bsdf->is_delta()) {
 		for (SceneLight* light : scene->lights) {
 			size_t num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
@@ -534,7 +538,7 @@ Spectrum PathTracer::trace_ray(const Ray &r) {
 
 	Ray matRay(hit_p + EPS_D * matRayDir, matRayDir, int(r.depth + 1));
 
-	Spectrum mat_L_out = abs(cosTheta) / (sumPr*(1.f - terminateProbability)) * matF * trace_ray(matRay);
+	Spectrum mat_L_out = abs(cosTheta) / (sumPr*(1.f - terminateProbability)*(1.f-depthP)) * matF * trace_ray(matRay);
 
 	if (mat_L_out.isnan())
 		printf("trace_ray : mat_L_out is nan\n");

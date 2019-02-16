@@ -16,6 +16,43 @@ Summed up by the rendering equation (Kajiya):
 
 ==Key challenge: to evaluate incoming radiance, we have to compute yet another integral==. I.e., rendering equation is ==recursive==. 
 
+**Deep in the Rendering Equation** 
+
+将 $\cos\theta​$ 改写成点积的形式，
+$$
+L_o(\mathbf{p},\omega_o)=L_e(\mathbf{p},\omega_o) + \int_{\mathcal{H}^2}f_r(\mathbf{p},\omega_i\to\omega_o)L_i(\mathbf{p},\omega_i)(\omega_i\cdot\mathbf{n}(\mathbf{p})) \ \text{d}\omega_i
+$$
+我们考虑 $L_i(\mathbf{p},\omega_i)$，其为
+$$
+L_i(\mathbf{p},\omega_i)=L_o(\text{RTX}(\mathbf{p},\omega_i),-\omega_i)
+$$
+所以渲染方程为
+$$
+L_o(\mathbf{p},\omega_o)=L_e(\mathbf{p},\omega_o) + \int_{\mathcal{H}^2}L_o(\text{RTX}(\mathbf{p},\omega_i),-\omega_i)f_r(\mathbf{p},\omega_i\to\omega_o)(\omega_i\cdot\mathbf{n}(\mathbf{p})) \ \text{d}\omega_i\\
+$$
+记 $L_o(\mathbf{p},\omega_o)$ 为 $f(u)$，$L_e(\mathbf{p},\omega_o)$ 为 $e(u)$，$L_o(RTX(\mathbf{p},\omega_i),-\omega_i)$ 为 $f(v)$，积分算子记为 $K(u,v)$。
+
+则渲染方程简化为
+$$
+f(u)=e(u)+\int K(u,v)f(v)\ \text{d}v
+$$
+这是第二类弗雷德霍姆积分方程，无法求解，只能近似。
+
+将方程展开
+$$
+\begin{aligned}
+L&=E+KL\\
+(I-K)L&=E\\
+L&=(I-K)^{-1}E\\
+L&=E+KE+K^2E+...\\
+\end{aligned}
+$$
+即
+$$
+f(u)=e(u)+\int K(u,v)e(v)dv+\int K(u,v)dv\int K(v,w)e(w)dw+...
+$$
+以上的解释中符号之间对应关系自行确认，重点是理解到该渲染方程的特性，以及求解方法。
+
 **Recursive Raytracing** 
 
 Basic strategy: recursively evaluate rendering equation! 
