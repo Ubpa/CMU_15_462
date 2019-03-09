@@ -57,6 +57,12 @@ $$
 >
 
 **Cosine-Weighted Hemisphere Sampling** 
+
+对于漫反射，BRDF为 $\frac{\rho}{\pi}​$，则所求积分为
+$$
+\int_{\mathcal{H}^2} \frac{\rho}{\pi}L(\boldsymbol{p},\omega_i)\cos\theta\ \text{d}\omega_i
+$$
+因此我们可以让采样概率密度函数正比于 $\cos\theta​$。
 $$
 \begin{aligned}
 p(\omega)&\propto\cos\theta\\
@@ -94,6 +100,8 @@ $$
 ![1544898869796](assets/1544898869796.jpg)
 
 Incident lighting estimator uses different random directions in each pixel. Some of those directions point towards the light, others do not. 
+
+> 软阴影是由面光源产生的
 
 **Reduce noise** 
 
@@ -156,12 +164,12 @@ Ignoring low-contribution samples introduces systematic error
 
 Instead, ==randomly discard low-contribution samples== in a way that leaves estimator unbiased 
 
-> New estimator: evaluate original estimator with probability  $p_{rr}$, reweight. Otherwise ignore
+> New estimator: evaluate original estimator with probability  $p_{rr}​$, reweight. Otherwise ignore
 
 >
 > Same expected value as original estimator: 
 >$$
-> p_{rr}E[\frac{X}{p_{rr}}]+E[(1-p_{rr})0]=E[X]
+> p_{rr}E[\frac{X}{p_{rr}}]+(1-p_{rr})E[0]=E[X]
 >$$
 >
 

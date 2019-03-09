@@ -22,7 +22,7 @@ Summed up by the rendering equation (Kajiya):
 $$
 L_o(\mathbf{p},\omega_o)=L_e(\mathbf{p},\omega_o) + \int_{\mathcal{H}^2}f_r(\mathbf{p},\omega_i\to\omega_o)L_i(\mathbf{p},\omega_i)(\omega_i\cdot\mathbf{n}(\mathbf{p})) \ \text{d}\omega_i
 $$
-我们考虑 $L_i(\mathbf{p},\omega_i)$，其为
+我们考虑 $L_i(\mathbf{p},\omega_i)​$，其为
 $$
 L_i(\mathbf{p},\omega_i)=L_o(\text{RTX}(\mathbf{p},\omega_i),-\omega_i)
 $$
@@ -30,7 +30,7 @@ $$
 $$
 L_o(\mathbf{p},\omega_o)=L_e(\mathbf{p},\omega_o) + \int_{\mathcal{H}^2}L_o(\text{RTX}(\mathbf{p},\omega_i),-\omega_i)f_r(\mathbf{p},\omega_i\to\omega_o)(\omega_i\cdot\mathbf{n}(\mathbf{p})) \ \text{d}\omega_i\\
 $$
-记 $L_o(\mathbf{p},\omega_o)$ 为 $f(u)$，$L_e(\mathbf{p},\omega_o)$ 为 $e(u)$，$L_o(RTX(\mathbf{p},\omega_i),-\omega_i)$ 为 $f(v)$，积分算子记为 $K(u,v)$。
+记 $L_o(\mathbf{p},\omega_o)​$ 为 $f(u)​$，$L_e(\mathbf{p},\omega_o)​$ 为 $e(u)​$，$L_o(RTX(\mathbf{p},\omega_i),-\omega_i)​$ 为 $f(v)​$，积分算子记为 $K(u,v)​$。
 
 则渲染方程简化为
 $$
@@ -154,45 +154,49 @@ More blurring, plus coloration (nonuniform absorption across frequencies)
   >
   >---
   >
-  >**Cook-Torrance BRDF**
+  >**Cook-Torrance BRDF** 
   >$$
   >f_r=k_df_\text{lambert}+k_sf_\text{cook-torrance}\\
   >f_\text{cook-torrance}=\frac{DFG}{4(\omega_0\cdot\mathbf{n})(\omega_i\cdot\mathbf{n})}
   >$$
-  >$k_s$ 是 镜面反射 部分，$k_d=1-k_s$ 是 折射/漫反射 部分
+  >$k_s$ 是 镜面反射 部分，$k_d=1-k_s​$ 是 折射/漫反射 部分
   >
-  >$f_\text{lambertian}$ 是下边提到的漫反射BRDF
+  >$f_\text{lambertian}​$ 是下边提到的漫反射BRDF
   >
-  >$f_\text{cook-torrance}$ 是 镜面反射 BRDF
+  >$f_\text{cook-torrance}​$ 是 镜面反射 BRDF
   >
-  >D, F, G 三个函数分别为正态分布函数(Normal**D**istribution Function)，菲涅尔方程(**F**resnel Rquation)和几何函数(**G**eometry Function)
+  >D, F, G 三个函数分别为正态分布函数(Normal**D**istribution Function)，菲涅尔方程(**F**resnel Rquation)和几何函数(**G**eometry Function)。
   >
-  >- **正态分布函数**：估算在受到表面粗糙度的影响下，取向方向与中间向量一致的微平面的数量。这是用来估算微平面的主要函数。
-  >  $$
-  >  NDF_{GGXTR}(\mathbf{n},\mathbf{h},\alpha)=\frac{\alpha^2}{\pi((\mathbf{n}\cdot\mathbf{h})^2(\alpha^2-1)+1)^2}
-  >  $$
-  >  在这里$\mathbf{h}$表示用来与平面上的微平面做比较用的中间向量，而$\alpha$表示表面粗糙度
+  >F统一都用 schlick 公式，D和G不同的组合形成不同的BRDF
   >
-  >  ![img](assets/ndf.jpg)
+  >- **正态分布函数**：估算在受到表面粗糙度的影响下，取向方向与**中间向量**一致的微平面的数量。这是用来估算微平面的主要函数。
+  >$$
+  >NDF_{GGXTR}(\mathbf{n},\mathbf{h},\alpha)=\frac{\alpha^2}{\pi((\mathbf{n}\cdot\mathbf{h})^2(\alpha^2-1)+1)^2}
+  >$$
+  >在这里$\mathbf{h}$表示用来与平面上的微平面做比较用的中间向量，而$\alpha$表示表面粗糙度，粗糙度为 0-1，如下展示了不同粗糙度下的效果。
+  >
+  >![img](assets/ndf.jpg)
   >
   >- **几何函数**：描述了微平面自成阴影的属性。当一个平面相对比较粗糙的时候，平面表面上的微平面有可能挡住其他的微平面从而减少表面所反射的光线。
   >
-  >  ![img](assets/geometry_shadowing.jpg)
-  >  $$
-  >  G_{SchlickGGX}(\mathbf{n},\mathbf{v},k)=\frac{\mathbf{n}\cdot\mathbf{v}}{(\mathbf{n}\cdot\mathbf{v}(1-k)+k)}\\
-  >  G(\mathbf{n},\mathbf{v},\mathbf{l},k)=G_{sup}(\mathbf{n},\mathbf{v},k)G_{sup}(\mathbf{n},\mathbf{l},k)
-  >  $$
-  >  ![img](assets/geometry-1544885007310.jpg)
+  >![img](assets/geometry_shadowing.jpg)
+  >$$
+  >G_{SchlickGGX}(\mathbf{n},\mathbf{v},k)=\frac{\mathbf{n}\cdot\mathbf{v}}{(\mathbf{n}\cdot\mathbf{v})(1-k)+k}\\
+  >G(\mathbf{n},\mathbf{v},\mathbf{l},k)=G_{sup}(\mathbf{n},\mathbf{v},k)G_{sup}(\mathbf{n},\mathbf{l},k)
+  >$$
+  >![img](assets/geometry-1544885007310.jpg)
   >
   >- **菲涅尔方程**：菲涅尔方程描述的是在不同的表面角下表面所反射的光线所占的比率。
-  >  $$
-  >  F_{Schlick}(\mathbf{n},\mathbf{v},F_0)=F_0+(1−F_0)(1−(\mathbf{n}⋅\mathbf{v}))^5
-  >  $$
-  >  $F_0$ 表示平面的基础反射率，它是利用所谓折射指数(Indices of Refraction)或者说IOR计算得出的
-  >  $$
-  >  F_0=(\frac{n_t-1}{n_t+1})^2
-  >  $$
-  >  ![img](assets/fresnel.jpg)
+  >$$
+  >F_{Schlick}(\mathbf{h},\mathbf{v},F_0)=F_0+(1−F_0)(1−(\mathbf{h}⋅\mathbf{v}))^5
+  >$$
+  >$F_0$ 表示平面的基础反射率，它是利用所谓折射指数(Indices of Refraction)或者说IOR计算得出的
+  >$$
+  >F_0=(\frac{n_t-1}{n_t+1})^2
+  >$$
+  >根据 wiki 上写的，这里的两个向量应该是光线方向和法向。但对于镜面反射，法向即为半程向量，光线方向与法向的点积就是视线方向的点积。
+  >
+  >![img](assets/fresnel.jpg)
 
 - Radiometric description
   $$
@@ -298,7 +302,7 @@ Light refracts when it enters a new medium.
 
   ![1544881171677](assets/1544881171677.jpg)
 
-  一个好的近似是 Schlick approximation，公式为
+  一个好的近似是 [Schlick approximation](https://en.wikipedia.org/wiki/Schlick%27s_approximation)，公式为
   $$
   R(\theta)=R_0+(1-R_0)(1-\cos\theta)^5\\
   R_0=(\frac{n_t-1}{n_t+1})^2
