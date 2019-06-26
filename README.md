@@ -3,6 +3,8 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 
 > http://15462.courses.cs.cmu.edu/fall2018/
 
+代码正确性不保证 !!! 只保证测试结果合理 !!!
+
 ## 简介
 
 ~~我正在跟这个课~~ 现已完成
@@ -35,9 +37,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 >
 > 现已将图片压缩上传至 github
 
-链接：https://pan.baidu.com/s/1gjXbqJYDD_66fGo8Ce9Txw 
+链接：https://pan.baidu.com/s/1tSaIfyG6Ekn1s-3EuGKf9A 
 
-提取码：fsyq 
+提取码：vr56 
 
 ## Todo
 
