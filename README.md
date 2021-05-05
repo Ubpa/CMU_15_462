@@ -37,9 +37,9 @@ COMPUTER GRAPHICS (CMU 15-462/662)
 >
 > 现已将图片压缩上传至 github
 
-链接：https://pan.baidu.com/s/1PNOrMxnqBB7yr9vlnyK7qw 
+链接：（度盘前缀自查）/s/1ilCQNRaaLA5_IQPoIYhD_w
 
-提取码：pmiv 
+提取码：eo8o
 
 ## Todo
 
